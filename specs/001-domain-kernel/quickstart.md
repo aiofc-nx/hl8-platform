@@ -25,7 +25,7 @@ yarn add @hl8/domain-kernel
 ### 1. 创建值对象
 
 ```typescript
-import { ValueObject } from '@hl8/domain-kernel';
+import { ValueObject } from "@hl8/domain-kernel";
 
 // 创建邮箱值对象
 class Email extends ValueObject<string> {
@@ -37,14 +37,14 @@ class Email extends ValueObject<string> {
   private validateEmail(email: string): void {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      throw new Error('Invalid email format');
+      throw new Error("Invalid email format");
     }
   }
 }
 
 // 使用值对象
-const email1 = new Email('user@example.com');
-const email2 = new Email('user@example.com');
+const email1 = new Email("user@example.com");
+const email2 = new Email("user@example.com");
 
 console.log(email1.equals(email2)); // true
 console.log(email1.toString()); // "user@example.com"
@@ -53,7 +53,7 @@ console.log(email1.toString()); // "user@example.com"
 ### 2. 创建实体（充血模型）
 
 ```typescript
-import { Entity, EntityId, AuditInfo } from '@hl8/domain-kernel';
+import { Entity, EntityId, AuditInfo } from "@hl8/domain-kernel";
 
 // 创建用户实体
 class User extends Entity {
@@ -69,7 +69,7 @@ class User extends Entity {
   // 业务方法 - 更新用户名
   updateName(newName: string): void {
     if (!newName || newName.trim().length === 0) {
-      throw new Error('Name cannot be empty');
+      throw new Error("Name cannot be empty");
     }
     this.name = newName;
     this.updateAuditInfo(); // 自动更新审计信息
@@ -86,7 +86,7 @@ class User extends Entity {
     return {
       id: this.getId().getValue(),
       name: this.name,
-      email: this.email.getValue()
+      email: this.email.getValue(),
     };
   }
 
@@ -97,7 +97,7 @@ class User extends Entity {
 }
 
 // 使用实体
-const user = new User('John Doe', new Email('john@example.com'));
+const user = new User("John Doe", new Email("john@example.com"));
 console.log(user.getId().getValue()); // UUID v4
 console.log(user.getLifecycleState()); // EntityLifecycle.CREATED
 
@@ -106,14 +106,14 @@ user.activate();
 console.log(user.getLifecycleState()); // EntityLifecycle.ACTIVE
 
 // 执行业务操作
-user.updateName('Jane Doe');
+user.updateName("Jane Doe");
 console.log(user.getUserInfo().name); // "Jane Doe"
 ```
 
 ### 3. 创建聚合根（实体分离原则）
 
 ```typescript
-import { AggregateRoot, InternalEntity } from '@hl8/domain-kernel';
+import { AggregateRoot, InternalEntity } from "@hl8/domain-kernel";
 
 // 创建订单项内部实体
 class OrderItem extends InternalEntity {
@@ -130,7 +130,7 @@ class OrderItem extends InternalEntity {
 
   // 执行业务逻辑
   executeBusinessLogic(params: any): any {
-    if (params.action === 'updateQuantity') {
+    if (params.action === "updateQuantity") {
       this.updateQuantity(params.quantity);
     }
     return this.calculateTotal();
@@ -139,7 +139,7 @@ class OrderItem extends InternalEntity {
   // 业务方法
   updateQuantity(newQuantity: number): void {
     if (newQuantity <= 0) {
-      throw new Error('Quantity must be positive');
+      throw new Error("Quantity must be positive");
     }
     this.quantity = newQuantity;
   }
@@ -163,22 +163,22 @@ class Order extends AggregateRoot {
   constructor(customerId: string) {
     super();
     this.customerId = customerId;
-    this.status = 'PENDING';
+    this.status = "PENDING";
   }
 
   // 协调业务操作 - 添加订单项
   addOrderItem(productId: string, quantity: number, price: number): void {
     const item = new OrderItem(productId, quantity, price);
     item.setAggregateRootId(this.getId()); // 设置聚合根ID
-    
+
     this.addInternalEntity(item);
-    this.updateStatus('UPDATED');
-    
+    this.updateStatus("UPDATED");
+
     // 发布领域事件
     this.addDomainEvent({
-      eventType: 'OrderItemAdded',
+      eventType: "OrderItemAdded",
       eventData: { productId, quantity, price },
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -186,16 +186,16 @@ class Order extends AggregateRoot {
   updateOrderItemQuantity(itemId: string, newQuantity: number): void {
     const item = this.getInternalEntity(new EntityId(itemId));
     if (!item) {
-      throw new Error('Order item not found');
+      throw new Error("Order item not found");
     }
 
     // 委托给内部实体执行
     const result = item.executeBusinessLogic({
-      action: 'updateQuantity',
-      quantity: newQuantity
+      action: "updateQuantity",
+      quantity: newQuantity,
     });
 
-    this.updateStatus('UPDATED');
+    this.updateStatus("UPDATED");
     return result;
   }
 
@@ -212,12 +212,12 @@ class Order extends AggregateRoot {
   validateBusinessInvariants(): boolean {
     // 订单必须有客户ID
     if (!this.customerId) return false;
-    
+
     // 订单项必须有效
     for (const item of this.items.values()) {
       if (!item.validateBusinessRules()) return false;
     }
-    
+
     return true;
   }
 
@@ -227,9 +227,9 @@ class Order extends AggregateRoot {
 }
 
 // 使用聚合根
-const order = new Order('customer-123');
-order.addOrderItem('product-1', 2, 100);
-order.addOrderItem('product-2', 1, 50);
+const order = new Order("customer-123");
+order.addOrderItem("product-1", 2, 100);
+order.addOrderItem("product-2", 1, 50);
 
 console.log(order.calculateTotal()); // 250
 console.log(order.getDomainEvents().length); // 2 (两个OrderItemAdded事件)
@@ -238,17 +238,17 @@ console.log(order.getDomainEvents().length); // 2 (两个OrderItemAdded事件)
 ### 4. 处理领域事件
 
 ```typescript
-import { DomainEvent } from '@hl8/domain-kernel';
+import { DomainEvent } from "@hl8/domain-kernel";
 
 // 创建领域事件处理器
 class OrderEventHandler {
   handle(event: DomainEvent): void {
     switch (event.getEventType()) {
-      case 'OrderItemAdded':
-        console.log('Order item added:', event.getEventData());
+      case "OrderItemAdded":
+        console.log("Order item added:", event.getEventData());
         break;
-      case 'OrderStatusChanged':
-        console.log('Order status changed:', event.getEventData());
+      case "OrderStatusChanged":
+        console.log("Order status changed:", event.getEventData());
         break;
     }
   }
@@ -269,15 +269,15 @@ order.clearDomainEvents();
 ### 5. 异常处理
 
 ```typescript
-import { BusinessException, SystemException } from '@hl8/domain-kernel';
+import { BusinessException, SystemException } from "@hl8/domain-kernel";
 
 // 业务异常
 try {
-  user.updateName(''); // 空名称
+  user.updateName(""); // 空名称
 } catch (error) {
   if (error instanceof BusinessException) {
-    console.log('Business error:', error.getMessage());
-    console.log('Error code:', error.getCode());
+    console.log("Business error:", error.getMessage());
+    console.log("Error code:", error.getCode());
   }
 }
 
@@ -286,8 +286,8 @@ try {
   // 系统级操作
 } catch (error) {
   if (error instanceof SystemException) {
-    console.log('System error:', error.getMessage());
-    console.log('Context:', error.getContext());
+    console.log("System error:", error.getMessage());
+    console.log("Context:", error.getContext());
   }
 }
 ```

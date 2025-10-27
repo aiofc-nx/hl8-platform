@@ -5,13 +5,42 @@ alwaysApply: true
 ---
 # hl8-platform Development Guidelines
 
+**我是一个中国软件工程师，你应当使用中文与我交流**
+
 ## Constitution Reference
 
 本项目遵循项目宪章规范，详见 `.specify/memory/constitution.md`
 
 ## 项目配置
 
-本项目各子项目统一了typescript、eslint、jest配置，详见`.cursor/docs/global-configuration-standardization.md`
+本项目各子项目统一了typescript、eslint、jest配置，详见:
+1、`.cursor/docs/backend-typescript-jest-configuration.md`。
+2、`.cursor/docs/backend-eslint-configuration.md`。
+
+**所有服务端项目必须使用 NodeNext 模块系统**
+
+- **核心配置**：module: "NodeNext", moduleResolution: "NodeNext", target: "ES2022", strict: true
+- **package.json 配置**：type: "module", engines: { "node": ">=20" }
+- **禁止使用 CommonJS**：不允许在新项目中使用 CommonJS 模块系统
+
+## 代码即文档原则
+
+**代码注释必须清晰、准确、完整地描述业务规则与逻辑**
+
+- **遵循 TSDoc 注释规范**
+- **所有公共 API、类、方法、接口、枚举都必须添加完整的 TSDoc 注释**
+- **注释必须包含**：
+  - @description: 功能描述和业务逻辑
+  - @param: 参数说明（含业务含义）
+  - @returns: 返回值说明
+  - @throws: 异常情况说明
+  - @example: 使用示例
+- **业务规则详细描述**
+- **前置条件和后置条件**
+- **使用场景和注意事项**
+- **代码变更时必须同步更新注释**
+
+**理由**：通过详细的注释让代码本身成为最好的业务文档，减少文档维护成本，提高团队协作效率，确保业务逻辑的准确传承。
 
 ## 测试
 
@@ -25,8 +54,13 @@ alwaysApply: true
 - **测试覆盖率要求**：核心业务逻辑 ≥ 80%，关键路径 ≥ 90%，所有公共 API 必须有测试用例
 
 ## Active Technologies
+
+- TypeScript 5.9.3, Node.js >=20 + @hl8/config, class-validator, class-transformer, uuid (001-domain-kernel)
+- 事件存储模式（按时间顺序持久化所有领域事件） (001-domain-kernel)
+
 - TypeScript 5.9.3, Node.js >=20 + @hl8/config, @nestjs/common, @nestjs/core, @nestjs/platform-fastify, class-validator, class-transformer (001-config-integration)
 - N/A (configuration management only) (001-config-integration)
 
 ## Recent Changes
+
 - 001-config-integration: Added TypeScript 5.9.3, Node.js >=20 + @hl8/config, @nestjs/common, @nestjs/core, @nestjs/platform-fastify, class-validator, class-transformer

@@ -222,10 +222,10 @@
 
 ```typescript
 enum EntityLifecycle {
-  CREATED = 'CREATED',
-  ACTIVE = 'ACTIVE', 
-  INACTIVE = 'INACTIVE',
-  DELETED = 'DELETED'
+  CREATED = "CREATED",
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  DELETED = "DELETED",
 }
 ```
 
@@ -233,8 +233,8 @@ enum EntityLifecycle {
 
 ```typescript
 enum ExceptionType {
-  BUSINESS = 'BUSINESS',
-  SYSTEM = 'SYSTEM'
+  BUSINESS = "BUSINESS",
+  SYSTEM = "SYSTEM",
 }
 ```
 

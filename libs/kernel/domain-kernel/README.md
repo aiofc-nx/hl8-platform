@@ -60,7 +60,7 @@ pnpm test
 ### 创建值对象
 
 ```typescript
-import { ValueObject } from '@hl8/domain-kernel';
+import { ValueObject } from "@hl8/domain-kernel";
 
 class Email extends ValueObject {
   constructor(value: string) {
@@ -68,8 +68,8 @@ class Email extends ValueObject {
   }
 
   validateValue(value: string): void {
-    if (!value || !value.includes('@')) {
-      throw new Error('无效的邮箱地址');
+    if (!value || !value.includes("@")) {
+      throw new Error("无效的邮箱地址");
     }
   }
 
@@ -82,7 +82,7 @@ class Email extends ValueObject {
 ### 创建实体
 
 ```typescript
-import { Entity, EntityId, AuditInfo, EntityLifecycle } from '@hl8/domain-kernel';
+import { Entity, EntityId, AuditInfo, EntityLifecycle } from "@hl8/domain-kernel";
 
 class User extends Entity {
   constructor(
@@ -91,20 +91,13 @@ class User extends Entity {
     id?: EntityId,
     auditInfo?: AuditInfo,
     lifecycleState?: EntityLifecycle,
-    version?: number
+    version?: number,
   ) {
     super(id, auditInfo, lifecycleState, version);
   }
 
   clone(): User {
-    return new User(
-      this.email,
-      this.name,
-      this.id,
-      this.auditInfo.clone(),
-      this.lifecycleState,
-      this.version
-    );
+    return new User(this.email, this.name, this.id, this.auditInfo.clone(), this.lifecycleState, this.version);
   }
 }
 ```
@@ -112,7 +105,7 @@ class User extends Entity {
 ### 创建聚合根
 
 ```typescript
-import { AggregateRoot, EntityId, AuditInfo, EntityLifecycle } from '@hl8/domain-kernel';
+import { AggregateRoot, EntityId, AuditInfo, EntityLifecycle } from "@hl8/domain-kernel";
 
 class UserAggregate extends AggregateRoot {
   constructor(
@@ -121,23 +114,23 @@ class UserAggregate extends AggregateRoot {
     id?: EntityId,
     auditInfo?: AuditInfo,
     lifecycleState?: EntityLifecycle,
-    version?: number
+    version?: number,
   ) {
     super(id, auditInfo, lifecycleState, version);
   }
 
   setProfile(email: string, name: string): { success: boolean; message: string } {
-    return this.coordinateBusinessOperation('setProfile', { email, name });
+    return this.coordinateBusinessOperation("setProfile", { email, name });
   }
 
   protected performCoordination(operation: string, params: any): any {
     switch (operation) {
-      case 'setProfile':
+      case "setProfile":
         const { email, name } = params;
         // 执行业务逻辑
-        return { success: true, message: '用户资料更新成功' };
+        return { success: true, message: "用户资料更新成功" };
       default:
-        return { success: false, error: '未知操作' };
+        return { success: false, error: "未知操作" };
     }
   }
 
@@ -146,14 +139,7 @@ class UserAggregate extends AggregateRoot {
   }
 
   clone(): UserAggregate {
-    return new UserAggregate(
-      this.email,
-      this.name,
-      this.id,
-      this.auditInfo.clone(),
-      this.lifecycleState,
-      this.version
-    );
+    return new UserAggregate(this.email, this.name, this.id, this.auditInfo.clone(), this.lifecycleState, this.version);
   }
 }
 ```
@@ -161,14 +147,14 @@ class UserAggregate extends AggregateRoot {
 ### 使用领域事件
 
 ```typescript
-import { DomainEvent, EntityId } from '@hl8/domain-kernel';
+import { DomainEvent, EntityId } from "@hl8/domain-kernel";
 
 // 创建领域事件
 const event: DomainEvent = {
-  type: 'UserCreated',
+  type: "UserCreated",
   aggregateRootId: userId,
   timestamp: new Date(),
-  data: { email: 'user@example.com', name: '张三' }
+  data: { email: "user@example.com", name: "张三" },
 };
 
 // 添加到聚合根
@@ -181,27 +167,27 @@ const events = aggregateRoot.getDomainEvents();
 ### 异常处理
 
 ```typescript
-import { BusinessException, SystemException } from '@hl8/domain-kernel';
+import { BusinessException, SystemException } from "@hl8/domain-kernel";
 
 // 业务异常
-throw new BusinessException('用户不存在', 'USER_NOT_FOUND');
+throw new BusinessException("用户不存在", "USER_NOT_FOUND");
 
 // 系统异常
-throw new SystemException('数据库连接失败', 'DATABASE_CONNECTION_ERROR');
+throw new SystemException("数据库连接失败", "DATABASE_CONNECTION_ERROR");
 ```
 
 ### 验证分离原则
 
 ```typescript
-import { SeparationValidator } from '@hl8/domain-kernel';
+import { SeparationValidator } from "@hl8/domain-kernel";
 
 // 验证聚合根是否符合分离原则
 const result = SeparationValidator.validateAggregateRoot(aggregateRoot);
 
 if (result.isValid) {
-  console.log('分离原则验证通过');
+  console.log("分离原则验证通过");
 } else {
-  console.log('分离原则验证失败:', result.errors);
+  console.log("分离原则验证失败:", result.errors);
 }
 ```
 
