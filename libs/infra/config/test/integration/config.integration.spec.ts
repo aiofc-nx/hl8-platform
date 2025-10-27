@@ -30,17 +30,18 @@ describe("配置模块集成测试", () => {
     tempFiles = [tempDir];
 
     // 清理环境变量
-    const envKeys = Object.keys(process.env).filter(key =>
-      key.startsWith('APP__') ||
-      key === 'name' ||
-      key === 'version' ||
-      key === 'port' ||
-      key === 'NAME' ||
-      key === 'VERSION' ||
-      key === 'PORT' ||
-      key.startsWith('DATABASE__')
+    const envKeys = Object.keys(process.env).filter(
+      (key) =>
+        key.startsWith("APP__") ||
+        key === "name" ||
+        key === "version" ||
+        key === "port" ||
+        key === "NAME" ||
+        key === "VERSION" ||
+        key === "PORT" ||
+        key.startsWith("DATABASE__"),
     );
-    envKeys.forEach(key => delete process.env[key]);
+    envKeys.forEach((key) => delete process.env[key]);
   });
 
   afterEach(async () => {
@@ -83,7 +84,12 @@ describe("配置模块集成测试", () => {
           TypedConfigModule.forRoot({
             schema: TestConfig,
             load: dotenvLoader({ separator: "__" }),
-            validationOptions: { skipMissingProperties: true, whitelist: false, forbidUnknownValues: false, skipUndefinedProperties: true },
+            validationOptions: {
+              skipMissingProperties: true,
+              whitelist: false,
+              forbidUnknownValues: false,
+              skipUndefinedProperties: true,
+            },
           }),
         ],
       }).compile();
@@ -91,9 +97,16 @@ describe("配置模块集成测试", () => {
       const config = module.get<TestConfig>(TestConfig);
       expect(config).toBeDefined();
       console.log("Config from env vars:", JSON.stringify(config, null, 2));
-      console.log("Environment variables:", Object.keys(process.env).filter(k =>
-        k === 'name' || k === 'version' || k === 'port' || k.startsWith('DATABASE__')
-      ));
+      console.log(
+        "Environment variables:",
+        Object.keys(process.env).filter(
+          (k) =>
+            k === "name" ||
+            k === "version" ||
+            k === "port" ||
+            k.startsWith("DATABASE__"),
+        ),
+      );
       expect(config.name).toBe("Test App");
       expect(config.version).toBe("1.0.0");
       expect(config.port).toBe(3000);
@@ -199,7 +212,7 @@ describe("配置模块集成测试", () => {
       await cacheManager.set("test-key", { test: "value" });
 
       // 等待文件写入
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       const cacheFiles = fs.readdirSync(cacheDir);
       expect(cacheFiles.length).toBeGreaterThan(0);

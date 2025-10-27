@@ -219,17 +219,24 @@ export class TypedConfigModule {
     // 验证配置
     let config: unknown;
     // 检查是否提供了自定义验证器
-    if (options.validate && options.validate !== this.validateWithClassValidator) {
+    if (
+      options.validate &&
+      options.validate !== this.validateWithClassValidator
+    ) {
       // 提供了自定义验证器，先进行类验证（但可能失败），然后使用自定义验证器
       try {
         this.validateWithClassValidator(normalized, Config, validationOptions);
-      } catch (e) {
+      } catch (_e) {
         // 类验证失败，但使用自定义验证器，所以继续
       }
       config = validate(normalized) as unknown;
     } else {
       // 使用默认的类验证
-      config = this.validateWithClassValidator(normalized, Config, validationOptions);
+      config = this.validateWithClassValidator(
+        normalized,
+        Config,
+        validationOptions,
+      );
     }
 
     const providers = this.getProviders(config, Config, cacheOptions);

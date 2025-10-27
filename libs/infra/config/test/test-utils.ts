@@ -13,7 +13,7 @@ import * as fs from "fs";
 
 import "reflect-metadata";
 import { IsString, IsNumber, ValidateNested } from "class-validator";
-import { Type } from "class-transformer";
+// import { Type } from "class-transformer";
 
 /**
  * 测试数据库配置类

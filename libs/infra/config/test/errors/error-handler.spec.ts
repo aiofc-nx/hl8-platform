@@ -6,7 +6,10 @@
  * @since 1.0.0
  */
 
-import { ConfigError, ConfigErrorType } from "../../src/lib/errors/config-error.js";
+import {
+  ConfigError,
+  ConfigErrorType,
+} from "../../src/lib/errors/config-error.js";
 import { ErrorHandler } from "../../src/lib/errors/error-handler.js";
 
 describe("ErrorHandler", () => {

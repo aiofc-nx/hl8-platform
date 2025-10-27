@@ -23,3 +23,10 @@ alwaysApply: true
   - 端到端测试：`test/e2e/`
 - **类型分离**：单元测试与源代码同目录，集成测试按模块组织，端到端测试按功能组织
 - **测试覆盖率要求**：核心业务逻辑 ≥ 80%，关键路径 ≥ 90%，所有公共 API 必须有测试用例
+
+## Active Technologies
+- TypeScript 5.9.3, Node.js >=20 + @hl8/config, @nestjs/common, @nestjs/core, @nestjs/platform-fastify, class-validator, class-transformer (001-config-integration)
+- N/A (configuration management only) (001-config-integration)
+
+## Recent Changes
+- 001-config-integration: Added TypeScript 5.9.3, Node.js >=20 + @hl8/config, @nestjs/common, @nestjs/core, @nestjs/platform-fastify, class-validator, class-transformer

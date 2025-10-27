@@ -7,7 +7,10 @@
  */
 
 import { MemoryCacheProvider } from "../../src/lib/cache/memory-cache.provider.js";
-import { CacheStrategy, MemoryCacheOptions } from "../../src/lib/types/cache.types.js";
+import {
+  CacheStrategy,
+  MemoryCacheOptions,
+} from "../../src/lib/types/cache.types.js";
 import { createTestConfig, wait } from "../test-utils.js";
 
 describe("MemoryCacheProvider", () => {
@@ -296,9 +299,11 @@ describe("MemoryCacheProvider", () => {
 
       // 通过破坏内部状态来模拟错误
       const originalCalculateSize = (cacheProvider as any).calculateSize;
-      (cacheProvider as any).calculateSize = jest.fn().mockImplementation(() => {
-        throw new Error("Size calculation failed");
-      });
+      (cacheProvider as any).calculateSize = jest
+        .fn()
+        .mockImplementation(() => {
+          throw new Error("Size calculation failed");
+        });
 
       try {
         await cacheProvider.set("key", createTestConfig());
@@ -383,7 +388,9 @@ describe("MemoryCacheProvider", () => {
 
         // 并发设置操作
         for (let i = 0; i < 100; i++) {
-          operations.push(concurrentProvider.set(`key-${i}`, { ...config, id: i }));
+          operations.push(
+            concurrentProvider.set(`key-${i}`, { ...config, id: i }),
+          );
         }
 
         await Promise.all(operations);

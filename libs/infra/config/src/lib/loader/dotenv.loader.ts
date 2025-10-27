@@ -174,7 +174,11 @@ function parseWithSeparator(
 
       // 确保当前值是一个对象（如果不是，则覆盖它）
       const nextValue = current[k];
-      if (typeof nextValue !== 'object' || nextValue === null || Array.isArray(nextValue)) {
+      if (
+        typeof nextValue !== "object" ||
+        nextValue === null ||
+        Array.isArray(nextValue)
+      ) {
         current[k] = {};
       }
 

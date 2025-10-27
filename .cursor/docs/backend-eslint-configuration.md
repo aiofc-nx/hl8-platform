@@ -41,7 +41,7 @@ export default [
   ...nest,
   {
     // 项目特定的覆盖配置
-  }
+  },
 ];
 ```
 
@@ -71,22 +71,11 @@ import prettierRecommended from "eslint-plugin-prettier/recommended";
 import tsEslint from "typescript-eslint";
 
 export default tsEslint.config(
-  eslint.configs.recommended,        // ESLint 推荐规则
-  ...tsEslint.configs.recommended,   // TypeScript ESLint 推荐规则
-  prettierRecommended,                // Prettier 集成
+  eslint.configs.recommended, // ESLint 推荐规则
+  ...tsEslint.configs.recommended, // TypeScript ESLint 推荐规则
+  prettierRecommended, // Prettier 集成
   {
-    ignores: [
-      ".*.?(c|m)js",
-      "*.setup*.?(c|m)js",
-      "*.config*.?(c|m)js",
-      "*.d.ts",
-      ".turbo/",
-      ".git/",
-      "build/",
-      "dist/",
-      "coverage/",
-      "node_modules/",
-    ],
+    ignores: [".*.?(c|m)js", "*.setup*.?(c|m)js", "*.config*.?(c|m)js", "*.d.ts", ".turbo/", ".git/", "build/", "dist/", "coverage/", "node_modules/"],
   },
 );
 ```
@@ -110,7 +99,7 @@ export default [
   {
     languageOptions: {
       parserOptions: {
-        projectService: true,                    // 启用 TypeScript 项目服务
+        projectService: true, // 启用 TypeScript 项目服务
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -158,7 +147,7 @@ export default [
     files: ["**/*.ts"],
     ignores: ["**/*.spec.ts", "**/*.test.ts"],
     rules: {
-      "@typescript-eslint/no-explicit-any": "error",  // 生产代码禁止 any
+      "@typescript-eslint/no-explicit-any": "error", // 生产代码禁止 any
     },
   },
   {
@@ -210,18 +199,22 @@ ESLint 配置支持多个配置对象，后配置会覆盖前配置：
 
 ```javascript
 export default [
-  ...nest,                                // 1. 基础配置
+  ...nest, // 1. 基础配置
   {
-    ignores: ["jest.config.ts"],          // 2. 全局忽略配置
+    ignores: ["jest.config.ts"], // 2. 全局忽略配置
   },
   {
-    files: ["**/*.ts"],                   // 3. 生产代码规则
+    files: ["**/*.ts"], // 3. 生产代码规则
     ignores: ["**/*.spec.ts"],
-    rules: { /* ... */ }
+    rules: {
+      /* ... */
+    },
   },
   {
-    files: ["**/*.spec.ts"],              // 4. 测试代码规则
-    rules: { /* ... */ }
+    files: ["**/*.spec.ts"], // 4. 测试代码规则
+    rules: {
+      /* ... */
+    },
   },
 ];
 ```
@@ -304,7 +297,7 @@ pnpm lint -- src/main.ts
 **核心规则**：
 
 - **no-explicit-any**: 禁止使用显式的 `any` 类型，强制使用具体类型或 `unknown`
-- **no-unsafe-***: 禁止不安全的类型操作（需要启用严格规则）
+- **no-unsafe-\***: 禁止不安全的类型操作（需要启用严格规则）
 
 ### 测试代码规则
 
@@ -362,7 +355,7 @@ try {
 }
 
 // ❌ 警告：未使用的变量
-let unused = 'value';
+let unused = "value";
 ```
 
 ## 最佳实践
@@ -454,12 +447,7 @@ function legacyCode(data: any) {
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ]
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"]
 }
 ```
 

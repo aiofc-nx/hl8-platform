@@ -16,9 +16,13 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "echo 'No e2e tests implemented yet.'"
+    "test:config": "jest --testPathPattern=config",
+    "test:integration": "jest --testPathPattern=integration",
+    "test:e2e": "jest --testPathPattern=e2e",
+    "test:all": "jest --testPathPattern='(config|integration|e2e)'"
   },
   "dependencies": {
+    "@hl8/config": "workspace:*",
     "@nestjs/common": "11.1.7",
     "@nestjs/core": "11.1.7",
     "@nestjs/mapped-types": "^2.1.0",

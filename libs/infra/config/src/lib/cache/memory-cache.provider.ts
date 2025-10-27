@@ -108,7 +108,9 @@ export class MemoryCacheProvider implements CacheProvider {
     try {
       const now = new Date();
       const actualTtl = ttl ?? this.options.ttl;
-      const expiresAt = actualTtl ? new Date(now.getTime() + actualTtl) : undefined;
+      const expiresAt = actualTtl
+        ? new Date(now.getTime() + actualTtl)
+        : undefined;
       const size = this.calculateSize(value);
 
       // 检查内存限制

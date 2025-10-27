@@ -11,7 +11,12 @@ import * as path from "path";
 import { dotenvLoader, fileLoader } from "../../src/lib/loader/index.js";
 import { TypedConfigModule } from "../../src/lib/typed-config.module.js";
 import { cleanupTempFiles, createTempDir } from "../test-utils.js";
-import { IsString, IsNumber, ValidateNested, IsOptional } from "class-validator";
+import {
+  IsString,
+  IsNumber,
+  ValidateNested,
+  IsOptional,
+} from "class-validator";
 import { Type } from "class-transformer";
 
 // 创建嵌套配置类
