@@ -28,7 +28,7 @@ export default [
   ...nest,
   {
     // 项目特定的配置
-  }
+  },
 ];
 ```
 
@@ -49,21 +49,9 @@ import eslint from "@eslint/js";
 import prettierRecommended from "eslint-plugin-prettier/recommended";
 import tsEslint from "typescript-eslint";
 
-export default tsEslint.config(
-  eslint.configs.recommended,
-  ...tsEslint.configs.recommended,
-  prettierRecommended,
-  {
-    ignores: [
-      "*.config*.?(c|m)js",
-      "*.d.ts",
-      ".turbo/",
-      "dist/",
-      "coverage/",
-      "node_modules/",
-    ],
-  },
-);
+export default tsEslint.config(eslint.configs.recommended, ...tsEslint.configs.recommended, prettierRecommended, {
+  ignores: ["*.config*.?(c|m)js", "*.d.ts", ".turbo/", "dist/", "coverage/", "node_modules/"],
+});
 ```
 
 ### NestJS 配置 (eslint-nest.config.mjs)

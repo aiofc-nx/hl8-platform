@@ -335,7 +335,7 @@ export class CacheManager {
       for (const listener of listeners) {
         try {
           listener(event);
-        } catch (error) {
+        } catch (_error) {
           // 忽略监听器错误
         }
       }

@@ -1,0 +1,261 @@
+openapi: 3.0.3
+info:
+  title: Configuration Management API
+  description: API contract for configuration management integration
+  version: 1.0.0
+  contact:
+    name: HL8 Platform Team
+    email: platform@hl8.com
+
+paths:
+  /health/config:
+    get:
+      summary: Configuration Health Check
+      description: Check if configuration is properly loaded and valid
+      operationId: getConfigHealth
+      tags:
+        - Configuration
+      responses:
+        "200":
+          description: Configuration is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, unhealthy]
+                  message:
+                    type: string
+                  configLoaded:
+                    type: boolean
+                  validationPassed:
+                    type: boolean
+                  lastValidated:
+                    type: string
+                    format: date-time
+        "500":
+          description: Configuration error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                        message:
+                          type: string
+                        value:
+                          type: string
+
+  /config/schema:
+    get:
+      summary: Get Configuration Schema
+      description: Retrieve the configuration schema definition
+      operationId: getConfigSchema
+      tags:
+        - Configuration
+      responses:
+        "200":
+          description: Configuration schema
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfigSchema"
+        "500":
+          description: Schema loading error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    ConfigSchema:
+      type: object
+      description: Configuration schema definition
+      properties:
+        app:
+          $ref: "#/components/schemas/AppConfig"
+        database:
+          $ref: "#/components/schemas/DatabaseConfig"
+        server:
+          $ref: "#/components/schemas/ServerConfig"
+        logging:
+          $ref: "#/components/schemas/LoggingConfig"
+      required:
+        - app
+        - database
+        - server
+        - logging
+
+    AppConfig:
+      type: object
+      description: Application configuration
+      properties:
+        name:
+          type: string
+          description: Application name
+          minLength: 1
+        version:
+          type: string
+          description: Application version
+          pattern: '^\\d+\\.\\d+\\.\\d+$'
+        environment:
+          type: string
+          description: Environment
+          enum: [development, staging, production]
+        debug:
+          type: boolean
+          description: Debug mode flag
+          default: false
+      required:
+        - name
+        - version
+        - environment
+
+    DatabaseConfig:
+      type: object
+      description: Database configuration
+      properties:
+        host:
+          type: string
+          description: Database host
+          format: hostname
+        port:
+          type: integer
+          description: Database port
+          minimum: 1
+          maximum: 65535
+        username:
+          type: string
+          description: Database username
+          minLength: 1
+        password:
+          type: string
+          description: Database password
+          minLength: 1
+        database:
+          type: string
+          description: Database name
+          minLength: 1
+        ssl:
+          type: boolean
+          description: SSL connection flag
+          default: false
+      required:
+        - host
+        - port
+        - username
+        - password
+        - database
+
+    ServerConfig:
+      type: object
+      description: Server configuration
+      properties:
+        port:
+          type: integer
+          description: Server port
+          minimum: 1
+          maximum: 65535
+        host:
+          type: string
+          description: Server host
+          format: hostname
+        cors:
+          $ref: "#/components/schemas/CorsConfig"
+      required:
+        - port
+        - host
+        - cors
+
+    CorsConfig:
+      type: object
+      description: CORS configuration
+      properties:
+        enabled:
+          type: boolean
+          description: CORS enabled flag
+        origins:
+          type: array
+          description: Allowed origins
+          items:
+            type: string
+            format: uri
+          minItems: 1
+        methods:
+          type: array
+          description: Allowed HTTP methods
+          items:
+            type: string
+            enum: [GET, POST, PUT, DELETE, PATCH, OPTIONS]
+          minItems: 1
+        credentials:
+          type: boolean
+          description: Allow credentials
+          default: false
+      required:
+        - enabled
+        - origins
+        - methods
+
+    LoggingConfig:
+      type: object
+      description: Logging configuration
+      properties:
+        level:
+          type: string
+          description: Log level
+          enum: [error, warn, info, debug]
+        format:
+          type: string
+          description: Log format
+          enum: [json, text]
+        output:
+          type: array
+          description: Output destinations
+          items:
+            type: string
+            enum: [console, file, syslog]
+          minItems: 1
+      required:
+        - level
+        - format
+        - output
+
+    Error:
+      type: object
+      description: Error response
+      properties:
+        status:
+          type: string
+          enum: [error]
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              value:
+                type: string
+
+tags:
+  - name: Configuration
+    description: Configuration management operations

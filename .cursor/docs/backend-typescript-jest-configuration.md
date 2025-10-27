@@ -43,11 +43,11 @@ NestJS 专用配置继承自 base.json，添加了框架特定的编译选项：
 {
   "extends": "./base.json",
   "compilerOptions": {
-    "experimentalDecorators": true,      // 启用装饰器
-    "emitDecoratorMetadata": true,       // 生成装饰器元数据
-    "incremental": true,                 // 启用增量编译
-    "strictNullChecks": false,           // NestJS 需要放宽
-    "noImplicitAny": false,              // 允许隐式 any
+    "experimentalDecorators": true, // 启用装饰器
+    "emitDecoratorMetadata": true, // 生成装饰器元数据
+    "incremental": true, // 启用增量编译
+    "strictNullChecks": false, // NestJS 需要放宽
+    "noImplicitAny": false, // 允许隐式 any
     "allowSyntheticDefaultImports": true // 支持默认导入
   }
 }
@@ -161,7 +161,7 @@ Jest 测试配置采用三层次配置：
 jest.setTimeout(10000); // 测试超时时间
 
 // 确保 jest 在全局范围内可用
-if (typeof global.jest === 'undefined') {
+if (typeof global.jest === "undefined") {
   global.jest = jest;
 }
 
@@ -195,8 +195,8 @@ export default {
   rootDir: ".",
   extensionsToTreatAsEsm: [".ts"],
   moduleNameMapper: {
-    "^(\\.{1,2}/.*)\\.js$": "$1",       // ES 模块路径映射
-    "^@/(.*)$": "<rootDir>/src/$1",     // 路径别名
+    "^(\\.{1,2}/.*)\\.js$": "$1", // ES 模块路径映射
+    "^@/(.*)$": "<rootDir>/src/$1", // 路径别名
   },
   transform: {
     "^.+\\.ts$": [
@@ -222,20 +222,12 @@ export default {
 ```typescript
 // apps/fastify-api/jest.config.ts
 export default {
-  collectCoverageFrom: [
-    "src/**/*.(t|j)s",
-    "!src/**/*.spec.ts",
-    "!src/**/*.test.ts",
-  ],
+  collectCoverageFrom: ["src/**/*.(t|j)s", "!src/**/*.spec.ts", "!src/**/*.test.ts"],
   coverageDirectory: "../coverage",
   moduleFileExtensions: ["js", "json", "ts"],
   rootDir: "src",
   testEnvironment: "node",
-  testMatch: [
-    "**/*.spec.ts",
-    "../test/integration/**/*.spec.ts",
-    "../test/e2e/**/*.spec.ts",
-  ],
+  testMatch: ["**/*.spec.ts", "../test/integration/**/*.spec.ts", "../test/e2e/**/*.spec.ts"],
   preset: "ts-jest/presets/default-esm",
   extensionsToTreatAsEsm: [".ts"],
   transform: {
@@ -264,7 +256,7 @@ export default {
 #### preset 配置
 
 ```typescript
-preset: "ts-jest/presets/default-esm"
+preset: "ts-jest/presets/default-esm";
 ```
 
 - 使用 `default-esm` preset 支持 ES 模块
@@ -273,8 +265,8 @@ preset: "ts-jest/presets/default-esm"
 #### 环境配置
 
 ```typescript
-testEnvironment: "node"  // Node.js 环境
-extensionsToTreatAsEsm: [".ts"]  // 将 .ts 文件视为 ES 模块
+testEnvironment: "node"; // Node.js 环境
+extensionsToTreatAsEsm: [".ts"]; // 将 .ts 文件视为 ES 模块
 ```
 
 #### 模块路径映射
@@ -318,10 +310,10 @@ transform: {
 
 ```typescript
 testMatch: [
-  "**/*.spec.ts",                    // 单元测试
+  "**/*.spec.ts", // 单元测试
   "../test/integration/**/*.spec.ts", // 集成测试
-  "../test/e2e/**/*.spec.ts"         // E2E 测试
-]
+  "../test/e2e/**/*.spec.ts", // E2E 测试
+];
 ```
 
 #### 覆盖率配置
@@ -405,10 +397,10 @@ transform: {
 
 ```typescript
 // src/lib/config-loader.spec.ts
-import { ConfigLoader } from './config-loader';
+import { ConfigLoader } from "./config-loader";
 
-describe('ConfigLoader', () => {
-  it('should load configuration from file', () => {
+describe("ConfigLoader", () => {
+  it("should load configuration from file", () => {
     // 测试逻辑
   });
 });
@@ -438,8 +430,8 @@ describe('ConfigLoader', () => {
 {
   "extends": "@repo/typescript-config/nestjs.json",
   "compilerOptions": {
-    "experimentalDecorators": true,  // ❌ 已在 nestjs.json 中定义
-    "emitDecoratorMetadata": true    // ❌ 已在 nestjs.json 中定义
+    "experimentalDecorators": true, // ❌ 已在 nestjs.json 中定义
+    "emitDecoratorMetadata": true // ❌ 已在 nestjs.json 中定义
   }
 }
 ```
@@ -498,10 +490,10 @@ transform: {
 moduleNameMapper: {
   // ES 模块路径映射（必需）
   "^(\\.{1,2}/.*)\\.js$": "$1",
-  
+
   // 路径别名
   "^@/(.*)$": "<rootDir>/src/$1",
-  
+
   // Monorepo 包映射
   "^@hl8/(.*)$": "<rootDir>/../../libs/$1/dist/index.js"
 }
@@ -512,10 +504,10 @@ moduleNameMapper: {
 ```typescript
 collectCoverageFrom: [
   "src/**/*.ts",
-  "!src/**/*.spec.ts",  // 排除测试文件
-  "!src/**/*.interface.ts",  // 排除接口定义
-  "!src/**/*.dto.ts"    // 排除 DTO
-]
+  "!src/**/*.spec.ts", // 排除测试文件
+  "!src/**/*.interface.ts", // 排除接口定义
+  "!src/**/*.dto.ts", // 排除 DTO
+];
 ```
 
 ### 测试编写
@@ -523,9 +515,9 @@ collectCoverageFrom: [
 #### 1. 使用 describe 组织测试
 
 ```typescript
-describe('ClassName', () => {
-  describe('methodName', () => {
-    it('should do something', () => {
+describe("ClassName", () => {
+  describe("methodName", () => {
+    it("should do something", () => {
       // 测试逻辑
     });
   });
@@ -535,7 +527,7 @@ describe('ClassName', () => {
 #### 2. 使用 beforeEach/afterEach
 
 ```typescript
-describe('Service', () => {
+describe("Service", () => {
   let service: TestService;
 
   beforeEach(() => {
@@ -551,7 +543,7 @@ describe('Service', () => {
 #### 3. 测试异步代码
 
 ```typescript
-it('should handle async operations', async () => {
+it("should handle async operations", async () => {
   const result = await service.asyncMethod();
   expect(result).toBeDefined();
 });

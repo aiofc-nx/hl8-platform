@@ -46,20 +46,20 @@ packages/typescript-config/
   "$schema": "https://json.schemastore.org/tsconfig",
   "display": "Default",
   "compilerOptions": {
-    "declaration": true,                           // 生成声明文件
-    "declarationMap": true,                        // 为声明文件生成 source map
-    "esModuleInterop": true,                       // 启用 ES 模块互操作性
-    "incremental": false,                          // 禁用增量编译
-    "isolatedModules": true,                       // 确保每个文件都可以独立编译
-    "lib": ["es2022", "DOM", "DOM.Iterable"],      // 包含的库文件
-    "module": "NodeNext",                          // 使用 Node.js 的 ESM 模块系统
-    "moduleDetection": "force",                    // 强制模块检测
-    "moduleResolution": "NodeNext",                // 使用 Node.js 的模块解析策略
-    "noUncheckedIndexedAccess": true,              // 索引访问需要明确检查
-    "resolveJsonModule": true,                     // 支持导入 JSON 模块
-    "skipLibCheck": true,                          // 跳过声明文件的类型检查
-    "strict": true,                                // 启用所有严格类型检查选项
-    "target": "ES2022"                             // 编译目标为 ES2022
+    "declaration": true, // 生成声明文件
+    "declarationMap": true, // 为声明文件生成 source map
+    "esModuleInterop": true, // 启用 ES 模块互操作性
+    "incremental": false, // 禁用增量编译
+    "isolatedModules": true, // 确保每个文件都可以独立编译
+    "lib": ["es2022", "DOM", "DOM.Iterable"], // 包含的库文件
+    "module": "NodeNext", // 使用 Node.js 的 ESM 模块系统
+    "moduleDetection": "force", // 强制模块检测
+    "moduleResolution": "NodeNext", // 使用 Node.js 的模块解析策略
+    "noUncheckedIndexedAccess": true, // 索引访问需要明确检查
+    "resolveJsonModule": true, // 支持导入 JSON 模块
+    "skipLibCheck": true, // 跳过声明文件的类型检查
+    "strict": true, // 启用所有严格类型检查选项
+    "target": "ES2022" // 编译目标为 ES2022
   }
 }
 ```
@@ -89,17 +89,17 @@ NestJS 配置继承自基础配置，并添加了框架特定的编译选项：
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "removeComments": true,                        // 移除注释
-    "emitDecoratorMetadata": true,                 // 为装饰器生成元数据
-    "experimentalDecorators": true,                // 启用实验性装饰器支持
-    "allowSyntheticDefaultImports": true,          // 允许从没有默认导出的模块中导入
-    "sourceMap": true,                             // 生成 source map
-    "incremental": true,                           // 启用增量编译
-    "strictNullChecks": false,                     // 放宽 null 检查（NestJS 需要）
-    "noImplicitAny": false,                        // 允许隐式 any
-    "strictBindCallApply": false,                  // 放宽 bind/call/apply 检查
-    "forceConsistentCasingInFileNames": false,     // 放宽文件名大小写检查
-    "noFallthroughCasesInSwitch": false            // 允许 switch 语句 fallthrough
+    "removeComments": true, // 移除注释
+    "emitDecoratorMetadata": true, // 为装饰器生成元数据
+    "experimentalDecorators": true, // 启用实验性装饰器支持
+    "allowSyntheticDefaultImports": true, // 允许从没有默认导出的模块中导入
+    "sourceMap": true, // 生成 source map
+    "incremental": true, // 启用增量编译
+    "strictNullChecks": false, // 放宽 null 检查（NestJS 需要）
+    "noImplicitAny": false, // 允许隐式 any
+    "strictBindCallApply": false, // 放宽 bind/call/apply 检查
+    "forceConsistentCasingInFileNames": false, // 放宽文件名大小写检查
+    "noFallthroughCasesInSwitch": false // 允许 switch 语句 fallthrough
   }
 }
 ```
@@ -121,12 +121,12 @@ Next.js 配置继承自基础配置，并针对前端项目进行了优化：
   "display": "Next.js",
   "extends": "./base.json",
   "compilerOptions": {
-    "plugins": [{ "name": "next" }],              // Next.js 插件
-    "module": "ESNext",                            // 使用 ESNext 模块系统
-    "moduleResolution": "Bundler",                 // 使用打包工具的模块解析
-    "allowJs": true,                               // 允许 JavaScript 文件
-    "jsx": "preserve",                             // 保留 JSX 语法
-    "noEmit": true                                 // 不生成输出文件（Next.js 负责编译）
+    "plugins": [{ "name": "next" }], // Next.js 插件
+    "module": "ESNext", // 使用 ESNext 模块系统
+    "moduleResolution": "Bundler", // 使用打包工具的模块解析
+    "allowJs": true, // 允许 JavaScript 文件
+    "jsx": "preserve", // 保留 JSX 语法
+    "noEmit": true // 不生成输出文件（Next.js 负责编译）
   }
 }
 ```
@@ -150,7 +150,7 @@ React 库配置用于开发和构建 React 组件库：
   "display": "React Library",
   "extends": "./base.json",
   "compilerOptions": {
-    "jsx": "react-jsx"                             // 使用新的 JSX 转换
+    "jsx": "react-jsx" // 使用新的 JSX 转换
   }
 }
 ```
@@ -183,7 +183,7 @@ base.json
 以下选项已在 `nestjs.json` 中定义，子项目**不应**重复配置：
 
 - ❌ `experimentalDecorators` - 已在 nestjs.json 中设为 true
-- ❌ `emitDecoratorMetadata` - 已在 nestjs.json 中设为 true  
+- ❌ `emitDecoratorMetadata` - 已在 nestjs.json 中设为 true
 - ❌ `module` 和 `moduleResolution` - 已在 nestjs.json 中设为 NodeNext
 - ❌ `noImplicitAny` - 已在 nestjs.json 中设为 false
 - ❌ `strictNullChecks` - 已在 nestjs.json 中设为 false
@@ -310,12 +310,12 @@ NestJS 配置启用了增量编译：
 
 根据项目类型选择合适的配置：
 
-| 项目类型 | 使用配置 | 说明 |
-|---------|---------|------|
-| NestJS 后端应用 | `nestjs.json` | 支持装饰器、依赖注入 |
-| Next.js 前端应用 | `nextjs.json` | 支持 JSX、SSR |
-| React 组件库 | `react-library.json` | 支持 JSX、组件开发 |
-| Node.js 工具库 | `base.json` | 基础配置，可按需扩展 |
+| 项目类型         | 使用配置             | 说明                 |
+| ---------------- | -------------------- | -------------------- |
+| NestJS 后端应用  | `nestjs.json`        | 支持装饰器、依赖注入 |
+| Next.js 前端应用 | `nextjs.json`        | 支持 JSX、SSR        |
+| React 组件库     | `react-library.json` | 支持 JSX、组件开发   |
+| Node.js 工具库   | `base.json`          | 基础配置，可按需扩展 |
 
 ### 2. 最小化配置覆盖
 

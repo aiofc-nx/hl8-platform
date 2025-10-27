@@ -7,7 +7,10 @@
  */
 
 import { CacheManager } from "../../src/lib/cache/cache.manager.js";
-import { CacheOptions, CacheStrategy } from "../../src/lib/types/cache.types.js";
+import {
+  CacheOptions,
+  CacheStrategy,
+} from "../../src/lib/types/cache.types.js";
 import { createTestConfig, wait } from "../test-utils.js";
 
 describe("CacheManager", () => {
@@ -328,7 +331,7 @@ describe("CacheManager", () => {
       // 通过破坏内部状态来模拟错误
       const originalProvider = (cacheManager as any).provider;
       (cacheManager as any).provider = {
-        get: jest.fn().mockRejectedValue(new Error("Provider error"))
+        get: jest.fn().mockRejectedValue(new Error("Provider error")),
       };
 
       const result = await cacheManager.get("key");
@@ -405,7 +408,9 @@ describe("CacheManager", () => {
 
         // 并发设置操作
         for (let i = 0; i < 100; i++) {
-          operations.push(concurrentCacheManager.set(`key-${i}`, { ...config, id: i }));
+          operations.push(
+            concurrentCacheManager.set(`key-${i}`, { ...config, id: i }),
+          );
         }
 
         await Promise.all(operations);
