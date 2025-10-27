@@ -1,0 +1,25 @@
+---
+description: 前置提示
+globs:
+alwaysApply: true
+---
+# hl8-platform Development Guidelines
+
+## Constitution Reference
+
+本项目遵循项目宪章规范，详见 `.specify/memory/constitution.md`
+
+## 项目配置
+
+本项目各子项目统一了typescript、eslint、jest配置，详见`.cursor/docs/global-configuration-standardization.md`
+
+## 测试
+
+**分层测试架构，确保代码质量和快速反馈**
+
+- **就近原则**：单元测试文件与被测试文件在同一目录，命名格式：`{被测试文件名}.spec.ts`
+- **集中管理**：集成测试、端到端测试统一放置在项目根目录下的 **test** 目录（src目录外）
+  - 集成测试：`test/integration/`
+  - 端到端测试：`test/e2e/`
+- **类型分离**：单元测试与源代码同目录，集成测试按模块组织，端到端测试按功能组织
+- **测试覆盖率要求**：核心业务逻辑 ≥ 80%，关键路径 ≥ 90%，所有公共 API 必须有测试用例
