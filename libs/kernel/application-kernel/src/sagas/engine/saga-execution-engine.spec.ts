@@ -136,6 +136,9 @@ describe("SagaExecutionEngine", () => {
       const defaultEngine = new SagaExecutionEngine(logger, stateManager);
 
       expect(defaultEngine).toBeDefined();
+
+      // 清理引擎实例
+      defaultEngine.destroy();
     });
   });
 
@@ -509,13 +512,17 @@ describe("SagaExecutionEngine", () => {
         mockStateManager as any,
       );
 
-      const saga = new TestSaga(logger, aggregateId);
-      const data = { value: "test" };
+      try {
+        const saga = new TestSaga(logger, aggregateId);
+        const data = { value: "test" };
 
-      // 执行应该成功，但状态保存会失败
-      const result = await errorEngine.execute(saga, data);
+        // 执行应该成功，但状态保存会失败
+        const result = await errorEngine.execute(saga, data);
 
-      expect(result.success).toBe(true);
+        expect(result.success).toBe(true);
+      } finally {
+        errorEngine.destroy();
+      }
     });
 
     it("应该处理状态查询错误", async () => {
@@ -534,9 +541,13 @@ describe("SagaExecutionEngine", () => {
         mockStateManager as any,
       );
 
-      await expect(errorEngine.getSagaStatus("test-saga")).rejects.toThrow(
-        "查询失败",
-      );
+      try {
+        await expect(errorEngine.getSagaStatus("test-saga")).rejects.toThrow(
+          "查询失败",
+        );
+      } finally {
+        errorEngine.destroy();
+      }
     });
   });
 
