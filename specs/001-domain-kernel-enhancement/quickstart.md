@@ -63,7 +63,7 @@ class UserAggregateFactory implements IAggregateFactory<UserAggregate> {
   createFromEvents(events: DomainEvent[]): UserAggregate {
     // Reconstruct aggregate from events
     const aggregate = new UserAggregate("", "");
-    events.forEach(event => aggregate.applyEvent(event));
+    events.forEach((event) => aggregate.applyEvent(event));
     return aggregate;
   }
 
@@ -156,12 +156,12 @@ class UserEmailSpecification implements IQuerySpecification<User> {
           field: "email",
           operator: QueryOperator.EQUALS,
           value: this.email,
-          logicalOperator: LogicalOperator.AND
-        }
+          logicalOperator: LogicalOperator.AND,
+        },
       ],
       joins: [],
       groupBy: [],
-      having: []
+      having: [],
     };
   }
 
@@ -237,48 +237,27 @@ class ServiceLocator implements IServiceLocator {
 ### 5. Enhanced Exception Handling
 
 ```typescript
-import { 
-  RepositoryException, 
-  FactoryException, 
-  SpecificationException,
-  AggregateException 
-} from "@hl8/domain-kernel";
+import { RepositoryException, FactoryException, SpecificationException, AggregateException } from "@hl8/domain-kernel";
 
 // Repository exception
 try {
   await userRepository.findById(userId);
 } catch (error) {
-  throw new RepositoryException(
-    "Failed to find user",
-    "findById",
-    "User",
-    userId,
-    error
-  );
+  throw new RepositoryException("Failed to find user", "findById", "User", userId, error);
 }
 
 // Factory exception
 try {
   const user = userFactory.create(invalidParams);
 } catch (error) {
-  throw new FactoryException(
-    "Failed to create user",
-    "UserFactory",
-    invalidParams,
-    error
-  );
+  throw new FactoryException("Failed to create user", "UserFactory", invalidParams, error);
 }
 
 // Specification exception
 try {
   const result = specification.isSatisfiedBy(candidate);
 } catch (error) {
-  throw new SpecificationException(
-    "Failed to evaluate specification",
-    "ActiveUserSpecification",
-    candidate,
-    error
-  );
+  throw new SpecificationException("Failed to evaluate specification", "ActiveUserSpecification", candidate, error);
 }
 ```
 
@@ -293,7 +272,7 @@ class EmailValidator implements IValueObjectValidator<Email> {
 
   validate(value: Email, rules: IValueObjectValidationRule<Email>[]): IValueObjectValidationResult {
     const violations: FieldViolation[] = [];
-    
+
     for (const rule of rules) {
       const result = rule.validate(value);
       if (!result.isValid) {
@@ -304,17 +283,17 @@ class EmailValidator implements IValueObjectValidator<Email> {
           rule: rule.name,
           severity: ViolationSeverity.ERROR,
           code: "INVALID_EMAIL",
-          context: {}
+          context: {},
         });
       }
     }
 
     return {
       isValid: violations.length === 0,
-      errors: violations.map(v => v.violation),
+      errors: violations.map((v) => v.violation),
       warnings: [],
       valueObjectType: "Email",
-      validationRules: rules.map(r => r.name),
+      validationRules: rules.map((r) => r.name),
       fieldViolations: violations,
       statistics: {
         startTime: new Date(),
@@ -324,8 +303,8 @@ class EmailValidator implements IValueObjectValidator<Email> {
         executedRulesCount: rules.length,
         violationsCount: violations.length,
         fieldsCount: 1,
-        validatedFieldsCount: 1
-      }
+        validatedFieldsCount: 1,
+      },
     };
   }
 
@@ -334,7 +313,7 @@ class EmailValidator implements IValueObjectValidator<Email> {
   }
 
   removeRule(ruleName: string): boolean {
-    const index = this.rules.findIndex(r => r.name === ruleName);
+    const index = this.rules.findIndex((r) => r.name === ruleName);
     if (index >= 0) {
       this.rules.splice(index, 1);
       return true;
@@ -358,7 +337,7 @@ const version1: IModelVersion = {
   createdAt: new Date("2024-01-01"),
   breakingChanges: [],
   description: "Initial domain model",
-  tags: ["initial", "stable"]
+  tags: ["initial", "stable"],
 };
 
 const version2: IModelVersion = {
@@ -369,7 +348,7 @@ const version2: IModelVersion = {
   createdAt: new Date("2024-06-01"),
   breakingChanges: ["User.email field renamed to User.emailAddress"],
   description: "Major refactoring with breaking changes",
-  tags: ["breaking", "refactor"]
+  tags: ["breaking", "refactor"],
 };
 
 // Version compatibility checker
@@ -381,15 +360,15 @@ class VersionCompatibilityChecker implements IVersionCompatibilityChecker {
 
   getCompatibilityIssues(from: IModelVersion, to: IModelVersion): string[] {
     const issues: string[] = [];
-    
+
     if (to.major > from.major) {
       issues.push(`Major version upgrade from ${from.major} to ${to.major}`);
     }
-    
+
     if (to.breakingChanges.length > 0) {
       issues.push(...to.breakingChanges);
     }
-    
+
     return issues;
   }
 
@@ -437,21 +416,21 @@ class UserAggregateFactoryImpl implements IAggregateFactory<UserAggregate> {
 
   createFromEvents(events: DomainEvent[]): UserAggregate {
     const aggregate = new UserAggregate("", "");
-    events.forEach(event => aggregate.applyEvent(event));
+    events.forEach((event) => aggregate.applyEvent(event));
     return aggregate;
   }
 
   validateCreationParams(params: AggregateCreationParams): ValidationResult {
     const errors: string[] = [];
-    
+
     if (!params.data.email) {
       errors.push("Email is required");
     }
-    
+
     if (!params.data.name) {
       errors.push("Name is required");
     }
-    
+
     return errors.length === 0 ? ValidationResult.success() : ValidationResult.failure(errors);
   }
 }
@@ -461,7 +440,10 @@ class UserAggregateFactoryImpl implements IAggregateFactory<UserAggregate> {
 
 ```typescript
 class UserAgeSpecification implements IBusinessSpecification<User> {
-  constructor(private readonly minAge: number, private readonly maxAge: number) {}
+  constructor(
+    private readonly minAge: number,
+    private readonly maxAge: number,
+  ) {}
 
   isSatisfiedBy(candidate: User): boolean {
     return candidate.age >= this.minAge && candidate.age <= this.maxAge;
@@ -472,11 +454,7 @@ class UserAgeSpecification implements IBusinessSpecification<User> {
   }
 
   getBusinessRule(): BusinessRule {
-    return new BusinessRule(
-      "userAge",
-      `User age must be between ${this.minAge} and ${this.maxAge}`,
-      this.isSatisfiedBy
-    );
+    return new BusinessRule("userAge", `User age must be between ${this.minAge} and ${this.maxAge}`, this.isSatisfiedBy);
   }
 
   getSeverity(): BusinessRuleSeverity {
@@ -510,7 +488,7 @@ describe("Domain Kernel Enhancement", () => {
       aggregateType: "UserAggregate",
       data: { email: "user@example.com", name: "张三" },
       dependencies: new Map(),
-      metadata: {}
+      metadata: {},
     };
 
     const user = userFactory.create(params);
@@ -522,7 +500,7 @@ describe("Domain Kernel Enhancement", () => {
     const spec = new ActiveUserSpecification();
     const user = new User("user@example.com", 25);
     user.status = "ACTIVE";
-    
+
     expect(spec.isSatisfiedBy(user)).toBe(true);
   });
 
@@ -530,19 +508,17 @@ describe("Domain Kernel Enhancement", () => {
     const activeSpec = new ActiveUserSpecification();
     const ageSpec = new UserAgeSpecification(18, 65);
     const composedSpec = activeSpec.and(ageSpec);
-    
+
     const user = new User("user@example.com", 25);
     user.status = "ACTIVE";
-    
+
     expect(composedSpec.isSatisfiedBy(user)).toBe(true);
   });
 
   it("should handle repository exceptions", async () => {
     const invalidId = new EntityId();
-    
-    await expect(userRepository.findById(invalidId))
-      .rejects
-      .toThrow(RepositoryException);
+
+    await expect(userRepository.findById(invalidId)).rejects.toThrow(RepositoryException);
   });
 });
 ```

@@ -44,10 +44,7 @@ export abstract class AggregateRoot extends Entity {
    * @returns 操作结果
    * @throws {Error} 当聚合根状态不允许执行业务操作时抛出异常
    */
-  public coordinateBusinessOperation(
-    operation: string,
-    params: unknown,
-  ): unknown {
+  public coordinateBusinessOperation(operation: string, params: unknown): unknown {
     if (!this.canExecuteBusinessOperation()) {
       throw new Error("聚合根状态不允许执行业务操作");
     }
@@ -127,10 +124,7 @@ export abstract class Entity {
    * @param params 操作参数
    * @returns 操作结果
    */
-  public executeBusinessLogic(
-    operation: string,
-    params: unknown,
-  ): unknown {
+  public executeBusinessLogic(operation: string, params: unknown): unknown {
     // 验证实体状态
     if (!this.canExecuteBusinessLogic()) {
       throw new Error("实体状态不允许执行业务操作");
@@ -157,10 +151,7 @@ export abstract class Entity {
    * @param params 操作参数
    * @returns 操作结果
    */
-  public abstract performBusinessLogic(
-    operation: string,
-    params: unknown,
-  ): unknown;
+  public abstract performBusinessLogic(operation: string, params: unknown): unknown;
 
   /**
    * 检查是否可以执行业务逻辑
@@ -234,10 +225,7 @@ export abstract class DomainService {
    * @param params 操作参数
    * @returns 操作结果
    */
-  protected abstract performBusinessLogic(
-    operation: string,
-    params: unknown,
-  ): unknown;
+  protected abstract performBusinessLogic(operation: string, params: unknown): unknown;
 
   /**
    * 获取必需的依赖项列表（由子类实现）
@@ -359,10 +347,7 @@ export class BusinessRuleManager implements IBusinessRuleManager {
       this.rules.set(rule.name, rule);
       return true;
     } catch (error) {
-      throw new BusinessRuleManagerException(
-        `Failed to register rule '${rule.name}': ${error instanceof Error ? error.message : String(error)}`,
-        { ruleName: rule.name, originalError: error },
-      );
+      throw new BusinessRuleManagerException(`Failed to register rule '${rule.name}': ${error instanceof Error ? error.message : String(error)}`, { ruleName: rule.name, originalError: error });
     }
   }
 
@@ -372,17 +357,14 @@ export class BusinessRuleManager implements IBusinessRuleManager {
    * @param context 验证上下文
    * @returns 验证结果
    */
-  public validateEntity(
-    entity: unknown,
-    context?: BusinessRuleContext,
-  ): BusinessRuleValidationResult {
+  public validateEntity(entity: unknown, context?: BusinessRuleContext): BusinessRuleValidationResult {
     const startTime = Date.now();
     const violations: BusinessRuleViolation[] = [];
 
     try {
       // 获取启用的规则
       const enabledRules = Array.from(this.rules.values())
-        .filter(rule => rule.enabled)
+        .filter((rule) => rule.enabled)
         .sort((a, b) => a.priority - b.priority);
 
       // 执行规则验证
@@ -406,25 +388,23 @@ export class BusinessRuleManager implements IBusinessRuleManager {
       // 更新统计信息
       this.updateValidationStats(startTime, violations.length);
 
-      return new BusinessRuleValidationResultImpl(
-        violations.length === 0,
-        violations,
-        {
-          executionTime: Date.now() - startTime,
-          rulesExecuted: enabledRules.length,
-          violationsCount: violations.length,
-        },
-      );
+      return new BusinessRuleValidationResultImpl(violations.length === 0, violations, {
+        executionTime: Date.now() - startTime,
+        rulesExecuted: enabledRules.length,
+        violationsCount: violations.length,
+      });
     } catch (error) {
       return new BusinessRuleValidationResultImpl(
         false,
-        [{
-          ruleName: "BusinessRuleManager",
-          message: `Validation failed: ${error instanceof Error ? error.message : String(error)}`,
-          severity: BusinessRuleSeverity.ERROR,
-          context: context,
-          timestamp: new Date(),
-        }],
+        [
+          {
+            ruleName: "BusinessRuleManager",
+            message: `Validation failed: ${error instanceof Error ? error.message : String(error)}`,
+            severity: BusinessRuleSeverity.ERROR,
+            context: context,
+            timestamp: new Date(),
+          },
+        ],
         {
           executionTime: Date.now() - startTime,
           rulesExecuted: 0,
@@ -603,15 +583,7 @@ export abstract class DomainEvent {
   private readonly _data: unknown;
   private readonly _metadata: Record<string, unknown>;
 
-  constructor(
-    aggregateRootId: EntityId,
-    eventType: string,
-    data: unknown,
-    metadata: Record<string, unknown> = {},
-    eventId?: EntityId,
-    timestamp?: Date,
-    version: number = 1,
-  ) {
+  constructor(aggregateRootId: EntityId, eventType: string, data: unknown, metadata: Record<string, unknown> = {}, eventId?: EntityId, timestamp?: Date, version: number = 1) {
     this._eventId = eventId || new EntityId();
     this._aggregateRootId = aggregateRootId ? aggregateRootId.clone() : new EntityId();
     this._timestamp = timestamp || new Date();
@@ -708,7 +680,7 @@ export abstract class DomainEvent {
     }
 
     if (Array.isArray(obj)) {
-      return obj.map(item => this.deepClone(item));
+      return obj.map((item) => this.deepClone(item));
     }
 
     const cloned: Record<string, unknown> = {};
@@ -728,12 +700,7 @@ export abstract class DomainEvent {
 ```typescript
 // 领域层实现：用户相关领域事件
 export class UserCreatedEvent extends DomainEvent {
-  constructor(
-    userId: EntityId,
-    email: string,
-    name: string,
-    metadata: Record<string, unknown> = {},
-  ) {
+  constructor(userId: EntityId, email: string, name: string, metadata: Record<string, unknown> = {}) {
     super(
       userId,
       "UserCreated",
@@ -748,12 +715,7 @@ export class UserCreatedEvent extends DomainEvent {
 }
 
 export class UserEmailChangedEvent extends DomainEvent {
-  constructor(
-    userId: EntityId,
-    oldEmail: string,
-    newEmail: string,
-    metadata: Record<string, unknown> = {},
-  ) {
+  constructor(userId: EntityId, oldEmail: string, newEmail: string, metadata: Record<string, unknown> = {}) {
     super(
       userId,
       "UserEmailChanged",
@@ -768,13 +730,7 @@ export class UserEmailChangedEvent extends DomainEvent {
 }
 
 export class UserStatusChangedEvent extends DomainEvent {
-  constructor(
-    userId: EntityId,
-    oldStatus: string,
-    newStatus: string,
-    reason: string,
-    metadata: Record<string, unknown> = {},
-  ) {
+  constructor(userId: EntityId, oldStatus: string, newStatus: string, reason: string, metadata: Record<string, unknown> = {}) {
     super(
       userId,
       "UserStatusChanged",
@@ -801,10 +757,7 @@ export class UserStatusChangedEvent extends DomainEvent {
 ```typescript
 // 应用层定义：libs/kernel/application-kernel/src/use-cases/base/use-case.base.ts
 @Injectable()
-export abstract class UseCase<
-  TInput extends UseCaseInput,
-  TOutput extends UseCaseOutput,
-> {
+export abstract class UseCase<TInput extends UseCaseInput, TOutput extends UseCaseOutput> {
   protected readonly logger: Hl8Logger;
   protected readonly useCaseName: string;
 
@@ -927,14 +880,11 @@ export class CreateUserUseCase extends UseCase<CreateUserInput, CreateUserOutput
 
   protected async executeBusinessLogic(input: CreateUserInput): Promise<CreateUserOutput> {
     // 1. 使用领域服务执行业务逻辑
-    const userCreationResult = await this.userDomainService.executeBusinessLogic(
-      "createUser",
-      {
-        email: input.email,
-        name: input.name,
-        age: input.age,
-      }
-    ) as UserCreationResult;
+    const userCreationResult = (await this.userDomainService.executeBusinessLogic("createUser", {
+      email: input.email,
+      name: input.name,
+      age: input.age,
+    })) as UserCreationResult;
 
     // 2. 获取创建的用户聚合根
     const user = await this.getUserById(userCreationResult.userId);
@@ -950,46 +900,30 @@ export class CreateUserUseCase extends UseCase<CreateUserInput, CreateUserOutput
         "用户创建后验证失败",
         this.useCaseName,
         input,
-        validationResult.violations.map(v => v.message),
+        validationResult.violations.map((v) => v.message),
         { validationResult: validationResult.toJSON() },
       );
     }
 
     // 4. 发布领域事件
-    const userCreatedEvent = new UserCreatedEvent(
-      user.id,
-      user.email,
-      user.name,
-      {
-        correlationId: input.correlationId,
-        userId: input.userId,
-      }
-    );
+    const userCreatedEvent = new UserCreatedEvent(user.id, user.email, user.name, {
+      correlationId: input.correlationId,
+      userId: input.userId,
+    });
 
     await this.eventBus.publish(userCreatedEvent);
 
     // 5. 返回结果
-    return new CreateUserOutput(
-      userCreationResult.userId,
-      userCreationResult.email,
-      userCreationResult.name,
-      userCreationResult.createdAt,
-      input.correlationId,
-    );
+    return new CreateUserOutput(userCreationResult.userId, userCreationResult.email, userCreationResult.name, userCreationResult.createdAt, input.correlationId);
   }
 
   private async getUserById(userId: string): Promise<UserAggregate> {
     // 从仓储中获取用户聚合根
     const userRepository = this.userDomainService.getDependency<IUserRepository>("userRepository");
     const user = await userRepository.findById(new EntityId(userId));
-    
+
     if (!user) {
-      throw new UseCaseException(
-        "用户不存在",
-        "USER_NOT_FOUND",
-        this.useCaseName,
-        { userId },
-      );
+      throw new UseCaseException("用户不存在", "USER_NOT_FOUND", this.useCaseName, { userId });
     }
 
     return user;
@@ -1088,14 +1022,11 @@ export class CreateUserCommandHandler extends BaseCommandHandler<CreateUserComma
 
   protected async executeCommand(command: CreateUserCommand): Promise<CreateUserResult> {
     // 1. 使用领域服务创建用户
-    const userCreationResult = await this.userDomainService.executeBusinessLogic(
-      "createUser",
-      {
-        email: command.email,
-        name: command.name,
-        age: command.age,
-      }
-    ) as UserCreationResult;
+    const userCreationResult = (await this.userDomainService.executeBusinessLogic("createUser", {
+      email: command.email,
+      name: command.name,
+      age: command.age,
+    })) as UserCreationResult;
 
     // 2. 获取创建的用户聚合根
     const user = await this.getUserById(userCreationResult.userId);
@@ -1111,79 +1042,49 @@ export class CreateUserCommandHandler extends BaseCommandHandler<CreateUserComma
       throw new CommandValidationException(
         "用户创建后验证失败",
         command,
-        validationResult.violations.map(v => v.message),
+        validationResult.violations.map((v) => v.message),
         { validationResult: validationResult.toJSON() },
       );
     }
 
     // 4. 发布领域事件
-    const userCreatedEvent = new UserCreatedEvent(
-      user.id,
-      user.email,
-      user.name,
-      {
-        commandId: command.commandId,
-        correlationId: command.correlationId,
-        userId: command.userId,
-      }
-    );
+    const userCreatedEvent = new UserCreatedEvent(user.id, user.email, user.name, {
+      commandId: command.commandId,
+      correlationId: command.correlationId,
+      userId: command.userId,
+    });
 
     await this.eventBus.publish(userCreatedEvent);
 
     // 5. 返回结果
-    return new CreateUserResult(
-      userCreationResult.userId,
-      userCreationResult.email,
-      userCreationResult.name,
-      userCreationResult.createdAt,
-      command.commandId,
-    );
+    return new CreateUserResult(userCreationResult.userId, userCreationResult.email, userCreationResult.name, userCreationResult.createdAt, command.commandId);
   }
 
   protected async validateCommand(command: CreateUserCommand): Promise<void> {
     // 验证命令基本属性
     if (!command.email || !command.name) {
-      throw new CommandValidationException(
-        "邮箱和姓名不能为空",
-        command,
-        ["email", "name"],
-      );
+      throw new CommandValidationException("邮箱和姓名不能为空", command, ["email", "name"]);
     }
 
     // 验证邮箱格式
-    const emailValidation = await this.userDomainService.executeBusinessLogic(
-      "validateEmail",
-      command.email
-    ) as { isValid: boolean };
+    const emailValidation = (await this.userDomainService.executeBusinessLogic("validateEmail", command.email)) as { isValid: boolean };
 
     if (!emailValidation.isValid) {
-      throw new CommandValidationException(
-        "邮箱格式无效",
-        command,
-        ["email"],
-      );
+      throw new CommandValidationException("邮箱格式无效", command, ["email"]);
     }
 
     // 验证年龄
     if (command.age && (command.age < 18 || command.age > 120)) {
-      throw new CommandValidationException(
-        "年龄必须在18-120岁之间",
-        command,
-        ["age"],
-      );
+      throw new CommandValidationException("年龄必须在18-120岁之间", command, ["age"]);
     }
   }
 
   private async getUserById(userId: string): Promise<UserAggregate> {
     const userRepository = this.userDomainService.getDependency<IUserRepository>("userRepository");
     const user = await userRepository.findById(new EntityId(userId));
-    
+
     if (!user) {
-      throw new CommandException(
-        "用户不存在",
-        "USER_NOT_FOUND",
-        { userId },
-      );
+      throw new CommandException("用户不存在", "USER_NOT_FOUND", { userId });
     }
 
     return user;
@@ -1285,11 +1186,7 @@ export class GetUserQueryHandler extends BaseQueryHandler<GetUserQuery, GetUserR
     const user = await userRepository.findById(new EntityId(query.userId));
 
     if (!user) {
-      throw new QueryException(
-        "用户不存在",
-        "USER_NOT_FOUND",
-        { userId: query.userId },
-      );
+      throw new QueryException("用户不存在", "USER_NOT_FOUND", { userId: query.userId });
     }
 
     // 2. 验证用户业务规则
@@ -1302,42 +1199,25 @@ export class GetUserQueryHandler extends BaseQueryHandler<GetUserQuery, GetUserR
     if (!validationResult.isValid) {
       this.logger.warn("用户数据验证失败", {
         userId: query.userId,
-        violations: validationResult.violations.map(v => v.message),
+        violations: validationResult.violations.map((v) => v.message),
       });
     }
 
     // 3. 返回查询结果
-    return new GetUserResult(
-      user.id.toString(),
-      user.email,
-      user.name,
-      user.age,
-      user.status,
-      user.auditInfo.createdAt,
-      user.auditInfo.updatedAt,
-      query.queryId,
-    );
+    return new GetUserResult(user.id.toString(), user.email, user.name, user.age, user.status, user.auditInfo.createdAt, user.auditInfo.updatedAt, query.queryId);
   }
 
   protected async validateQuery(query: GetUserQuery): Promise<void> {
     // 验证查询基本属性
     if (!query.userId) {
-      throw new QueryValidationException(
-        "用户ID不能为空",
-        query,
-        ["userId"],
-      );
+      throw new QueryValidationException("用户ID不能为空", query, ["userId"]);
     }
 
     // 验证用户ID格式
     try {
       new EntityId(query.userId);
     } catch (error) {
-      throw new QueryValidationException(
-        "用户ID格式无效",
-        query,
-        ["userId"],
-      );
+      throw new QueryValidationException("用户ID格式无效", query, ["userId"]);
     }
   }
 }
@@ -1365,7 +1245,7 @@ export abstract class BaseEventHandler<TEvent extends DomainEvent> {
    */
   public async handle(event: TEvent): Promise<void> {
     const startTime = Date.now();
-    const correlationId = event.metadata.correlationId as string || this.generateCorrelationId();
+    const correlationId = (event.metadata.correlationId as string) || this.generateCorrelationId();
 
     this.logger.log("事件开始处理", {
       eventType: event.eventType,
@@ -1473,42 +1353,26 @@ export class UserCreatedEventHandler extends BaseEventHandler<UserCreatedEvent> 
         error: error instanceof Error ? error.message : String(error),
       });
 
-      throw new EventProcessingException(
-        `用户创建事件处理失败: ${error instanceof Error ? error.message : String(error)}`,
-        event,
-        { originalError: error },
-      );
+      throw new EventProcessingException(`用户创建事件处理失败: ${error instanceof Error ? error.message : String(error)}`, event, { originalError: error });
     }
   }
 
   protected async validateEvent(event: UserCreatedEvent): Promise<void> {
     // 验证事件数据
-    if (!event.data || typeof event.data !== 'object') {
-      throw new EventProcessingException(
-        "事件数据无效",
-        event,
-        { reason: "missing_data" },
-      );
+    if (!event.data || typeof event.data !== "object") {
+      throw new EventProcessingException("事件数据无效", event, { reason: "missing_data" });
     }
 
     const { email, name } = event.data as { email: string; name: string };
 
     if (!email || !name) {
-      throw new EventProcessingException(
-        "事件数据不完整",
-        event,
-        { reason: "missing_email_or_name" },
-      );
+      throw new EventProcessingException("事件数据不完整", event, { reason: "missing_email_or_name" });
     }
 
     // 验证邮箱格式
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      throw new EventProcessingException(
-        "邮箱格式无效",
-        event,
-        { reason: "invalid_email_format" },
-      );
+      throw new EventProcessingException("邮箱格式无效", event, { reason: "invalid_email_format" });
     }
   }
 }

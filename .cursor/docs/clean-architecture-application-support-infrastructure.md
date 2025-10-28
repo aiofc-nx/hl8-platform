@@ -41,11 +41,7 @@ export interface IEventStore {
    * @param expectedVersion 期望版本号，用于乐观并发控制
    * @returns 保存结果
    */
-  saveEvents(
-    aggregateId: EntityId,
-    events: DomainEvent[],
-    expectedVersion: number,
-  ): Promise<EventStoreResult>;
+  saveEvents(aggregateId: EntityId, events: DomainEvent[], expectedVersion: number): Promise<EventStoreResult>;
 
   /**
    * 获取聚合根的所有事件
@@ -54,11 +50,7 @@ export interface IEventStore {
    * @param toVersion 结束版本号，可选
    * @returns 事件列表
    */
-  getEvents(
-    aggregateId: EntityId,
-    fromVersion?: number,
-    toVersion?: number,
-  ): Promise<DomainEvent[]>;
+  getEvents(aggregateId: EntityId, fromVersion?: number, toVersion?: number): Promise<DomainEvent[]>;
 
   /**
    * 获取聚合根的事件流
@@ -67,11 +59,7 @@ export interface IEventStore {
    * @param toVersion 结束版本号，可选
    * @returns 事件流
    */
-  getEventStream(
-    aggregateId: EntityId,
-    fromVersion?: number,
-    toVersion?: number,
-  ): Promise<EventStream>;
+  getEventStream(aggregateId: EntityId, fromVersion?: number, toVersion?: number): Promise<EventStream>;
 
   /**
    * 获取所有事件
@@ -80,11 +68,7 @@ export interface IEventStore {
    * @param limit 限制数量，可选
    * @returns 事件列表
    */
-  getAllEvents(
-    fromTimestamp?: Date,
-    toTimestamp?: Date,
-    limit?: number,
-  ): Promise<DomainEvent[]>;
+  getAllEvents(fromTimestamp?: Date, toTimestamp?: Date, limit?: number): Promise<DomainEvent[]>;
 
   /**
    * 获取事件快照
@@ -92,10 +76,7 @@ export interface IEventStore {
    * @param version 版本号，可选，默认最新版本
    * @returns 事件快照
    */
-  getSnapshot(
-    aggregateId: EntityId,
-    version?: number,
-  ): Promise<EventSnapshot | null>;
+  getSnapshot(aggregateId: EntityId, version?: number): Promise<EventSnapshot | null>;
 
   /**
    * 保存事件快照
@@ -110,10 +91,7 @@ export interface IEventStore {
    * @param version 版本号，可选，默认删除所有版本
    * @returns 删除结果
    */
-  deleteSnapshot(
-    aggregateId: EntityId,
-    version?: number,
-  ): Promise<EventStoreResult>;
+  deleteSnapshot(aggregateId: EntityId, version?: number): Promise<EventStoreResult>;
 
   /**
    * 获取聚合根的当前版本
@@ -159,13 +137,7 @@ export interface ICache {
    * @param metadata 元数据
    * @returns 设置结果
    */
-  set<T>(
-    key: string,
-    value: T,
-    ttl?: number,
-    tags?: string[],
-    metadata?: Record<string, unknown>,
-  ): Promise<boolean>;
+  set<T>(key: string, value: T, ttl?: number, tags?: string[], metadata?: Record<string, unknown>): Promise<boolean>;
 
   /**
    * 删除缓存项
@@ -202,12 +174,7 @@ export interface ICache {
    * @param metadata 元数据
    * @returns 设置结果
    */
-  setMany<T>(
-    items: Record<string, T>,
-    ttl?: number,
-    tags?: string[],
-    metadata?: Record<string, unknown>,
-  ): Promise<boolean>;
+  setMany<T>(items: Record<string, T>, ttl?: number, tags?: string[], metadata?: Record<string, unknown>): Promise<boolean>;
 
   /**
    * 删除多个缓存项
@@ -261,10 +228,7 @@ export interface ICache {
    * @param metadata 元数据
    * @returns 更新结果
    */
-  updateMetadata(
-    key: string,
-    metadata: Record<string, unknown>,
-  ): Promise<boolean>;
+  updateMetadata(key: string, metadata: Record<string, unknown>): Promise<boolean>;
 
   /**
    * 获取所有缓存键
@@ -500,11 +464,7 @@ export class ConfigLoaderService {
       // 验证配置
       const validationResult = await this.validateConfig(rawConfig);
       if (!validationResult.valid) {
-        throw new ConfigValidationException(
-          "配置验证失败",
-          validationResult.errors,
-          validationResult.warnings,
-        );
+        throw new ConfigValidationException("配置验证失败", validationResult.errors, validationResult.warnings);
       }
 
       // 合并默认配置
@@ -548,9 +508,7 @@ export class ConfigLoaderService {
 
     try {
       // 验证事件存储配置
-      const eventStoreValidation = this.validateEventStoreConfig(
-        (config as any).eventStore,
-      );
+      const eventStoreValidation = this.validateEventStoreConfig((config as any).eventStore);
       errors.push(...eventStoreValidation.errors);
       warnings.push(...eventStoreValidation.warnings);
 
@@ -560,9 +518,7 @@ export class ConfigLoaderService {
       warnings.push(...cacheValidation.warnings);
 
       // 验证监控配置
-      const monitoringValidation = this.validateMonitoringConfig(
-        (config as any).monitoring,
-      );
+      const monitoringValidation = this.validateMonitoringConfig((config as any).monitoring);
       errors.push(...monitoringValidation.errors);
       warnings.push(...monitoringValidation.warnings);
 
@@ -883,9 +839,7 @@ export class MonitoringService {
    * @returns 活跃告警列表
    */
   public getActiveAlerts(): AlertEvent[] {
-    return Array.from(this.activeAlerts.values()).filter(
-      alert => alert.status === "active"
-    );
+    return Array.from(this.activeAlerts.values()).filter((alert) => alert.status === "active");
   }
 
   /**
@@ -982,10 +936,7 @@ export class MonitoringService {
     }
   }
 
-  private evaluateAlertCondition(
-    metric: PerformanceMetric,
-    rule: AlertRule,
-  ): boolean {
+  private evaluateAlertCondition(metric: PerformanceMetric, rule: AlertRule): boolean {
     const value = metric.value;
     const threshold = rule.threshold;
 
@@ -1035,9 +986,7 @@ export class MonitoringService {
   }
 
   private recoverAlert(ruleId: string): void {
-    const alert = Array.from(this.activeAlerts.values()).find(
-      a => a.ruleId === ruleId && a.status === "active"
-    );
+    const alert = Array.from(this.activeAlerts.values()).find((a) => a.ruleId === ruleId && a.status === "active");
 
     if (alert) {
       alert.status = "recovered";
@@ -1244,8 +1193,7 @@ export class ApplicationKernelModule {
         // 配置服务
         {
           provide: ApplicationKernelConfigService,
-          useFactory: (logger: Logger) =>
-            new ApplicationKernelConfigService(logger),
+          useFactory: (logger: Logger) => new ApplicationKernelConfigService(logger),
           inject: [Logger],
         },
         // 日志服务
@@ -1304,18 +1252,13 @@ export class ApplicationKernelModule {
                 return data.get(sagaId);
               },
               async getByAggregateId(aggregateId: string): Promise<SagaStateSnapshot[]> {
-                return Array.from(data.values()).filter(
-                  (s) => s.aggregateId === aggregateId,
-                );
+                return Array.from(data.values()).filter((s) => s.aggregateId === aggregateId);
               },
               async query(query: SagaStateQuery): Promise<SagaStateQueryResult> {
                 let list = Array.from(data.values());
-                if (query.sagaId)
-                  list = list.filter((s) => s.sagaId === query.sagaId);
-                if (query.aggregateId)
-                  list = list.filter((s) => s.aggregateId === query.aggregateId);
-                if (query.status)
-                  list = list.filter((s) => s.status === query.status);
+                if (query.sagaId) list = list.filter((s) => s.sagaId === query.sagaId);
+                if (query.aggregateId) list = list.filter((s) => s.aggregateId === query.aggregateId);
+                if (query.status) list = list.filter((s) => s.status === query.status);
                 if (query.limit) list = list.slice(0, query.limit);
                 if (query.offset) list = list.slice(query.offset);
                 return { items: list, total: list.length };
@@ -1359,17 +1302,7 @@ export class ApplicationKernelModule {
           inject: [Logger],
         },
       ],
-      exports: [
-        ApplicationKernelConfigService,
-        Logger,
-        CommandQueryBusImpl,
-        EventStore,
-        EventBusImpl,
-        ProjectorRegistry,
-        SagaStateManager,
-        InMemoryCache,
-        MonitoringService,
-      ],
+      exports: [ApplicationKernelConfigService, Logger, CommandQueryBusImpl, EventStore, EventBusImpl, ProjectorRegistry, SagaStateManager, InMemoryCache, MonitoringService],
     };
   }
 
@@ -1378,11 +1311,7 @@ export class ApplicationKernelModule {
    * @param options 模块选项
    * @returns 动态模块
    */
-  static forRootAsync(options: {
-    imports?: any[];
-    useFactory: (...args: any[]) => Promise<ApplicationKernelModuleOptions>;
-    inject?: any[];
-  }): DynamicModule {
+  static forRootAsync(options: { imports?: any[]; useFactory: (...args: any[]) => Promise<ApplicationKernelModuleOptions>; inject?: any[] }): DynamicModule {
     return {
       module: ApplicationKernelModule,
       imports: [CqrsModule, ...(options.imports || [])],
@@ -1394,23 +1323,12 @@ export class ApplicationKernelModule {
         },
         {
           provide: ApplicationKernelConfigService,
-          useFactory: (logger: Logger, config: ApplicationKernelModuleOptions) =>
-            new ApplicationKernelConfigService(logger, config),
+          useFactory: (logger: Logger, config: ApplicationKernelModuleOptions) => new ApplicationKernelConfigService(logger, config),
           inject: [Logger, "APPLICATION_KERNEL_OPTIONS"],
         },
         // ... 其他提供者
       ],
-      exports: [
-        ApplicationKernelConfigService,
-        Logger,
-        CommandQueryBusImpl,
-        EventStore,
-        EventBusImpl,
-        ProjectorRegistry,
-        SagaStateManager,
-        InMemoryCache,
-        MonitoringService,
-      ],
+      exports: [ApplicationKernelConfigService, Logger, CommandQueryBusImpl, EventStore, EventBusImpl, ProjectorRegistry, SagaStateManager, InMemoryCache, MonitoringService],
     };
   }
 }
@@ -1431,11 +1349,7 @@ export class PostgreSQLEventStore implements IEventStore {
     private readonly logger: Logger,
   ) {}
 
-  async saveEvents(
-    aggregateId: EntityId,
-    events: DomainEvent[],
-    expectedVersion: number,
-  ): Promise<EventStoreResult> {
+  async saveEvents(aggregateId: EntityId, events: DomainEvent[], expectedVersion: number): Promise<EventStoreResult> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -1460,15 +1374,7 @@ export class PostgreSQLEventStore implements IEventStore {
         await queryRunner.query(
           `INSERT INTO domain_events (id, aggregate_id, event_type, data, metadata, version, created_at) 
            VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-          [
-            event.eventId.toString(),
-            aggregateId.toString(),
-            event.eventType,
-            JSON.stringify(event.data),
-            JSON.stringify(event.metadata),
-            currentVersion + i + 1,
-            event.timestamp,
-          ]
+          [event.eventId.toString(), aggregateId.toString(), event.eventType, JSON.stringify(event.data), JSON.stringify(event.metadata), currentVersion + i + 1, event.timestamp],
         );
       }
 
@@ -1505,11 +1411,7 @@ export class PostgreSQLEventStore implements IEventStore {
     }
   }
 
-  async getEvents(
-    aggregateId: EntityId,
-    fromVersion?: number,
-    toVersion?: number,
-  ): Promise<DomainEvent[]> {
+  async getEvents(aggregateId: EntityId, fromVersion?: number, toVersion?: number): Promise<DomainEvent[]> {
     let query = `
       SELECT id, event_type, data, metadata, version, created_at
       FROM domain_events
@@ -1531,15 +1433,7 @@ export class PostgreSQLEventStore implements IEventStore {
 
     const rows = await this.dataSource.query(query, params);
 
-    return rows.map(row => new DomainEvent(
-      aggregateId,
-      row.event_type,
-      JSON.parse(row.data),
-      JSON.parse(row.metadata),
-      new EntityId(row.id),
-      new Date(row.created_at),
-      row.version,
-    ));
+    return rows.map((row) => new DomainEvent(aggregateId, row.event_type, JSON.parse(row.data), JSON.parse(row.metadata), new EntityId(row.id), new Date(row.created_at), row.version));
   }
 
   // 实现其他接口方法...
@@ -1558,10 +1452,7 @@ export class RedisCache implements ICache {
   private readonly config: CacheConfig;
   private readonly stats: CacheStats;
 
-  constructor(
-    config: CacheConfig,
-    logger: Logger,
-  ) {
+  constructor(config: CacheConfig, logger: Logger) {
     this.config = config;
     this.stats = {
       hits: 0,
@@ -1577,7 +1468,7 @@ export class RedisCache implements ICache {
 
     // 根据应用层配置创建Redis连接
     this.redis = new Redis({
-      host: config.connection?.host || 'localhost',
+      host: config.connection?.host || "localhost",
       port: config.connection?.port || 6379,
       password: config.connection?.password,
       retryDelayOnFailover: 100,
@@ -1603,7 +1494,7 @@ export class RedisCache implements ICache {
       this.updateHitRate();
 
       const item: CacheItem<T> = JSON.parse(value);
-      
+
       // 检查是否过期
       if (item.expiresAt && new Date() > item.expiresAt) {
         await this.delete(key);
@@ -1627,13 +1518,7 @@ export class RedisCache implements ICache {
     }
   }
 
-  async set<T>(
-    key: string,
-    value: T,
-    ttl?: number,
-    tags?: string[],
-    metadata?: Record<string, unknown>,
-  ): Promise<boolean> {
+  async set<T>(key: string, value: T, ttl?: number, tags?: string[], metadata?: Record<string, unknown>): Promise<boolean> {
     try {
       const item: CacheItem<T> = {
         value,
@@ -1646,7 +1531,7 @@ export class RedisCache implements ICache {
       };
 
       const serialized = JSON.stringify(item);
-      await this.redis.set(key, serialized, 'PX', ttl || this.config.defaultTtl);
+      await this.redis.set(key, serialized, "PX", ttl || this.config.defaultTtl);
 
       this.stats.sets++;
       this.stats.currentSize++;
@@ -1691,10 +1576,10 @@ export class PrometheusMonitoringService extends MonitoringService {
 
   async start(): Promise<void> {
     await super.start();
-    
+
     // 注册Prometheus指标
     this.registerPrometheusMetrics();
-    
+
     this.logger.log("Prometheus监控服务已启动");
   }
 
@@ -1711,33 +1596,33 @@ export class PrometheusMonitoringService extends MonitoringService {
   private registerPrometheusMetrics(): void {
     // 注册内存指标
     const memoryUsedGauge = new Gauge({
-      name: 'memory_heap_used_bytes',
-      help: 'Used heap memory in bytes',
+      name: "memory_heap_used_bytes",
+      help: "Used heap memory in bytes",
       registers: [this.prometheusRegistry],
     });
-    this.metrics.set('memory.heap.used', memoryUsedGauge);
+    this.metrics.set("memory.heap.used", memoryUsedGauge);
 
     const memoryTotalGauge = new Gauge({
-      name: 'memory_heap_total_bytes',
-      help: 'Total heap memory in bytes',
+      name: "memory_heap_total_bytes",
+      help: "Total heap memory in bytes",
       registers: [this.prometheusRegistry],
     });
-    this.metrics.set('memory.heap.total', memoryTotalGauge);
+    this.metrics.set("memory.heap.total", memoryTotalGauge);
 
     // 注册CPU指标
     const cpuUserCounter = new Counter({
-      name: 'cpu_user_microseconds_total',
-      help: 'Total user CPU time in microseconds',
+      name: "cpu_user_microseconds_total",
+      help: "Total user CPU time in microseconds",
       registers: [this.prometheusRegistry],
     });
-    this.metrics.set('cpu.user', cpuUserCounter);
+    this.metrics.set("cpu.user", cpuUserCounter);
 
     const cpuSystemCounter = new Counter({
-      name: 'cpu_system_microseconds_total',
-      help: 'Total system CPU time in microseconds',
+      name: "cpu_system_microseconds_total",
+      help: "Total system CPU time in microseconds",
       registers: [this.prometheusRegistry],
     });
-    this.metrics.set('cpu.system', cpuSystemCounter);
+    this.metrics.set("cpu.system", cpuSystemCounter);
   }
 
   private getOrCreatePrometheusMetric(metric: PerformanceMetric): Metric | undefined {

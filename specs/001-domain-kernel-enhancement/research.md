@@ -41,11 +41,7 @@ export interface IQueryRepository<T> extends IRepository<T> {
 }
 
 export interface IPaginatedRepository<T> extends IQueryRepository<T> {
-  findPaginated(
-    spec: ISpecification<T>,
-    page: number,
-    limit: number
-  ): Promise<PaginatedResult<T>>;
+  findPaginated(spec: ISpecification<T>, page: number, limit: number): Promise<PaginatedResult<T>>;
 }
 ```
 
@@ -118,7 +114,7 @@ export interface ISpecification<T> {
 export class AndSpecification<T> implements ISpecification<T> {
   constructor(
     private left: ISpecification<T>,
-    private right: ISpecification<T>
+    private right: ISpecification<T>,
   ) {}
 
   isSatisfiedBy(candidate: T): boolean {
@@ -188,25 +184,14 @@ export interface IServiceLocator {
 
 ```typescript
 export class RepositoryException extends DomainException {
-  constructor(
-    message: string,
-    operation: string,
-    entityType: string,
-    entityId?: EntityId,
-    originalError?: Error
-  ) {
-    super(message, 'REPOSITORY_ERROR', { operation, entityType, entityId }, originalError);
+  constructor(message: string, operation: string, entityType: string, entityId?: EntityId, originalError?: Error) {
+    super(message, "REPOSITORY_ERROR", { operation, entityType, entityId }, originalError);
   }
 }
 
 export class FactoryException extends DomainException {
-  constructor(
-    message: string,
-    factoryType: string,
-    creationParams: unknown,
-    originalError?: Error
-  ) {
-    super(message, 'FACTORY_ERROR', { factoryType, creationParams }, originalError);
+  constructor(message: string, factoryType: string, creationParams: unknown, originalError?: Error) {
+    super(message, "FACTORY_ERROR", { factoryType, creationParams }, originalError);
   }
 }
 ```

@@ -48,10 +48,7 @@ export interface IEventStore {
    * @returns Promise<DomainEvent[]> 事件数组
    * @throws {Error} 当获取失败时抛出异常
    */
-  getEventsFromVersion(
-    aggregateRootId: EntityId,
-    fromVersion: number,
-  ): Promise<DomainEvent[]>;
+  getEventsFromVersion(aggregateRootId: EntityId, fromVersion: number): Promise<DomainEvent[]>;
 
   /**
    * 获取聚合根的事件（在指定时间范围内）
@@ -61,11 +58,7 @@ export interface IEventStore {
    * @returns Promise<DomainEvent[]> 事件数组
    * @throws {Error} 当获取失败时抛出异常
    */
-  getEventsInTimeRange(
-    aggregateRootId: EntityId,
-    fromDate: Date,
-    toDate: Date,
-  ): Promise<DomainEvent[]>;
+  getEventsInTimeRange(aggregateRootId: EntityId, fromDate: Date, toDate: Date): Promise<DomainEvent[]>;
 
   /**
    * 获取所有事件（按时间顺序）
@@ -84,11 +77,7 @@ export interface IEventStore {
    * @returns Promise<DomainEvent[]> 事件数组
    * @throws {Error} 当获取失败时抛出异常
    */
-  getEventsByType(
-    eventType: string,
-    limit?: number,
-    offset?: number,
-  ): Promise<DomainEvent[]>;
+  getEventsByType(eventType: string, limit?: number, offset?: number): Promise<DomainEvent[]>;
 
   /**
    * 获取聚合根的最新版本号
@@ -172,10 +161,7 @@ export abstract class DomainService {
    * @param params 操作参数
    * @returns 操作结果
    */
-  protected abstract performBusinessLogic(
-    operation: string,
-    params: unknown,
-  ): unknown;
+  protected abstract performBusinessLogic(operation: string, params: unknown): unknown;
 
   /**
    * 验证服务
@@ -191,12 +177,8 @@ export abstract class DomainService {
   public equals(other: DomainService | null | undefined): boolean {
     if (!other) return false;
     if (!(other instanceof DomainService)) return false;
-    
-    return (
-      this._serviceId.equals(other._serviceId) &&
-      this._version === other._version &&
-      this.constructor === other.constructor
-    );
+
+    return this._serviceId.equals(other._serviceId) && this._version === other._version && this.constructor === other.constructor;
   }
 }
 ```
@@ -211,12 +193,7 @@ export abstract class Entity {
   protected readonly _lifecycleState: EntityLifecycle;
   protected readonly _version: number;
 
-  constructor(
-    id?: EntityId,
-    auditInfo?: AuditInfo,
-    lifecycleState: EntityLifecycle = EntityLifecycle.CREATED,
-    version: number = 1,
-  ) {
+  constructor(id?: EntityId, auditInfo?: AuditInfo, lifecycleState: EntityLifecycle = EntityLifecycle.CREATED, version: number = 1) {
     this._id = id || new EntityId();
     this._auditInfo = auditInfo || new AuditInfo();
     this._lifecycleState = lifecycleState;
@@ -274,10 +251,7 @@ export abstract class Entity {
    * @param params 操作参数
    * @returns 操作结果
    */
-  public abstract executeBusinessLogic(
-    operation: string,
-    params: unknown,
-  ): unknown;
+  public abstract executeBusinessLogic(operation: string, params: unknown): unknown;
 }
 ```
 
@@ -328,11 +302,11 @@ export class EntityId {
    * @throws {Error} 当标识符无效时抛出异常
    */
   private validateId(): void {
-    if (!this._value || this._value.trim() === '') {
-      throw new Error('实体标识符不能为空');
+    if (!this._value || this._value.trim() === "") {
+      throw new Error("实体标识符不能为空");
     }
     if (!UuidGenerator.isValid(this._value)) {
-      throw new Error('实体标识符格式无效');
+      throw new Error("实体标识符格式无效");
     }
   }
 }
@@ -349,16 +323,10 @@ export class AuditInfo {
   public readonly updatedBy: string;
   public readonly version: number;
 
-  constructor(
-    createdAt?: Date,
-    updatedAt?: Date,
-    createdBy?: string,
-    updatedBy?: string,
-    version?: number,
-  ) {
+  constructor(createdAt?: Date, updatedAt?: Date, createdBy?: string, updatedBy?: string, version?: number) {
     this.createdAt = createdAt || new Date();
     this.updatedAt = updatedAt || this.createdAt;
-    this.createdBy = createdBy || 'system';
+    this.createdBy = createdBy || "system";
     this.updatedBy = updatedBy || this.createdBy;
     this.version = version || 1;
   }
@@ -368,13 +336,7 @@ export class AuditInfo {
    * @returns 新的审计信息实例
    */
   public clone(): AuditInfo {
-    return new AuditInfo(
-      this.createdAt,
-      this.updatedAt,
-      this.createdBy,
-      this.updatedBy,
-      this.version,
-    );
+    return new AuditInfo(this.createdAt, this.updatedAt, this.createdBy, this.updatedBy, this.version);
   }
 
   /**
@@ -383,13 +345,7 @@ export class AuditInfo {
    * @returns 新的审计信息实例
    */
   public update(updatedBy: string): AuditInfo {
-    return new AuditInfo(
-      this.createdAt,
-      new Date(),
-      this.createdBy,
-      updatedBy,
-      this.version + 1,
-    );
+    return new AuditInfo(this.createdAt, new Date(), this.createdBy, updatedBy, this.version + 1);
   }
 }
 ```
@@ -408,20 +364,18 @@ export class SeparationValidator {
    * @param aggregateRoot 聚合根实例
    * @returns 验证结果
    */
-  public static validateAggregateRoot(
-    aggregateRoot: AggregateRoot,
-  ): SeparationValidationResult {
+  public static validateAggregateRoot(aggregateRoot: AggregateRoot): SeparationValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
 
     // 验证聚合根不能直接执行业务逻辑
     if (this.hasDirectBusinessLogic(aggregateRoot)) {
-      errors.push('聚合根不能直接执行业务逻辑，应通过协调操作实现');
+      errors.push("聚合根不能直接执行业务逻辑，应通过协调操作实现");
     }
 
     // 验证聚合根不能直接访问外部服务
     if (this.hasExternalDependencies(aggregateRoot)) {
-      errors.push('聚合根不能直接依赖外部服务');
+      errors.push("聚合根不能直接依赖外部服务");
     }
 
     // 验证内部实体管理
@@ -448,12 +402,12 @@ export class SeparationValidator {
 
     // 验证实体不能直接访问外部服务
     if (this.hasExternalDependencies(entity)) {
-      errors.push('实体不能直接依赖外部服务');
+      errors.push("实体不能直接依赖外部服务");
     }
 
     // 验证实体的业务规则
     if (!entity.validateBusinessRules()) {
-      errors.push('实体业务规则验证失败');
+      errors.push("实体业务规则验证失败");
     }
 
     return {
@@ -476,12 +430,7 @@ export class ValueObjectValidator<T = unknown> {
   public readonly rules: readonly ValidationRule<T>[];
   public readonly enabled: boolean;
 
-  constructor(
-    name: string,
-    description: string = '',
-    rules: ValidationRule<T>[] = [],
-    enabled: boolean = true,
-  ) {
+  constructor(name: string, description: string = "", rules: ValidationRule<T>[] = [], enabled: boolean = true) {
     this.name = name;
     this.description = description;
     this.rules = Object.freeze([...rules]);
@@ -517,9 +466,7 @@ export class ValueObjectValidator<T = unknown> {
       }
 
       // 按优先级排序规则
-      const sortedRules = [...this.rules].sort(
-        (a, b) => a.priority - b.priority,
-      );
+      const sortedRules = [...this.rules].sort((a, b) => a.priority - b.priority);
 
       // 执行所有规则
       const errors: ValidationError[] = [];
@@ -535,9 +482,9 @@ export class ValueObjectValidator<T = unknown> {
           }
         } catch (error) {
           errors.push({
-            field: rule.field || 'unknown',
+            field: rule.field || "unknown",
             message: `规则执行失败: ${error instanceof Error ? error.message : String(error)}`,
-            code: 'RULE_EXECUTION_ERROR',
+            code: "RULE_EXECUTION_ERROR",
             level: ValidationErrorLevel.ERROR,
             value: value,
             rule: rule.name,
@@ -545,24 +492,17 @@ export class ValueObjectValidator<T = unknown> {
         }
       }
 
-      return new ValidationResultImpl(
-        errors.length === 0,
-        errors,
-        {
-          executionTime: Date.now() - startTime,
-          rulesExecuted,
-          fieldsValidated: 1,
-        },
-      );
+      return new ValidationResultImpl(errors.length === 0, errors, {
+        executionTime: Date.now() - startTime,
+        rulesExecuted,
+        fieldsValidated: 1,
+      });
     } catch (error) {
-      return ValidationResultImpl.error(
-        `验证器执行失败: ${error instanceof Error ? error.message : String(error)}`,
-        {
-          executionTime: Date.now() - startTime,
-          rulesExecuted: 0,
-          fieldsValidated: 1,
-        },
-      );
+      return ValidationResultImpl.error(`验证器执行失败: ${error instanceof Error ? error.message : String(error)}`, {
+        executionTime: Date.now() - startTime,
+        rulesExecuted: 0,
+        fieldsValidated: 1,
+      });
     }
   }
 
@@ -573,12 +513,7 @@ export class ValueObjectValidator<T = unknown> {
    */
   public addRule(rule: ValidationRule<T>): ValueObjectValidator<T> {
     const newRules = [...this.rules, rule];
-    return new ValueObjectValidator(
-      this.name,
-      this.description,
-      newRules,
-      this.enabled,
-    );
+    return new ValueObjectValidator(this.name, this.description, newRules, this.enabled);
   }
 }
 ```
@@ -609,11 +544,7 @@ export class EventStore implements IEventStore {
    * @param expectedVersion 期望版本号
    * @returns 保存结果
    */
-  public async saveEvents(
-    aggregateId: EntityId,
-    events: DomainEvent[],
-    expectedVersion: number,
-  ): Promise<EventStoreResult> {
+  public async saveEvents(aggregateId: EntityId, events: DomainEvent[], expectedVersion: number): Promise<EventStoreResult> {
     try {
       const aggregateKey = aggregateId.toString();
       const currentVersion = await this.getCurrentVersion(aggregateId);
@@ -633,23 +564,13 @@ export class EventStore implements IEventStore {
 
       // 添加版本信息到事件
       const versionedEvents = events.map((event, index) => {
-        const versionedEvent = new DomainEvent(
-          aggregateId,
-          event.eventType,
-          event.data,
-          { ...event.metadata, version: currentVersion + index + 1 },
-          event.eventId,
-          event.timestamp,
-          currentVersion + index + 1,
-        );
+        const versionedEvent = new DomainEvent(aggregateId, event.eventType, event.data, { ...event.metadata, version: currentVersion + index + 1 }, event.eventId, event.timestamp, currentVersion + index + 1);
         return versionedEvent;
       });
 
       this.events.set(aggregateKey, [...existingEvents, ...versionedEvents]);
 
-      this.logger.log(
-        `Saved ${events.length} events for aggregate ${aggregateKey} at version ${newVersion}`,
-      );
+      this.logger.log(`Saved ${events.length} events for aggregate ${aggregateKey} at version ${newVersion}`);
 
       return {
         success: true,
@@ -658,7 +579,7 @@ export class EventStore implements IEventStore {
         timestamp: new Date(),
       };
     } catch (error) {
-      this.logger.error('Failed to save events', {
+      this.logger.error("Failed to save events", {
         error,
         aggregateId: aggregateId.toString(),
       });
@@ -691,16 +612,16 @@ export class UserRepository {
   public async save(user: UserAggregate): Promise<void> {
     // 使用领域层提供的EntityId
     const userId = user.id.toString();
-    
+
     // 使用领域层提供的AuditInfo
     const auditInfo = user.auditInfo.toJSON();
-    
+
     // 使用领域层提供的领域事件
     const events = user.getDomainEvents();
-    
+
     // 实现具体的持久化逻辑
     await this.eventStore.appendEvents(events);
-    
+
     this.logger.log(`User ${userId} saved successfully`, {
       userId,
       version: user.version,
@@ -711,10 +632,10 @@ export class UserRepository {
   public async findById(id: EntityId): Promise<UserAggregate | null> {
     // 使用领域层提供的EntityId
     const userId = id.toString();
-    
+
     // 使用领域层提供的事件查询接口
     const events = await this.eventStore.getEvents(id);
-    
+
     if (events.length === 0) {
       return null;
     }
@@ -747,21 +668,17 @@ export class UserService {
 
     // 使用领域层提供的聚合根
     const user = new UserAggregate(userData.email, userData.name);
-    
+
     // 使用领域层提供的分离原则验证
     const separationResult = SeparationValidator.validateAggregateRoot(user);
     if (!separationResult.isValid) {
-      throw new BusinessException(
-        '聚合根不符合分离原则',
-        'AGGREGATE_SEPARATION_VIOLATION',
-        separationResult.errors,
-      );
+      throw new BusinessException("聚合根不符合分离原则", "AGGREGATE_SEPARATION_VIOLATION", separationResult.errors);
     }
 
     // 保存到基础设施层
     await this.userRepository.save(user);
-    
-    this.logger.log('User created successfully', {
+
+    this.logger.log("User created successfully", {
       userId: user.id.toString(),
       email: userData.email,
     });
@@ -858,11 +775,11 @@ export interface IEventStore {
 @Injectable()
 export class PostgreSQLEventStore implements IEventStore {
   constructor(private readonly dataSource: DataSource) {}
-  
+
   async appendEvents(events: DomainEvent[]): Promise<void> {
     // PostgreSQL具体实现
   }
-  
+
   async getEvents(aggregateRootId: EntityId): Promise<DomainEvent[]> {
     // PostgreSQL具体实现
   }
@@ -872,11 +789,11 @@ export class PostgreSQLEventStore implements IEventStore {
 @Injectable()
 export class MongoEventStore implements IEventStore {
   constructor(private readonly mongoClient: MongoClient) {}
-  
+
   async appendEvents(events: DomainEvent[]): Promise<void> {
     // MongoDB具体实现
   }
-  
+
   async getEvents(aggregateRootId: EntityId): Promise<DomainEvent[]> {
     // MongoDB具体实现
   }
@@ -889,28 +806,20 @@ export class HybridEventStore implements IEventStore {
     private readonly postgresStore: PostgreSQLEventStore,
     private readonly mongoStore: MongoEventStore,
   ) {}
-  
+
   async appendEvents(events: DomainEvent[]): Promise<void> {
     // 根据事件类型选择存储方式
-    const postgresEvents = events.filter(e => e.eventType.startsWith('user.'));
-    const mongoEvents = events.filter(e => e.eventType.startsWith('system.'));
-    
-    await Promise.all([
-      this.postgresStore.appendEvents(postgresEvents),
-      this.mongoStore.appendEvents(mongoEvents),
-    ]);
+    const postgresEvents = events.filter((e) => e.eventType.startsWith("user."));
+    const mongoEvents = events.filter((e) => e.eventType.startsWith("system."));
+
+    await Promise.all([this.postgresStore.appendEvents(postgresEvents), this.mongoStore.appendEvents(mongoEvents)]);
   }
-  
+
   async getEvents(aggregateRootId: EntityId): Promise<DomainEvent[]> {
     // 从两个存储中获取事件并合并
-    const [postgresEvents, mongoEvents] = await Promise.all([
-      this.postgresStore.getEvents(aggregateRootId),
-      this.mongoStore.getEvents(aggregateRootId),
-    ]);
-    
-    return [...postgresEvents, ...mongoEvents].sort(
-      (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
-    );
+    const [postgresEvents, mongoEvents] = await Promise.all([this.postgresStore.getEvents(aggregateRootId), this.mongoStore.getEvents(aggregateRootId)]);
+
+    return [...postgresEvents, ...mongoEvents].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   }
 }
 ```
@@ -927,15 +836,15 @@ export abstract class DomainService {
 export class UserDomainService extends DomainService {
   protected performBusinessLogic(operation: string, params: unknown): unknown {
     switch (operation) {
-      case 'validateEmail':
+      case "validateEmail":
         return this.validateEmail(params as string);
-      case 'generateUserId':
+      case "generateUserId":
         return EntityId.generate();
       default:
         throw new Error(`Unknown operation: ${operation}`);
     }
   }
-  
+
   private validateEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -946,19 +855,19 @@ export class UserDomainService extends DomainService {
 export class OrderDomainService extends DomainService {
   protected performBusinessLogic(operation: string, params: unknown): unknown {
     switch (operation) {
-      case 'calculateTotal':
+      case "calculateTotal":
         return this.calculateTotal(params as OrderItem[]);
-      case 'validateOrder':
+      case "validateOrder":
         return this.validateOrder(params as Order);
       default:
         throw new Error(`Unknown operation: ${operation}`);
     }
   }
-  
+
   private calculateTotal(items: OrderItem[]): number {
     return items.reduce((total, item) => total + item.price * item.quantity, 0);
   }
-  
+
   private validateOrder(order: Order): boolean {
     return order.items.length > 0 && order.total > 0;
   }
