@@ -40,7 +40,7 @@ export abstract class UseCaseOutput {
   @IsOptional()
   @IsDate()
   @Transform(({ value }) => (value ? new Date(value) : new Date()))
-  public timestamp?: Date;
+  public timestamp: Date = new Date();
 
   /** 结果元数据 */
   @IsOptional()

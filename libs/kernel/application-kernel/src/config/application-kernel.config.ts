@@ -3,8 +3,7 @@
  * @description 应用层核心模块的配置管理和验证
  */
 
-import { Injectable } from "@nestjs/common";
-import { Logger, InjectPinoLogger } from "@hl8/logger";
+import { Logger } from "@hl8/logger";
 import {
   ApplicationKernelConfig,
   ConfigValidationResult,
@@ -21,15 +20,11 @@ import {
  * 应用层核心配置服务
  * @description 管理应用层核心模块的配置
  */
-@Injectable()
 export class ApplicationKernelConfigService {
   private config: ApplicationKernelConfig;
   private updateCallbacks: ConfigUpdateCallback[] = [];
 
-  constructor(
-    @InjectPinoLogger(ApplicationKernelConfigService.name)
-    private readonly logger: Logger,
-  ) {
+  constructor(private readonly logger: Logger) {
     this.config = this.loadDefaultConfig();
   }
 

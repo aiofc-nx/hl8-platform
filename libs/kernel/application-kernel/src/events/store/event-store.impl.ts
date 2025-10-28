@@ -4,7 +4,7 @@
  */
 
 import { Injectable } from "@nestjs/common";
-import { Logger, InjectPinoLogger } from "@hl8/logger";
+import { Logger } from "@hl8/logger";
 import { EntityId } from "@hl8/domain-kernel";
 import {
   IEventStore,
@@ -27,7 +27,7 @@ export class EventStore implements IEventStore {
   private readonly events = new Map<string, DomainEvent[]>();
   private readonly statistics = new Map<string, EventStoreStatistics>();
 
-  constructor(@InjectPinoLogger(EventStore.name) logger: Logger) {
+  constructor(logger: Logger) {
     this.logger = logger;
   }
 
@@ -68,6 +68,8 @@ export class EventStore implements IEventStore {
           event.data,
           { ...event.metadata, version: currentVersion + index + 1 },
           event.eventId,
+          event.timestamp,
+          currentVersion + index + 1,
         );
         return versionedEvent;
       });
@@ -119,13 +121,13 @@ export class EventStore implements IEventStore {
 
       if (fromVersion !== undefined) {
         filteredEvents = filteredEvents.filter(
-          (event) => event.version >= fromVersion,
+          (event) => (event.metadata.version as number) >= fromVersion,
         );
       }
 
       if (toVersion !== undefined) {
         filteredEvents = filteredEvents.filter(
-          (event) => event.version <= toVersion,
+          (event) => (event.metadata.version as number) <= toVersion,
         );
       }
 

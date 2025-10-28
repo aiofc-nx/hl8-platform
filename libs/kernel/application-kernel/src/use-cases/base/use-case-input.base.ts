@@ -30,7 +30,7 @@ export abstract class UseCaseInput {
   /** 请求时间戳 */
   @IsOptional()
   @Transform(({ value }) => (value ? new Date(value) : new Date()))
-  public timestamp?: Date;
+  public timestamp: Date = new Date();
 
   /** 请求元数据 */
   @IsOptional()

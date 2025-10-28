@@ -12,6 +12,7 @@ import { Logger } from "@hl8/logger";
 
 // Mock logger
 const mockLogger = {
+  log: jest.fn(),
   info: jest.fn(),
   warn: jest.fn(),
   error: jest.fn(),
@@ -29,7 +30,7 @@ describe("EventStore", () => {
       providers: [
         EventStore,
         {
-          provide: "PinoLogger:EventStore",
+          provide: Logger,
           useValue: mockLogger,
         },
       ],
@@ -47,23 +48,29 @@ describe("EventStore", () => {
       try {
         const aggregateId = new EntityId();
         console.log("AggregateId:", aggregateId.toString());
+        console.log("AggregateId isValid:", aggregateId.isValid());
+
         const events: DomainEvent[] = [
-          new DomainEvent(
-            aggregateId,
-            "UserCreated",
-            { name: "John Doe" },
-            { version: 1 },
-          ),
+          new DomainEvent(aggregateId, "UserCreated", { name: "John Doe" }, {}),
         ];
 
         console.log("Events created:", events);
+        console.log("Event details:", {
+          eventId: events[0].eventId.toString(),
+          aggregateRootId: events[0].aggregateRootId.toString(),
+          eventType: events[0].eventType,
+          version: events[0].version,
+        });
+
         const result = await eventStore.saveEvents(aggregateId, events, 0);
 
         console.log("Result:", result);
         if (!result.success) {
           console.error("Error:", result.error);
+          console.error("Full result:", JSON.stringify(result, null, 2));
         }
         expect(result.success).toBe(true);
+        expect(result.error).toBeUndefined();
         expect(result.eventsCount).toBe(1);
         expect(result.newVersion).toBe(1);
       } catch (error) {
@@ -201,14 +208,7 @@ describe("EventStore", () => {
     it("应该返回当前版本号", async () => {
       const aggregateId = new EntityId();
       const events: DomainEvent[] = [
-        {
-          id: new EntityId(),
-          type: "UserCreated",
-          data: { name: "John Doe" },
-          timestamp: new Date(),
-          version: 1,
-          aggregateId: aggregateId.toString(),
-        } as DomainEvent,
+        new DomainEvent(aggregateId, "UserCreated", { name: "John Doe" }, {}),
       ];
 
       await eventStore.saveEvents(aggregateId, events, 0);
