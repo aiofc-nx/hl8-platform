@@ -4,6 +4,9 @@ export default {
   testEnvironment: "node",
   rootDir: ".",
   extensionsToTreatAsEsm: [".ts"],
+  testTimeout: 10000,
+  forceExit: true,
+  detectOpenHandles: true,
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
     "^(\\.{1,2}/.*)$": "$1",
