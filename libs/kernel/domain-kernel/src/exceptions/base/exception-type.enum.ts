@@ -13,6 +13,15 @@ export enum ExceptionType {
 
   /** 系统异常 - 由系统错误、技术问题或外部依赖问题引起的异常 */
   SYSTEM = "SYSTEM",
+
+  /** 业务规则异常 - 由业务规则违反引起的异常 */
+  BUSINESS_RULE = "BUSINESS_RULE",
+
+  /** 协调异常 - 由协调规则或协调逻辑错误引起的异常 */
+  COORDINATION = "COORDINATION",
+
+  /** 验证异常 - 由验证规则违反引起的异常 */
+  VALIDATION = "VALIDATION",
 }
 
 /**

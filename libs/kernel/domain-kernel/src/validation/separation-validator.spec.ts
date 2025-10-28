@@ -51,6 +51,19 @@ class TestAggregateRoot extends AggregateRoot {
     return this._data.length >= 0;
   }
 
+  public validateBusinessRules(): boolean {
+    return this._data.length >= 0;
+  }
+
+  public executeBusinessLogic(operation: string, params: unknown): unknown {
+    if (operation === "updateData") {
+      const newData = (params as { data: string }).data;
+      this._data = newData;
+      return { success: true, data: newData };
+    }
+    return { success: false, error: "未知操作" };
+  }
+
   public clone(): AggregateRoot {
     const cloned = new TestAggregateRoot(
       this.id,
@@ -105,6 +118,10 @@ class TestInternalEntity extends InternalEntity {
 
   protected performNotification(event: unknown): void {
     // 模拟通知
+  }
+
+  protected performBusinessRuleValidation(): boolean {
+    return this._value != null && this._value !== undefined;
   }
 
   public clone(): InternalEntity {

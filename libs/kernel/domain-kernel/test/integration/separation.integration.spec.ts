@@ -48,6 +48,19 @@ class TestAggregateRoot extends AggregateRoot {
     return this._data.length >= 0;
   }
 
+  public validateBusinessRules(): boolean {
+    return this._data.length >= 0;
+  }
+
+  public executeBusinessLogic(operation: string, params: unknown): unknown {
+    if (operation === "updateData") {
+      const newData = (params as { data: string }).data;
+      this._data = newData;
+      return { success: true, data: newData };
+    }
+    return { success: false, error: "未知操作" };
+  }
+
   public clone(): AggregateRoot {
     const cloned = new TestAggregateRoot(
       this.id,
@@ -147,6 +160,14 @@ class ViolatingAggregateRoot extends AggregateRoot {
     return true;
   }
 
+  public validateBusinessRules(): boolean {
+    return true;
+  }
+
+  public executeBusinessLogic(operation: string, params: unknown): unknown {
+    return { success: false, error: "未知操作" };
+  }
+
   public clone(): AggregateRoot {
     return new ViolatingAggregateRoot(
       this.id,
@@ -233,6 +254,17 @@ describe("实体分离原则集成测试", () => {
 
         protected performBusinessInvariantValidation(): boolean {
           return true;
+        }
+
+        public validateBusinessRules(): boolean {
+          return true;
+        }
+
+        public executeBusinessLogic(
+          operation: string,
+          params: unknown,
+        ): unknown {
+          return { success: false, error: "未知操作" };
         }
 
         public clone(): AggregateRoot {

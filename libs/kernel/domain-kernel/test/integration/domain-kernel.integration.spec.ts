@@ -12,6 +12,47 @@ import {
 } from "../../src/aggregates/base/aggregate-root.base.js";
 import { DomainService } from "../../src/services/base/domain-service.base.js";
 import { DomainEvent as DomainEventClass } from "../../src/events/base/domain-event.base.js";
+
+// 测试用的具体领域事件实现
+class TestDomainEvent extends DomainEventClass {
+  constructor(
+    aggregateRootId: EntityId,
+    eventType: string,
+    data: unknown,
+    metadata: Record<string, unknown> = {},
+    eventId?: EntityId,
+    timestamp?: Date,
+    version: number = 1,
+  ) {
+    super(
+      aggregateRootId,
+      eventType,
+      data,
+      metadata,
+      eventId,
+      timestamp,
+      version,
+    );
+  }
+
+  protected validateEvent(): void {
+    if (!this.eventType) {
+      throw new Error("事件类型不能为空");
+    }
+  }
+
+  public clone(): DomainEventClass {
+    return new TestDomainEvent(
+      this.aggregateRootId,
+      this.eventType,
+      this.data,
+      this.metadata,
+      this.eventId,
+      this.timestamp,
+      this.version,
+    );
+  }
+}
 import { IEventStore } from "../../src/events/store/event-store.interface.js";
 import { EntityId } from "../../src/identifiers/entity-id.js";
 import { AuditInfo } from "../../src/audit/audit-info.js";
@@ -32,6 +73,14 @@ class TestValueObject extends ValueObject<string> {
     if (!value || value.length === 0) {
       throw new Error("值不能为空");
     }
+  }
+
+  protected createClone(
+    value: string,
+    createdAt: Date,
+    version: number,
+  ): ValueObject<string> {
+    return new TestValueObject(value);
   }
 }
 
@@ -83,6 +132,26 @@ class TestAggregateRoot extends AggregateRoot {
 
   protected performBusinessInvariantValidation(): boolean {
     return this._name.length > 0 && this._value >= 0;
+  }
+
+  public validateBusinessRules(): boolean {
+    return this._name.length > 0 && this._value >= 0;
+  }
+
+  public executeBusinessLogic(operation: string, params: unknown): unknown {
+    if (operation === "updateName") {
+      const data = params as { name: string };
+      this._name = data.name;
+      return { success: true, name: this._name };
+    }
+
+    if (operation === "updateValue") {
+      const data = params as { value: number };
+      this._value = data.value;
+      return { success: true, value: this._value };
+    }
+
+    return { success: false, error: "未知操作" };
   }
 
   public clone(): AggregateRoot {
@@ -343,7 +412,7 @@ describe("领域核心模块集成测试", () => {
       // 6. 存储事件
       const domainEvents = events.map(
         (event) =>
-          new DomainEventClass(
+          new TestDomainEvent(
             event.aggregateRootId,
             event.type,
             event.data,
@@ -429,7 +498,7 @@ describe("领域核心模块集成测试", () => {
 
   describe("事件存储集成", () => {
     it("应该支持事件存储操作", async () => {
-      const event = new DomainEventClass(aggregateRoot.id, "TestEvent", {
+      const event = new TestDomainEvent(aggregateRoot.id, "TestEvent", {
         data: "test",
       });
 
@@ -441,10 +510,10 @@ describe("领域核心模块集成测试", () => {
     });
 
     it("应该支持事件查询", async () => {
-      const event1 = new DomainEventClass(aggregateRoot.id, "Event1", {
+      const event1 = new TestDomainEvent(aggregateRoot.id, "Event1", {
         data: "1",
       });
-      const event2 = new DomainEventClass(aggregateRoot.id, "Event2", {
+      const event2 = new TestDomainEvent(aggregateRoot.id, "Event2", {
         data: "2",
       });
 
