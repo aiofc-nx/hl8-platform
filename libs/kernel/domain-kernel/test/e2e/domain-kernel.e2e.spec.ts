@@ -9,6 +9,47 @@ import { InternalEntity } from "../../src/entities/internal/internal-entity.base
 import { AggregateRoot } from "../../src/aggregates/base/aggregate-root.base.js";
 import { DomainService } from "../../src/services/base/domain-service.base.js";
 import { DomainEvent } from "../../src/events/base/domain-event.base.js";
+
+// 测试用的具体领域事件实现
+class TestDomainEvent extends DomainEvent {
+  constructor(
+    aggregateRootId: EntityId,
+    eventType: string,
+    data: unknown,
+    metadata: Record<string, unknown> = {},
+    eventId?: EntityId,
+    timestamp?: Date,
+    version: number = 1,
+  ) {
+    super(
+      aggregateRootId,
+      eventType,
+      data,
+      metadata,
+      eventId,
+      timestamp,
+      version,
+    );
+  }
+
+  protected validateEvent(): void {
+    if (!this.eventType) {
+      throw new Error("事件类型不能为空");
+    }
+  }
+
+  public clone(): DomainEvent {
+    return new TestDomainEvent(
+      this.aggregateRootId,
+      this.eventType,
+      this.data,
+      this.metadata,
+      this.eventId,
+      this.timestamp,
+      this.version,
+    );
+  }
+}
 import { IEventStore } from "../../src/events/store/event-store.interface.js";
 import { EntityId } from "../../src/identifiers/entity-id.js";
 import { AuditInfo } from "../../src/audit/audit-info.js";
@@ -30,6 +71,14 @@ class UserId extends ValueObject<string> {
       throw new Error("用户ID长度不能少于3个字符");
     }
   }
+
+  protected createClone(
+    value: string,
+    createdAt: Date,
+    version: number,
+  ): ValueObject<string> {
+    return new UserId(value);
+  }
 }
 
 class Email extends ValueObject<string> {
@@ -42,6 +91,14 @@ class Email extends ValueObject<string> {
     if (!emailRegex.test(value)) {
       throw new Error("邮箱格式无效");
     }
+  }
+
+  protected createClone(
+    value: string,
+    createdAt: Date,
+    version: number,
+  ): ValueObject<string> {
+    return new Email(value);
   }
 }
 
@@ -211,6 +268,30 @@ class User extends AggregateRoot {
 
   protected performBusinessInvariantValidation(): boolean {
     return this._status !== "suspended" || this.internalEntities.size === 0;
+  }
+
+  public validateBusinessRules(): boolean {
+    return this._status !== "suspended" || this.internalEntities.size === 0;
+  }
+
+  public executeBusinessLogic(operation: string, params: unknown): unknown {
+    if (operation === "updateProfile") {
+      const profile = this.findProfile();
+      if (!profile) {
+        throw new BusinessException("用户资料不存在", "PROFILE_NOT_FOUND");
+      }
+      return profile.executeBusinessLogic({
+        type: "updateProfile",
+        data: params,
+      });
+    }
+
+    if (operation === "suspendUser") {
+      this.setSuspended();
+      return { success: true, status: this._status };
+    }
+
+    return { success: false, error: "未知操作" };
   }
 
   public clone(): AggregateRoot {
@@ -388,7 +469,7 @@ describe("用户管理系统端到端测试", () => {
       const result = userService.executeBusinessLogic("createUser", {
         userId: "john_doe",
         email: "john@example.com",
-      });
+      }) as { success: boolean; user: User; profile: UserProfile };
 
       expect(result.success).toBe(true);
       expect(result.user).toBeInstanceOf(User);
@@ -424,7 +505,7 @@ describe("用户管理系统端到端测试", () => {
       const result = user.coordinateBusinessOperation("updateProfile", {
         firstName: "Jane",
         lastName: "Doe",
-      });
+      }) as { success: boolean };
 
       expect(result.success).toBe(true);
       expect(profile.fullName).toBe("Jane Doe");
@@ -456,7 +537,10 @@ describe("用户管理系统端到端测试", () => {
     });
 
     it("应该能够暂停用户", () => {
-      const result = user.coordinateBusinessOperation("suspendUser", {});
+      const result = user.coordinateBusinessOperation("suspendUser", {}) as {
+        success: boolean;
+        status: string;
+      };
 
       expect(result.success).toBe(true);
       expect(user.status).toBe("suspended");
@@ -489,7 +573,7 @@ describe("用户管理系统端到端测试", () => {
       // 存储事件
       const domainEvents = events.map(
         (event) =>
-          new DomainEvent(
+          new TestDomainEvent(
             event.aggregateRootId,
             event.type,
             event.data,

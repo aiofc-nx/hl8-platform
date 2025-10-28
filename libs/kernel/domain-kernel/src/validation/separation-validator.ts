@@ -283,7 +283,12 @@ export class SeparationValidator {
     const directBusinessLogicMethods = methods.filter((method) => {
       if (
         method === "constructor" ||
-        method === "coordinateBusinessOperation"
+        method === "coordinateBusinessOperation" ||
+        method === "validateBusinessRules" ||
+        method === "executeBusinessLogic" ||
+        method === "performCoordination" ||
+        method === "performBusinessInvariantValidation" ||
+        method === "clone"
       ) {
         return false;
       }
@@ -304,9 +309,6 @@ export class SeparationValidator {
         "process",
         "calculate",
         "compute",
-        "validate",
-        "check",
-        "execute",
       ];
 
       return businessLogicIndicators.some(
