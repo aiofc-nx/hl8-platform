@@ -9,7 +9,10 @@ import type {
   PerformanceMetricData,
   PerformanceMetricLabel,
 } from "./performance-metrics.js";
-import { PerformanceMetric } from "./performance-metrics.js";
+import {
+  PerformanceMetric,
+  PerformanceMetricType,
+} from "./performance-metrics.js";
 
 /**
  * 告警规则接口
@@ -106,6 +109,89 @@ export class MonitoringService {
 
     if (config.enabled) {
       this.startTimers();
+    }
+  }
+
+  // 兼容契约测试所需的便捷API
+  recordMetric(
+    name: string,
+    value: number,
+    labels?: Record<string, string>,
+  ): void {
+    const metric =
+      this.metrics.get(name) ||
+      this.createMetric({ name, type: PerformanceMetricType.GAUGE });
+    metric.record(
+      value,
+      labels
+        ? (Object.entries(labels).map(([k, v]) => ({
+            name: k,
+            value: v,
+          })) as PerformanceMetricLabel[])
+        : [],
+    );
+  }
+
+  incrementCounter(name: string, labels?: Record<string, string>): void {
+    const metric =
+      this.metrics.get(name) ||
+      this.createMetric({ name, type: PerformanceMetricType.COUNTER });
+    metric.increment(
+      1,
+      labels
+        ? (Object.entries(labels).map(([k, v]) => ({
+            name: k,
+            value: v,
+          })) as PerformanceMetricLabel[])
+        : [],
+    );
+  }
+
+  recordHistogram(
+    name: string,
+    value: number,
+    labels?: Record<string, string>,
+  ): void {
+    const metric =
+      this.metrics.get(name) ||
+      this.createMetric({ name, type: PerformanceMetricType.HISTOGRAM });
+    metric.observe(
+      value,
+      labels
+        ? (Object.entries(labels).map(([k, v]) => ({
+            name: k,
+            value: v,
+          })) as PerformanceMetricLabel[])
+        : [],
+    );
+  }
+
+  recordGauge(
+    name: string,
+    value: number,
+    labels?: Record<string, string>,
+  ): void {
+    const metric =
+      this.metrics.get(name) ||
+      this.createMetric({ name, type: PerformanceMetricType.GAUGE });
+    metric.set(
+      value,
+      labels
+        ? (Object.entries(labels).map(([k, v]) => ({
+            name: k,
+            value: v,
+          })) as PerformanceMetricLabel[])
+        : [],
+    );
+  }
+
+  getMetrics(): PerformanceMetric[] {
+    return this.getAllMetrics();
+  }
+
+  clearMetrics(): void {
+    for (const metric of this.metrics.values()) {
+      metric.clear();
     }
   }
 

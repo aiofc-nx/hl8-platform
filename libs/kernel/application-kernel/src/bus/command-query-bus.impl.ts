@@ -501,22 +501,34 @@ export class CommandQueryBusImpl
     command: BaseCommand,
     _context: ExecutionContext,
   ): Promise<CommandResult> {
-    const handler = this.commandHandlers.get(command.commandType);
-    if (!handler) {
+    try {
+      // 使用 NestJS CommandBus 执行命令
+      const result = await this.nestCommandBus.execute(command);
+
+      // 将 NestJS 结果转换为我们的 CommandResult 格式
+      if (result && typeof result === "object" && "success" in result) {
+        return result as CommandResult;
+      }
+
+      // 如果没有返回 CommandResult 格式，创建一个成功的默认结果
+      return CommandResult.success(result, "Command executed successfully");
+    } catch (error) {
+      // 检查是否是处理器未找到的错误
+      if (
+        error instanceof Error &&
+        error.message.includes("No handler found")
+      ) {
+        return CommandResult.failure(
+          "HANDLER_NOT_FOUND",
+          `未找到命令处理器: ${command.commandType}`,
+        );
+      }
+
       return CommandResult.failure(
-        "HANDLER_NOT_FOUND",
-        `未找到命令处理器: ${command.commandType}`,
+        "EXECUTION_ERROR",
+        error instanceof Error ? error.message : String(error),
       );
     }
-
-    if (!handler.isAvailable()) {
-      return CommandResult.failure(
-        "HANDLER_UNAVAILABLE",
-        `命令处理器不可用: ${handler.getHandlerName()}`,
-      );
-    }
-
-    return await handler.handle(command);
   }
 
   /**
@@ -529,22 +541,34 @@ export class CommandQueryBusImpl
     query: BaseQuery,
     _context: ExecutionContext,
   ): Promise<QueryResult> {
-    const handler = this.queryHandlers.get(query.queryType);
-    if (!handler) {
+    try {
+      // 使用 NestJS QueryBus 执行查询
+      const result = await this.nestQueryBus.execute(query);
+
+      // 将 NestJS 结果转换为我们的 QueryResult 格式
+      if (result && typeof result === "object" && "success" in result) {
+        return result as QueryResult;
+      }
+
+      // 如果没有返回 QueryResult 格式，创建一个成功的默认结果
+      return QueryResult.successItem(result, "Query executed successfully");
+    } catch (error) {
+      // 检查是否是处理器未找到的错误
+      if (
+        error instanceof Error &&
+        error.message.includes("No handler found")
+      ) {
+        return QueryResult.failure(
+          "HANDLER_NOT_FOUND",
+          `未找到查询处理器: ${query.queryType}`,
+        );
+      }
+
       return QueryResult.failure(
-        "HANDLER_NOT_FOUND",
-        `未找到查询处理器: ${query.queryType}`,
+        "EXECUTION_ERROR",
+        error instanceof Error ? error.message : String(error),
       );
     }
-
-    if (!handler.isAvailable()) {
-      return QueryResult.failure(
-        "HANDLER_UNAVAILABLE",
-        `查询处理器不可用: ${handler.getHandlerName()}`,
-      );
-    }
-
-    return await handler.handle(query);
   }
 
   /**
@@ -779,3 +803,6 @@ export class CommandQueryBusImpl
         : 0;
   }
 }
+
+// 为向后兼容的别名，满足契约测试对 CommandQueryBus 的导入
+export class CommandQueryBus extends CommandQueryBusImpl {}

@@ -129,6 +129,51 @@ export abstract class BaseSagaStep {
     };
   }
 
+  private logDebug(message: string, meta?: Record<string, unknown>): void {
+    const fn = (this.logger as unknown as Record<string, unknown>)["debug"];
+    if (typeof fn === "function") {
+      if (meta) {
+        (fn as (a: unknown, b?: unknown) => void).call(
+          this.logger,
+          message,
+          meta,
+        );
+      } else {
+        (fn as (a: unknown) => void).call(this.logger, message);
+      }
+    }
+  }
+
+  private logWarn(message: string, meta?: Record<string, unknown>): void {
+    const fn = (this.logger as unknown as Record<string, unknown>)["warn"];
+    if (typeof fn === "function") {
+      if (meta) {
+        (fn as (a: unknown, b?: unknown) => void).call(
+          this.logger,
+          message,
+          meta,
+        );
+      } else {
+        (fn as (a: unknown) => void).call(this.logger, message);
+      }
+    }
+  }
+
+  private logError(message: string, meta?: Record<string, unknown>): void {
+    const fn = (this.logger as unknown as Record<string, unknown>)["error"];
+    if (typeof fn === "function") {
+      if (meta) {
+        (fn as (a: unknown, b?: unknown) => void).call(
+          this.logger,
+          message,
+          meta,
+        );
+      } else {
+        (fn as (a: unknown) => void).call(this.logger, message);
+      }
+    }
+  }
+
   /**
    * 获取步骤名称
    * @returns 步骤名称
@@ -184,7 +229,7 @@ export abstract class BaseSagaStep {
    */
   public async execute(context: SagaContext): Promise<StepExecutionResult> {
     if (!this.isEnabled()) {
-      this.logger.debug(`步骤已禁用，跳过执行: ${this.config.name}`);
+      this.logDebug(`步骤已禁用，跳过执行: ${this.config.name}`);
       return {
         success: true,
         executionTime: 0,
@@ -194,7 +239,7 @@ export abstract class BaseSagaStep {
     }
 
     if (this.status === SagaStepStatus.COMPLETED) {
-      this.logger.debug(`步骤已完成，跳过执行: ${this.config.name}`);
+      this.logDebug(`步骤已完成，跳过执行: ${this.config.name}`);
       return this.lastResult!;
     }
 
@@ -210,7 +255,7 @@ export abstract class BaseSagaStep {
     // 检查执行条件
     if (this.config.condition?.enabled) {
       if (!(await this.checkCondition(context))) {
-        this.logger.debug(`步骤条件不满足，跳过执行: ${this.config.name}`);
+        this.logDebug(`步骤条件不满足，跳过执行: ${this.config.name}`);
         this.status = SagaStepStatus.SKIPPED;
         this.statistics.status = this.status;
         return {
@@ -228,7 +273,7 @@ export abstract class BaseSagaStep {
     // 重试执行
     while (retryCount <= this.config.retry!.maxAttempts) {
       try {
-        this.logger.debug(`执行步骤: ${this.config.name}`, {
+        this.logDebug(`执行步骤: ${this.config.name}`, {
           sagaId: context.sagaId.toString(),
           retryCount,
         });
@@ -252,7 +297,7 @@ export abstract class BaseSagaStep {
         // 执行后置处理
         await this.onAfterExecute(context, this.lastResult);
 
-        this.logger.debug(`步骤执行成功: ${this.config.name}`, {
+        this.logDebug(`步骤执行成功: ${this.config.name}`, {
           sagaId: context.sagaId.toString(),
           executionTime: this.lastResult.executionTime,
           retryCount,
@@ -263,7 +308,7 @@ export abstract class BaseSagaStep {
         lastError = error instanceof Error ? error : new Error(String(error));
         retryCount++;
 
-        this.logger.warn(`步骤执行失败: ${this.config.name}`, {
+        this.logWarn(`步骤执行失败: ${this.config.name}`, {
           sagaId: context.sagaId.toString(),
           retryCount,
           error: lastError.message,
@@ -297,7 +342,7 @@ export abstract class BaseSagaStep {
     // 执行错误处理
     await this.onError(context, lastError!, this.lastResult);
 
-    this.logger.error(`步骤执行最终失败: ${this.config.name}`, {
+    this.logError(`步骤执行最终失败: ${this.config.name}`, {
       sagaId: context.sagaId.toString(),
       error: lastError!.message,
       executionTime: this.lastResult.executionTime,
@@ -314,7 +359,7 @@ export abstract class BaseSagaStep {
    */
   public async compensate(context: SagaContext): Promise<StepExecutionResult> {
     if (!this.config.compensation?.enabled) {
-      this.logger.debug(`步骤未启用补偿: ${this.config.name}`);
+      this.logDebug(`步骤未启用补偿: ${this.config.name}`);
       return {
         success: true,
         executionTime: 0,
@@ -324,7 +369,7 @@ export abstract class BaseSagaStep {
     }
 
     if (this.status !== SagaStepStatus.COMPLETED) {
-      this.logger.debug(`步骤未完成，跳过补偿: ${this.config.name}`);
+      this.logDebug(`步骤未完成，跳过补偿: ${this.config.name}`);
       return {
         success: true,
         executionTime: 0,
@@ -347,7 +392,7 @@ export abstract class BaseSagaStep {
     // 重试补偿
     while (retryCount <= this.config.compensation!.maxAttempts) {
       try {
-        this.logger.debug(`补偿步骤: ${this.config.name}`, {
+        this.logDebug(`补偿步骤: ${this.config.name}`, {
           sagaId: context.sagaId.toString(),
           retryCount,
         });
@@ -365,7 +410,7 @@ export abstract class BaseSagaStep {
         // 执行补偿后置处理
         await this.onAfterCompensate(context, compensationResult);
 
-        this.logger.debug(`步骤补偿成功: ${this.config.name}`, {
+        this.logDebug(`步骤补偿成功: ${this.config.name}`, {
           sagaId: context.sagaId.toString(),
           executionTime: compensationResult.executionTime,
           retryCount,
@@ -376,7 +421,7 @@ export abstract class BaseSagaStep {
         lastError = error instanceof Error ? error : new Error(String(error));
         retryCount++;
 
-        this.logger.warn(`步骤补偿失败: ${this.config.name}`, {
+        this.logWarn(`步骤补偿失败: ${this.config.name}`, {
           sagaId: context.sagaId.toString(),
           retryCount,
           error: lastError.message,
@@ -404,7 +449,7 @@ export abstract class BaseSagaStep {
     // 执行补偿错误处理
     await this.onCompensationError(context, lastError!, compensationResult);
 
-    this.logger.error(`步骤补偿最终失败: ${this.config.name}`, {
+    this.logError(`步骤补偿最终失败: ${this.config.name}`, {
       sagaId: context.sagaId.toString(),
       error: lastError!.message,
       executionTime: compensationResult.executionTime,

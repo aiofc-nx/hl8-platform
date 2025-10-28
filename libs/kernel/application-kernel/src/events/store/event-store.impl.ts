@@ -147,6 +147,19 @@ export class EventStore implements IEventStore {
   }
 
   /**
+   * 追加事件（契合测试期望的 API）
+   * @param aggregateId 聚合根ID
+   * @param events 事件列表
+   */
+  public async appendEvents(
+    aggregateId: EntityId,
+    events: DomainEvent[],
+  ): Promise<void> {
+    const expected = await this.getCurrentVersion(aggregateId);
+    await this.saveEvents(aggregateId, events, expected);
+  }
+
+  /**
    * 获取聚合根的事件流
    * @param aggregateId 聚合根ID
    * @param fromVersion 起始版本号
@@ -253,6 +266,28 @@ export class EventStore implements IEventStore {
   }
 
   /**
+   * 创建快照（契合测试期望的 API）
+   * @param aggregateId 聚合根ID
+   * @param version 版本号
+   */
+  public async createSnapshot(
+    aggregateId: EntityId,
+    version: number,
+  ): Promise<EventSnapshot | null> {
+    const events = await this.getEvents(aggregateId, undefined, version);
+    const snapshot: EventSnapshot = {
+      aggregateId,
+      version,
+      timestamp: new Date(),
+      data: { eventsCount: events.length },
+      type: "auto",
+      metadata: {},
+    };
+    await this.saveSnapshot(snapshot);
+    return snapshot;
+  }
+
+  /**
    * 保存事件快照
    * @param snapshot 事件快照
    * @returns 保存结果
@@ -288,6 +323,16 @@ export class EventStore implements IEventStore {
         timestamp: new Date(),
       };
     }
+  }
+
+  /**
+   * 重放事件（简化实现：返回指定版本之后的所有事件）
+   */
+  public async replayEvents(
+    aggregateId: EntityId,
+    fromVersion?: number,
+  ): Promise<DomainEvent[]> {
+    return this.getEvents(aggregateId, fromVersion);
   }
 
   /**

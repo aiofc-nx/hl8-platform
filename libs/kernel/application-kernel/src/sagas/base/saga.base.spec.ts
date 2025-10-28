@@ -5,13 +5,8 @@
 
 import { Logger } from "@hl8/logger";
 import { EntityId } from "@hl8/domain-kernel";
-import {
-  Saga,
-  SagaStatus,
-  SagaConfig,
-  SagaContext,
-  SagaStep,
-} from "./saga.base.js";
+import { Saga, SagaStatus, SagaConfig, SagaContext } from "./saga.base.js";
+import { BaseSagaStep } from "./saga-step.js";
 
 /**
  * 测试Saga实现
@@ -37,21 +32,28 @@ class TestSaga extends Saga<{ value: string }> {
 
     // 初始化实际的Saga步骤
     this.steps = this.testSteps.map((testStep, index) => {
-      const step = new (class extends SagaStep {
+      class StepImpl extends BaseSagaStep {
         constructor() {
-          super(testStep.name, `测试步骤${index + 1}`);
+          super({} as unknown as Logger, {
+            name: testStep.name,
+            description: `测试步骤${index + 1}`,
+          });
         }
 
-        public async execute(context: SagaContext): Promise<void> {
+        protected async executeStep(_context: SagaContext): Promise<unknown> {
           testStep.executed = true;
           await new Promise((resolve) => setTimeout(resolve, 10));
+          return undefined;
         }
 
-        public async compensate(context: SagaContext): Promise<void> {
+        protected async compensateStep(
+          _context: SagaContext,
+        ): Promise<unknown> {
           testStep.compensated = true;
+          return undefined;
         }
-      })();
-      return step;
+      }
+      return new StepImpl();
     });
   }
 

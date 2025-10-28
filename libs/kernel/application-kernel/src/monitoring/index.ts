@@ -4,5 +4,5 @@
  */
 
 // Monitoring
-// export * from "./performance-metrics.js";
-// export * from "./monitoring.service.js";
+export * from "./performance-metrics.js";
+export * from "./monitoring.service.js";

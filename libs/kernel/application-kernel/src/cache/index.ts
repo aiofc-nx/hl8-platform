@@ -4,8 +4,8 @@
  */
 
 // Cache
-// export * from "./cache.interface.js";
-// export * from "./cache.impl.js";
+export * from "./cache.interface.js";
+export * from "./cache.impl.js";
 
 // Invalidation
 // export * from "./invalidation/event-based-invalidation.js";

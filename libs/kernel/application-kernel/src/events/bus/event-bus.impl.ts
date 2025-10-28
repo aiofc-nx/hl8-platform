@@ -124,6 +124,9 @@ export class EventBusImpl implements IEventBus, OnModuleInit, OnModuleDestroy {
       // 使用NestJS事件总线发布事件
       this.nestEventBus.publish(event);
 
+      // 手动调用注册的处理器
+      await this.callRegisteredHandlers(event.eventType, event);
+
       // 更新统计信息
       this.updateStatistics(
         event.eventType,
@@ -164,6 +167,17 @@ export class EventBusImpl implements IEventBus, OnModuleInit, OnModuleDestroy {
         successCount: 0,
         failureCount: 0,
       };
+    }
+  }
+
+  /**
+   * 兼容 publish(event) API（测试期望）
+   */
+  public async publish(event: DomainEvent | IntegrationEvent): Promise<void> {
+    if (event instanceof DomainEvent) {
+      await this.publishDomainEvent(event);
+    } else {
+      await this.publishIntegrationEvent(event);
     }
   }
 
@@ -289,6 +303,19 @@ export class EventBusImpl implements IEventBus, OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * 兼容 subscribe(eventType, handler) API（测试期望）
+   */
+  public async subscribe(
+    eventType: string,
+    handler: EventHandler<DomainEvent | IntegrationEvent>,
+  ): Promise<string> {
+    return this.subscribeToDomainEvent(
+      eventType,
+      handler as EventHandler<DomainEvent>,
+    );
+  }
+
+  /**
    * 订阅集成事件
    * @param eventType 事件类型
    * @param handler 事件处理器
@@ -351,6 +378,13 @@ export class EventBusImpl implements IEventBus, OnModuleInit, OnModuleDestroy {
    */
   public async getSubscriptions(): Promise<EventSubscription[]> {
     return Array.from(this.subscriptions.values());
+  }
+
+  /**
+   * 兼容 getSubscribers() API（测试期望）
+   */
+  public async getSubscribers(): Promise<EventSubscription[]> {
+    return this.getSubscriptions();
   }
 
   /**
@@ -490,5 +524,36 @@ export class EventBusImpl implements IEventBus, OnModuleInit, OnModuleDestroy {
     );
     this.statistics.averageProcessingTime =
       totalProcessed > 0 ? totalProcessingTime / totalProcessed : 0;
+  }
+
+  /**
+   * 调用注册的处理器
+   * @param eventType 事件类型
+   * @param event 事件
+   */
+  private async callRegisteredHandlers(
+    eventType: string,
+    event: DomainEvent | IntegrationEvent,
+  ): Promise<void> {
+    // 找到所有订阅了该事件类型的活跃订阅
+    const activeSubscriptions = Array.from(this.subscriptions.values()).filter(
+      (sub) => sub.eventType === eventType && sub.active,
+    );
+
+    // 为每个订阅调用对应的处理器
+    for (const subscription of activeSubscriptions) {
+      const handler = this.handlers.get(subscription.id);
+      if (handler) {
+        try {
+          await handler.handle(event);
+        } catch (error) {
+          this.logger.error("事件处理器执行失败", {
+            eventType,
+            handlerName: handler.getHandlerName(),
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
+    }
   }
 }
