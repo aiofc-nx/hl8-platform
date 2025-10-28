@@ -54,6 +54,9 @@ alwaysApply: true
 - **测试覆盖率要求**：核心业务逻辑 ≥ 80%，关键路径 ≥ 90%，所有公共 API 必须有测试用例
 
 ## Active Technologies
+- TypeScript 5.9.3, Node.js >=20 + @nestjs/core, @nestjs/common, @nestjs/cqrs, @nestjs/platform-fastify, class-validator, class-transformer, uuid (002-application-kernel)
+- 混合存储策略（PostgreSQL + MongoDB），事件存储支持关系型数据库和NoSQL (002-application-kernel)
+- TypeScript 5.9.3, Node.js >=20 + @nestjs/core, @nestjs/cqrs, @hl8/domain-kernel, @hl8/config, @hl8/logger, class-validator, class-transformer, uuid (002-application-kernel)
 
 - TypeScript 5.9.3, Node.js >=20 + @hl8/config, class-validator, class-transformer, uuid (001-domain-kernel)
 - 事件存储模式（按时间顺序持久化所有领域事件） (001-domain-kernel)

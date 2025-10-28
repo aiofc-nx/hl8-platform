@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Coverage
+coverage/
+
+# Logs
+*.log
+
+# Environment files
+.env*
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Test files
+*.test.js
+*.spec.js
+*.test.ts
+*.spec.ts
+
+# Generated files
+*.d.ts
+
+# Config files that might have different formatting
+*.config.js
+*.config.ts
+jest.config.*
+tsconfig*.json
