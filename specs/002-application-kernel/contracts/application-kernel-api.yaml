@@ -1,0 +1,718 @@
+openapi: 3.0.3
+info:
+  title: Application Kernel Core Module API
+  description: |
+    Application layer core module providing CQRS + Event Sourcing + Event-Driven Architecture.
+    Integrates with @hl8/config and @hl8/logger for platform consistency.
+  version: 1.0.0
+  contact:
+    name: HL8 Platform Team
+    email: platform@hl8.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.hl8.com/v1
+    description: Production server
+  - url: https://staging-api.hl8.com/v1
+    description: Staging server
+  - url: http://localhost:3000/v1
+    description: Development server
+
+tags:
+  - name: UseCases
+    description: Use case management and execution
+  - name: Commands
+    description: CQRS command operations
+  - name: Queries
+    description: CQRS query operations
+  - name: Events
+    description: Event sourcing and event bus operations
+  - name: Projectors
+    description: Event projection and read model management
+  - name: Sagas
+    description: Saga pattern for distributed transactions
+  - name: Bus
+    description: Command and query bus operations
+  - name: Cache
+    description: Query cache management
+  - name: Monitoring
+    description: Performance monitoring and metrics
+  - name: Configuration
+    description: Configuration management using @hl8/config
+
+paths:
+  /use-cases:
+    get:
+      tags: [UseCases]
+      summary: List all use cases
+      description: Retrieve a paginated list of all registered use cases
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: enabled
+          in: query
+          schema:
+            type: boolean
+        - name: version
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully retrieved use cases
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    post:
+      tags: [UseCases]
+      summary: Execute a use case
+      description: Execute a use case with input validation and business logic
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UseCaseExecutionRequest"
+      responses:
+        "200":
+          description: Use case executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseExecutionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /commands:
+    post:
+      tags: [Commands]
+      summary: Execute a command
+      description: Execute a CQRS command with validation and event publishing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommandExecutionRequest"
+      responses:
+        "200":
+          description: Command executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommandExecutionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /queries:
+    post:
+      tags: [Queries]
+      summary: Execute a query
+      description: Execute a CQRS query with caching and result formatting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QueryExecutionRequest"
+      responses:
+        "200":
+          description: Query executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryExecutionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /events:
+    get:
+      tags: [Events]
+      summary: List events
+      description: Retrieve events from event store with filtering and pagination
+      parameters:
+        - name: aggregateId
+          in: query
+          schema:
+            type: string
+        - name: eventType
+          in: query
+          schema:
+            type: string
+        - name: fromVersion
+          in: query
+          schema:
+            type: integer
+        - name: toVersion
+          in: query
+          schema:
+            type: integer
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+      responses:
+        "200":
+          description: Successfully retrieved events
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    post:
+      tags: [Events]
+      summary: Publish an event
+      description: Publish a domain event to the event bus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventPublishRequest"
+      responses:
+        "200":
+          description: Event published successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventPublishResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /projectors:
+    get:
+      tags: [Projectors]
+      summary: List projectors
+      description: Retrieve all registered event projectors
+      responses:
+        "200":
+          description: Successfully retrieved projectors
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectorListResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    post:
+      tags: [Projectors]
+      summary: Rebuild read model
+      description: Rebuild read model by replaying events through projector
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReadModelRebuildRequest"
+      responses:
+        "200":
+          description: Read model rebuilt successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadModelRebuildResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /sagas:
+    get:
+      tags: [Sagas]
+      summary: List sagas
+      description: Retrieve all active and completed sagas
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [created, running, completed, failed, compensating]
+        - name: sagaType
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: Successfully retrieved sagas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SagaListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    post:
+      tags: [Sagas]
+      summary: Start a saga
+      description: Start a new saga for distributed transaction coordination
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SagaStartRequest"
+      responses:
+        "200":
+          description: Saga started successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SagaStartResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /cache:
+    get:
+      tags: [Cache]
+      summary: Get cache statistics
+      description: Retrieve cache statistics and performance metrics
+      responses:
+        "200":
+          description: Successfully retrieved cache statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CacheStatisticsResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    delete:
+      tags: [Cache]
+      summary: Clear cache
+      description: Clear all or specific cache entries
+      parameters:
+        - name: pattern
+          in: query
+          schema:
+            type: string
+          description: Cache key pattern to clear (optional)
+      responses:
+        "200":
+          description: Cache cleared successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CacheClearResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /monitoring/metrics:
+    get:
+      tags: [Monitoring]
+      summary: Get performance metrics
+      description: Retrieve performance metrics for all components
+      parameters:
+        - name: component
+          in: query
+          schema:
+            type: string
+        - name: timeRange
+          in: query
+          schema:
+            type: string
+            enum: [1h, 24h, 7d, 30d]
+            default: 1h
+      responses:
+        "200":
+          description: Successfully retrieved metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetricsResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /configuration:
+    get:
+      tags: [Configuration]
+      summary: Get configuration
+      description: Retrieve current configuration using @hl8/config
+      parameters:
+        - name: section
+          in: query
+          schema:
+            type: string
+          description: Configuration section to retrieve
+      responses:
+        "200":
+          description: Successfully retrieved configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfigurationResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    put:
+      tags: [Configuration]
+      summary: Update configuration
+      description: Update configuration with validation using @hl8/config
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfigurationUpdateRequest"
+      responses:
+        "200":
+          description: Configuration updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfigurationUpdateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  schemas:
+    UseCaseExecutionRequest:
+      type: object
+      required: [useCaseName, input]
+      properties:
+        useCaseName:
+          type: string
+          description: Name of the use case to execute
+        input:
+          type: object
+          description: Use case input data
+        correlationId:
+          type: string
+          description: Correlation ID for request tracking
+        userId:
+          type: string
+          description: User ID executing the use case
+        metadata:
+          type: object
+          description: Additional metadata
+
+    UseCaseExecutionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        output:
+          type: object
+          description: Use case output data
+        message:
+          type: string
+        executionTime:
+          type: number
+          description: Execution time in milliseconds
+        timestamp:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+
+    CommandExecutionRequest:
+      type: object
+      required: [commandType, payload]
+      properties:
+        commandType:
+          type: string
+          description: Type of command to execute
+        payload:
+          type: object
+          description: Command payload data
+        aggregateId:
+          type: string
+          description: Target aggregate ID
+        correlationId:
+          type: string
+          description: Correlation ID for request tracking
+        userId:
+          type: string
+          description: User ID executing the command
+        metadata:
+          type: object
+          description: Additional metadata
+
+    CommandExecutionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          description: Command execution result
+        message:
+          type: string
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/DomainEvent"
+        executionTime:
+          type: number
+          description: Execution time in milliseconds
+        timestamp:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+
+    QueryExecutionRequest:
+      type: object
+      required: [queryType]
+      properties:
+        queryType:
+          type: string
+          description: Type of query to execute
+        parameters:
+          type: object
+          description: Query parameters
+        pagination:
+          $ref: "#/components/schemas/PaginationInfo"
+        sorting:
+          type: array
+          items:
+            $ref: "#/components/schemas/SortingInfo"
+        filters:
+          type: array
+          items:
+            $ref: "#/components/schemas/FilterInfo"
+        correlationId:
+          type: string
+          description: Correlation ID for request tracking
+        userId:
+          type: string
+          description: User ID executing the query
+        metadata:
+          type: object
+          description: Additional metadata
+
+    QueryExecutionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            type: object
+          description: Query result data
+        item:
+          type: object
+          description: Single query result item
+        message:
+          type: string
+        pagination:
+          $ref: "#/components/schemas/PaginationInfo"
+        cacheInfo:
+          $ref: "#/components/schemas/CacheInfo"
+        executionTime:
+          type: number
+          description: Execution time in milliseconds
+        timestamp:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+
+    DomainEvent:
+      type: object
+      required: [eventId, aggregateRootId, eventType, data, version]
+      properties:
+        eventId:
+          type: string
+          format: uuid
+        aggregateRootId:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+        data:
+          type: object
+        version:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+        causationId:
+          type: string
+          format: uuid
+        correlationId:
+          type: string
+
+    PaginationInfo:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 1000
+        total:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
+        hasNext:
+          type: boolean
+        hasPrevious:
+          type: boolean
+
+    SortingInfo:
+      type: object
+      required: [field, direction]
+      properties:
+        field:
+          type: string
+        direction:
+          type: string
+          enum: [ASC, DESC]
+        priority:
+          type: integer
+          minimum: 0
+
+    FilterInfo:
+      type: object
+      required: [field, operator, value]
+      properties:
+        field:
+          type: string
+        operator:
+          type: string
+          enum:
+            [eq, ne, gt, gte, lt, lte, in, nin, contains, startsWith, endsWith]
+        value:
+          type: object
+        dataType:
+          type: string
+          enum: [string, number, boolean, date, array, object]
+
+    CacheInfo:
+      type: object
+      properties:
+        hit:
+          type: boolean
+        key:
+          type: string
+        ttl:
+          type: integer
+          description: Time to live in seconds
+        expiresAt:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Error message
+        details:
+          type: object
+          description: Additional error details
+        correlationId:
+          type: string
+          description: Correlation ID for error tracking
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []

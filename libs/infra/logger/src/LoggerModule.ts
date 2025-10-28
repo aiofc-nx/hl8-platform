@@ -1,0 +1,147 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { IncomingMessage, ServerResponse } from "node:http";
+
+import {
+  Global,
+  Module,
+  DynamicModule,
+  NestModule,
+  MiddlewareConsumer,
+  RequestMethod,
+  Inject,
+} from "@nestjs/common";
+import { Provider } from "@nestjs/common/interfaces";
+import { pinoHttp } from "pino-http";
+
+import { createProvidersForDecorated } from "./InjectPinoLogger";
+import { Logger } from "./Logger";
+import * as params_1 from "./params";
+import { PinoLogger } from "./PinoLogger";
+import { Store, storage } from "./storage";
+
+/**
+ * As NestJS@11 still supports express@4 `*`-style routing by itself let's keep
+ * it for the backward compatibility. On the next major NestJS release `*` we
+ * can replace it with `/{*splat}`, and drop the support for NestJS@9 and below.
+ */
+const DEFAULT_ROUTES = [{ path: "*", method: RequestMethod.ALL }];
+
+@Global()
+@Module({ providers: [Logger], exports: [Logger] })
+export class LoggerModule implements NestModule {
+  static forRoot(params?: params_1.Params | undefined): DynamicModule {
+    const paramsProvider: Provider<params_1.Params> = {
+      provide: params_1.PARAMS_PROVIDER_TOKEN,
+      useValue: params || {},
+    };
+
+    const decorated = createProvidersForDecorated();
+
+    return {
+      module: LoggerModule,
+      providers: [Logger, ...decorated, PinoLogger, paramsProvider],
+      exports: [Logger, ...decorated, PinoLogger, paramsProvider],
+    };
+  }
+
+  static forRootAsync(params: params_1.LoggerModuleAsyncParams): DynamicModule {
+    const paramsProvider: Provider<params_1.Params | Promise<params_1.Params>> =
+      {
+        provide: params_1.PARAMS_PROVIDER_TOKEN,
+        useFactory: params.useFactory,
+        inject: params.inject,
+      };
+
+    const decorated = createProvidersForDecorated();
+
+    const providers: any[] = [
+      Logger,
+      ...decorated,
+      PinoLogger,
+      paramsProvider,
+      ...(params.providers || []),
+    ];
+
+    return {
+      module: LoggerModule,
+      imports: params.imports,
+      providers,
+      exports: [Logger, ...decorated, PinoLogger, paramsProvider],
+    };
+  }
+
+  constructor(
+    @Inject(params_1.PARAMS_PROVIDER_TOKEN)
+    private readonly params: params_1.Params,
+  ) {}
+
+  configure(consumer: MiddlewareConsumer) {
+    const {
+      exclude,
+      forRoutes = DEFAULT_ROUTES,
+      pinoHttp,
+      useExisting,
+      assignResponse,
+    } = this.params;
+
+    const middlewares = createLoggerMiddlewares(
+      pinoHttp || {},
+      useExisting,
+      assignResponse,
+    );
+
+    if (exclude) {
+      consumer
+        .apply(...middlewares)
+        .exclude(...exclude)
+        .forRoutes(...forRoutes);
+    } else {
+      consumer.apply(...middlewares).forRoutes(...forRoutes);
+    }
+  }
+}
+
+function createLoggerMiddlewares(
+  params: NonNullable<params_1.Params["pinoHttp"]>,
+  useExisting = false,
+  assignResponse = false,
+) {
+  if (useExisting) {
+    return [bindLoggerMiddlewareFactory(useExisting, assignResponse)];
+  }
+
+  const middleware = pinoHttp(
+    ...(Array.isArray(params) ? params : [params as any]),
+  );
+
+  // @ts-expect-error: root is readonly field, but this is the place where
+  // it's set actually
+  PinoLogger.root = middleware.logger;
+
+  // FIXME: params type here is pinoHttp.Options | pino.DestinationStream
+  // pinoHttp has two overloads, each of them takes those types
+  return [middleware, bindLoggerMiddlewareFactory(useExisting, assignResponse)];
+}
+
+function bindLoggerMiddlewareFactory(
+  useExisting: boolean,
+  assignResponse: boolean,
+) {
+  return function bindLoggerMiddleware(
+    req: IncomingMessage,
+    res: ServerResponse,
+    next: () => void,
+  ) {
+    let log = req.log;
+    let resLog = assignResponse ? res.log : undefined;
+
+    if (!useExisting && req.allLogs) {
+      log = req.allLogs[req.allLogs.length - 1]!;
+    }
+    if (assignResponse && !useExisting && res.allLogs) {
+      resLog = res.allLogs[res.allLogs.length - 1]!;
+    }
+
+    storage.run(new Store(log, resLog), next);
+  };
+}
