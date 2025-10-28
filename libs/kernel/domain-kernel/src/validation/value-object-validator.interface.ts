@@ -1,293 +1,160 @@
 /**
- * @fileoverview 值对象验证器接口
- * @description 定义值对象验证器的基本契约和功能
+ * @fileoverview Value Object Validator Interface - 值对象验证器接口
+ * @description 值对象专用的验证器接口
  */
 
-import type {
-  ValidationRule,
-  ValidationContext,
-} from "./rules/validation-rule.interface.js";
-import type { ValidationResult } from "./rules/validation-result.interface.js";
-// import type { ValidationError } from "./rules/validation-error.interface.js";
+import { ValueObject } from "../value-objects/base/value-object.base.js";
+import { SimpleValidationResult } from "./rules/simple-validation-result.js";
+import { ValidationContext } from "./rules/validation-rule.interface.js";
+
+// 重新导出ValidationContext以便外部使用
+export type { ValidationContext };
+
+/**
+ * 值对象验证规则接口
+ * @description 值对象专用的验证规则接口
+ * @template T 值对象类型
+ */
+export interface IValueObjectValidationRule<T extends ValueObject<unknown>> {
+  /** 规则名称 */
+  name: string;
+  /** 规则描述 */
+  description: string;
+  /** 验证逻辑 */
+  validate(value: T): SimpleValidationResult;
+  /** 规则优先级 */
+  priority: number;
+  /** 是否启用 */
+  enabled: boolean;
+  /** 规则标签 */
+  tags: string[];
+  /** 规则元数据 */
+  metadata: Record<string, unknown>;
+}
+
+/**
+ * 字段违规接口
+ * @description 字段级别的验证违规信息
+ */
+export interface FieldViolation {
+  /** 字段名称 */
+  field: string;
+  /** 字段值 */
+  value: unknown;
+  /** 违规消息 */
+  violation: string;
+  /** 违规规则 */
+  rule: string;
+  /** 违规级别 */
+  severity: ViolationSeverity;
+  /** 违规代码 */
+  code: string;
+  /** 违规上下文 */
+  context: Record<string, unknown>;
+}
+
+/**
+ * 违规严重级别枚举
+ * @description 验证违规的严重级别
+ */
+export enum ViolationSeverity {
+  /** 信息 */
+  INFO = "info",
+  /** 警告 */
+  WARNING = "warning",
+  /** 错误 */
+  ERROR = "error",
+  /** 严重错误 */
+  CRITICAL = "critical",
+}
+
+/**
+ * 验证统计信息接口
+ * @description 验证过程的统计信息
+ */
+export interface ValidationStatistics {
+  /** 验证开始时间 */
+  startTime: Date;
+  /** 验证结束时间 */
+  endTime: Date;
+  /** 验证耗时（毫秒） */
+  duration: number;
+  /** 验证规则数量 */
+  rulesCount: number;
+  /** 执行的规则数量 */
+  executedRulesCount: number;
+  /** 违规数量 */
+  violationsCount: number;
+  /** 字段数量 */
+  fieldsCount: number;
+  /** 验证的字段数量 */
+  validatedFieldsCount: number;
+}
+
+/**
+ * 值对象验证结果接口
+ * @description 值对象验证的结果接口
+ */
+export interface IValueObjectValidationResult extends SimpleValidationResult {
+  /** 值对象类型 */
+  valueObjectType: string;
+  /** 应用的验证规则 */
+  validationRules: string[];
+  /** 字段违规列表 */
+  fieldViolations: FieldViolation[];
+  /** 验证统计信息 */
+  statistics: ValidationStatistics;
+}
 
 /**
  * 值对象验证器接口
- * @description 定义值对象验证的基本契约，所有值对象验证器都必须实现此接口
+ * @description 值对象专用的验证器接口
+ * @template T 值对象类型
  */
-export interface ValueObjectValidator<T = unknown> {
+export interface IValueObjectValidator<T extends ValueObject<unknown>> {
   /**
-   * 验证器名称
-   * @description 用于标识和调试的唯一名称
-   */
-  readonly name: string;
-
-  /**
-   * 验证器描述
-   * @description 验证器的详细描述，用于文档和错误消息
-   */
-  readonly description: string;
-
-  /**
-   * 验证规则列表
-   * @description 验证器包含的所有验证规则
-   */
-  readonly rules: readonly ValidationRule<T>[];
-
-  /**
-   * 验证器是否启用
-   * @description 用于动态启用/禁用验证器
-   */
-  readonly enabled: boolean;
-
-  /**
-   * 执行验证
-   * @description 对给定值对象执行所有验证规则
+   * 验证值对象
    * @param value 要验证的值对象
-   * @param context 验证上下文，包含额外的验证信息
+   * @param rules 验证规则列表
    * @returns 验证结果
    */
-  validate(value: T, context?: ValidationContext): ValidationResult;
+  validate(
+    value: T,
+    rules: IValueObjectValidationRule<T>[],
+  ): IValueObjectValidationResult;
+
+  /**
+   * 使用上下文验证值对象
+   * @param value 要验证的值对象
+   * @param context 验证上下文
+   * @returns 验证结果
+   */
+  validateWithContext(
+    value: T,
+    context: ValidationContext,
+  ): IValueObjectValidationResult;
 
   /**
    * 添加验证规则
-   * @description 向验证器添加新的验证规则
-   * @param rule 要添加的验证规则
-   * @returns 验证器实例（支持链式调用）
+   * @param rule 验证规则
    */
-  addRule(rule: ValidationRule<T>): ValueObjectValidator<T>;
+  addRule(rule: IValueObjectValidationRule<T>): void;
 
   /**
    * 移除验证规则
-   * @description 从验证器中移除指定的验证规则
-   * @param ruleName 要移除的规则名称
-   * @returns 验证器实例（支持链式调用）
-   */
-  removeRule(ruleName: string): ValueObjectValidator<T>;
-
-  /**
-   * 获取验证规则
-   * @description 根据名称获取验证规则
    * @param ruleName 规则名称
-   * @returns 验证规则实例，如果不存在则返回undefined
+   * @returns 是否移除成功
    */
-  getRule(ruleName: string): ValidationRule<T> | undefined;
+  removeRule(ruleName: string): boolean;
 
   /**
-   * 检查是否有指定规则
-   * @description 检查验证器是否包含指定的验证规则
-   * @param ruleName 规则名称
-   * @returns 是否包含该规则
+   * 获取所有验证规则
+   * @returns 验证规则列表
    */
-  hasRule(ruleName: string): boolean;
+  getRules(): IValueObjectValidationRule<T>[];
 
   /**
-   * 启用验证器
-   * @description 启用验证器，使其能够执行验证
-   * @returns 验证器实例（支持链式调用）
+   * 清空所有验证规则
    */
-  enable(): ValueObjectValidator<T>;
-
-  /**
-   * 禁用验证器
-   * @description 禁用验证器，使其不能执行验证
-   * @returns 验证器实例（支持链式调用）
-   */
-  disable(): ValueObjectValidator<T>;
-
-  /**
-   * 清空所有规则
-   * @description 移除验证器中的所有验证规则
-   * @returns 验证器实例（支持链式调用）
-   */
-  clearRules(): ValueObjectValidator<T>;
-
-  /**
-   * 获取规则数量
-   * @returns 验证器中的规则数量
-   */
-  getRuleCount(): number;
-
-  /**
-   * 获取启用的规则数量
-   * @returns 验证器中启用的规则数量
-   */
-  getEnabledRuleCount(): number;
-
-  /**
-   * 克隆验证器
-   * @description 创建验证器的深拷贝
-   * @returns 克隆的验证器实例
-   */
-  clone(): ValueObjectValidator<T>;
-
-  /**
-   * 合并验证器
-   * @description 将另一个验证器的规则合并到当前验证器
-   * @param other 要合并的验证器
-   * @returns 验证器实例（支持链式调用）
-   */
-  merge(other: ValueObjectValidator<T>): ValueObjectValidator<T>;
-}
-
-/**
- * 值对象验证器工厂接口
- * @description 用于创建值对象验证器的工厂接口
- */
-export interface ValueObjectValidatorFactory<T = unknown> {
-  /**
-   * 创建验证器
-   * @param name 验证器名称
-   * @param description 验证器描述
-   * @param rules 验证规则列表
-   * @returns 验证器实例
-   */
-  createValidator(
-    name: string,
-    description?: string,
-    rules?: ValidationRule<T>[],
-  ): ValueObjectValidator<T>;
-
-  /**
-   * 创建空验证器
-   * @param name 验证器名称
-   * @param description 验证器描述
-   * @returns 空验证器实例
-   */
-  createEmptyValidator(
-    name: string,
-    description?: string,
-  ): ValueObjectValidator<T>;
-
-  /**
-   * 从配置创建验证器
-   * @param config 验证器配置
-   * @returns 验证器实例
-   */
-  createValidatorFromConfig(
-    config: ValueObjectValidatorConfig<T>,
-  ): ValueObjectValidator<T>;
-
-  /**
-   * 注册验证器类型
-   * @param type 验证器类型
-   * @param creator 验证器创建函数
-   */
-  registerValidatorType(type: string, creator: ValidatorCreator<T>): void;
-
-  /**
-   * 获取支持的验证器类型
-   * @returns 支持的验证器类型列表
-   */
-  getSupportedValidatorTypes(): string[];
-}
-
-/**
- * 值对象验证器配置接口
- * @description 定义创建值对象验证器所需的配置
- */
-export interface ValueObjectValidatorConfig<_T = unknown> {
-  /**
-   * 验证器类型
-   * @description 验证器的类型标识符
-   */
-  type?: string;
-
-  /**
-   * 验证器名称
-   * @description 验证器的唯一名称
-   */
-  name: string;
-
-  /**
-   * 验证器描述
-   * @description 验证器的描述信息
-   */
-  description?: string;
-
-  /**
-   * 验证器是否启用
-   * @description 验证器是否默认启用
-   */
-  enabled?: boolean;
-
-  /**
-   * 验证规则配置
-   * @description 验证规则的配置列表
-   */
-  rules?: Array<{
-    type: string;
-    name: string;
-    description?: string;
-    priority?: number;
-    enabled?: boolean;
-    parameters?: Record<string, unknown>;
-    options?: Record<string, unknown>;
-  }>;
-
-  /**
-   * 验证器选项
-   * @description 验证器的特定选项
-   */
-  options?: Record<string, unknown>;
-}
-
-/**
- * 验证器创建函数类型
- * @description 用于创建值对象验证器的函数类型
- */
-export type ValidatorCreator<T = unknown> = (
-  config: ValueObjectValidatorConfig<T>,
-) => ValueObjectValidator<T>;
-
-/**
- * 值对象验证器构建器接口
- * @description 用于构建值对象验证器的构建器接口
- */
-export interface ValueObjectValidatorBuilder<T = unknown> {
-  /**
-   * 设置名称
-   * @param name 验证器名称
-   * @returns 构建器实例
-   */
-  setName(name: string): ValueObjectValidatorBuilder<T>;
-
-  /**
-   * 设置描述
-   * @param description 验证器描述
-   * @returns 构建器实例
-   */
-  setDescription(description: string): ValueObjectValidatorBuilder<T>;
-
-  /**
-   * 设置启用状态
-   * @param enabled 是否启用
-   * @returns 构建器实例
-   */
-  setEnabled(enabled: boolean): ValueObjectValidatorBuilder<T>;
-
-  /**
-   * 添加规则
-   * @param rule 验证规则
-   * @returns 构建器实例
-   */
-  addRule(rule: ValidationRule<T>): ValueObjectValidatorBuilder<T>;
-
-  /**
-   * 添加多个规则
-   * @param rules 验证规则列表
-   * @returns 构建器实例
-   */
-  addRules(rules: ValidationRule<T>[]): ValueObjectValidatorBuilder<T>;
-
-  /**
-   * 构建验证器
-   * @returns 验证器实例
-   */
-  build(): ValueObjectValidator<T>;
-
-  /**
-   * 重置构建器
-   * @returns 构建器实例
-   */
-  reset(): ValueObjectValidatorBuilder<T>;
+  clearRules(): void;
 }

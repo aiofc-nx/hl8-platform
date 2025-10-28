@@ -13,10 +13,7 @@ export type * from "./value-object-validator.interface.js";
 export { ValidationRule as ValidationRuleImpl } from "./rules/validation-rule.js";
 export { ValidationResult as ValidationResultImpl } from "./rules/validation-result.js";
 export { ValidationError as ValidationErrorImpl } from "./rules/validation-error.js";
-export {
-  ValueObjectValidator as ValueObjectValidatorImpl,
-  ValueObjectValidatorBuilderImpl,
-} from "./value-object-validator.js";
+export { ValueObjectValidator as ValueObjectValidatorImpl } from "./value-object-validator.js";
 
 // 工厂和构建器（仅导出实现，避免与接口命名冲突）
 export {

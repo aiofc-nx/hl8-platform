@@ -225,7 +225,7 @@ export abstract class BusinessRule<T = unknown> implements IBusinessRule<T> {
    * @param other 其他规则
    * @returns 是否冲突
    */
-  public conflictsWith(other: IBusinessRule<T>): boolean {
+  public conflictsWith(_other: IBusinessRule<T>): boolean {
     // 默认实现：无冲突
     // 子类可以重写此方法以提供冲突检查
     return false;

@@ -7,7 +7,7 @@
 
 ## Summary
 
-Enhance the domain kernel with comprehensive validation frameworks, business rule management, domain service coordination, and enhanced aggregate root operations while maintaining complete domain layer purity. The enhancement provides value object validation, business rule validation, domain service coordination, aggregate root business operations, and domain event processing capabilities.
+Enhance the domain kernel with comprehensive validation frameworks, business rule management, domain service coordination, and enhanced aggregate root operations while maintaining complete domain layer purity. The enhancement provides value object validation, business rule validation, domain service coordination, aggregate root business operations, domain event processing capabilities, and critical DDD patterns including Repository interfaces, Factory patterns, Specification patterns, and Domain Event Handlers.
 
 ## Technical Context
 
@@ -19,7 +19,8 @@ Enhance the domain kernel with comprehensive validation frameworks, business rul
 **Project Type**: single (domain kernel library)  
 **Performance Goals**: <10ms business rule validation, <5ms domain event processing, 100% error detection accuracy  
 **Constraints**: Must maintain domain layer purity, no external framework dependencies, backward compatibility  
-**Scale/Scope**: Domain kernel library supporting complex business logic across multiple domain modules
+**Scale/Scope**: Domain kernel library supporting complex business logic across multiple domain modules  
+**Missing DDD Components**: Repository interfaces, Factory patterns, Specification patterns, Domain Event Handlers, Aggregate Factories, Domain Service Registry, Enhanced Exception Categories, Value Object Validators, Domain Model Versioning
 
 ## Constitution Check
 
@@ -74,7 +75,8 @@ libs/kernel/domain-kernel/
 │   │   │   ├── validation-rule.interface.ts
 │   │   │   ├── validation-result.interface.ts
 │   │   │   └── validation-error.interface.ts
-│   │   └── value-object-validator.ts
+│   │   ├── value-object-validator.ts
+│   │   └── value-object-validator.interface.ts
 │   ├── business-rules/
 │   │   ├── business-rule.interface.ts
 │   │   ├── business-rule-validation-result.interface.ts
@@ -93,17 +95,52 @@ libs/kernel/domain-kernel/
 │   │   ├── domain-event-handler.interface.ts
 │   │   ├── event-processor.ts
 │   │   └── event-registry.ts
+│   ├── repositories/
+│   │   ├── repository.interface.ts
+│   │   ├── query-repository.interface.ts
+│   │   ├── command-repository.interface.ts
+│   │   └── paginated-repository.interface.ts
+│   ├── factories/
+│   │   ├── aggregate-factory.interface.ts
+│   │   ├── entity-factory.interface.ts
+│   │   ├── value-object-factory.interface.ts
+│   │   ├── domain-event-factory.interface.ts
+│   │   └── aggregate-reconstruction-factory.interface.ts
+│   ├── specifications/
+│   │   ├── specification.interface.ts
+│   │   ├── and-specification.ts
+│   │   ├── or-specification.ts
+│   │   ├── not-specification.ts
+│   │   ├── query-specification.interface.ts
+│   │   └── business-specification.interface.ts
+│   ├── services/
+│   │   ├── domain-service-registry.interface.ts
+│   │   ├── service-locator.interface.ts
+│   │   └── dependency-container.interface.ts
+│   ├── versioning/
+│   │   ├── model-version.interface.ts
+│   │   ├── version-compatibility-checker.interface.ts
+│   │   └── model-migrator.interface.ts
 │   └── exceptions/
 │       ├── validation-exceptions.ts
 │       ├── business-rule-exceptions.ts
-│       └── coordination-exceptions.ts
+│       ├── coordination-exceptions.ts
+│       ├── repository-exceptions.ts
+│       ├── factory-exceptions.ts
+│       ├── specification-exceptions.ts
+│       └── aggregate-exceptions.ts
 ├── test/
 │   ├── unit/
 │   │   ├── validation/
 │   │   ├── business-rules/
 │   │   ├── coordination/
 │   │   ├── operations/
-│   │   └── events/
+│   │   ├── events/
+│   │   ├── repositories/
+│   │   ├── factories/
+│   │   ├── specifications/
+│   │   ├── services/
+│   │   └── versioning/
 │   ├── integration/
 │   │   └── domain-kernel.integration.spec.ts
 │   └── e2e/
@@ -111,7 +148,7 @@ libs/kernel/domain-kernel/
 └── package.json
 ```
 
-**Structure Decision**: Single domain kernel library with modular enhancement features. The structure follows the existing domain kernel pattern while adding new validation, business rules, coordination, operations, and event processing modules. All enhancements maintain domain layer purity without external framework dependencies.
+**Structure Decision**: Single domain kernel library with modular enhancement features. The structure follows the existing domain kernel pattern while adding new validation, business rules, coordination, operations, event processing modules, and critical DDD patterns including Repository interfaces, Factory patterns, Specification patterns, Domain Event Handlers, and service management. All enhancements maintain domain layer purity without external framework dependencies.
 
 ## Complexity Tracking
 

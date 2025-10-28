@@ -34,3 +34,25 @@ export * from "./validation/index.js";
 
 // 业务规则
 export * from "./business-rules/index.js";
+
+// 仓储模式
+export * from "./repositories/repository.interface.js";
+export * from "./repositories/query-repository.interface.js";
+export * from "./repositories/command-repository.interface.js";
+export * from "./repositories/paginated-repository.interface.js";
+
+// 工厂模式
+export * from "./factories/aggregate-factory.interface.js";
+
+// 规范模式
+export * from "./specifications/specification.interface.js";
+export * from "./specifications/and-specification.js";
+
+// 增强异常处理
+export * from "./exceptions/repository-exceptions.js";
+export * from "./exceptions/factory-exceptions.js";
+
+// 值对象验证增强
+export * from "./validation/value-object-validator.interface.js";
+export * from "./validation/value-object-validator.js";
+export * from "./validation/rules/value-object-validation-rules.js";

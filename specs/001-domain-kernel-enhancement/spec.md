@@ -87,6 +87,86 @@ As a domain developer, I want to process domain events within the domain layer s
 
 ---
 
+### User Story 6 - Repository Pattern Implementation (Priority: P1)
+
+As a domain developer, I want to define repository interfaces for data access so that I can abstract data persistence concerns from domain logic while maintaining clean architecture boundaries.
+
+**Why this priority**: Repository pattern is fundamental to DDD and Clean Architecture. It provides a clean abstraction for data access and enables testability.
+
+**Independent Test**: Can be fully tested by creating repository interfaces and verifying that they define the correct contract for data access operations.
+
+**Acceptance Scenarios**:
+
+1. **Given** a domain entity, **When** I define a repository interface, **Then** the interface provides standard CRUD operations
+2. **Given** complex query requirements, **When** I define query repository interfaces, **Then** the interfaces support flexible querying capabilities
+3. **Given** pagination requirements, **When** I define paginated repository interfaces, **Then** the interfaces support efficient data pagination
+
+---
+
+### User Story 7 - Factory Pattern Implementation (Priority: P1)
+
+As a domain developer, I want to use factory patterns for complex object creation so that I can encapsulate object construction logic and ensure proper object initialization.
+
+**Why this priority**: Factory patterns are essential for complex object creation in DDD. They provide a clean way to encapsulate construction logic and ensure objects are created correctly.
+
+**Independent Test**: Can be fully tested by creating factory interfaces and implementations and verifying that they produce correctly initialized objects.
+
+**Acceptance Scenarios**:
+
+1. **Given** complex aggregate creation requirements, **When** I use an aggregate factory, **Then** the aggregate is created with all required dependencies
+2. **Given** entity reconstruction from events, **When** I use a reconstruction factory, **Then** the entity is properly reconstructed from historical data
+3. **Given** value object creation with validation, **When** I use a value object factory, **Then** the value object is created with proper validation
+
+---
+
+### User Story 8 - Specification Pattern Implementation (Priority: P1)
+
+As a domain developer, I want to use specification patterns for business rules and queries so that I can create reusable, composable business logic components.
+
+**Why this priority**: Specification pattern is crucial for complex business logic. It provides a clean way to express business rules and queries in a composable manner.
+
+**Independent Test**: Can be fully tested by creating specifications and verifying that they correctly evaluate business conditions and can be composed together.
+
+**Acceptance Scenarios**:
+
+1. **Given** business rules, **When** I create specifications, **Then** the specifications correctly evaluate business conditions
+2. **Given** multiple specifications, **When** I combine them with AND/OR logic, **Then** the combined specifications work correctly
+3. **Given** query requirements, **When** I create query specifications, **Then** the specifications support flexible querying
+
+---
+
+### User Story 9 - Domain Service Registry (Priority: P2)
+
+As a domain developer, I want to register and manage domain services so that I can organize service dependencies and enable service discovery within the domain layer.
+
+**Why this priority**: Service management is important for complex domain models. A service registry provides a clean way to manage service dependencies and enable service discovery.
+
+**Independent Test**: Can be fully tested by registering services and verifying that they can be located and used correctly.
+
+**Acceptance Scenarios**:
+
+1. **Given** domain services, **When** I register them in a service registry, **Then** the services can be located by type
+2. **Given** service dependencies, **When** I register services with dependencies, **Then** the registry validates dependency requirements
+3. **Given** service lifecycle requirements, **When** I manage services through the registry, **Then** services are properly initialized and cleaned up
+
+---
+
+### User Story 10 - Enhanced Exception Handling (Priority: P2)
+
+As a domain developer, I want to use specific exception types for different domain operations so that I can provide clear error handling and debugging information.
+
+**Why this priority**: Proper exception handling is crucial for maintainable code. Specific exception types provide clear error information and enable better error handling strategies.
+
+**Independent Test**: Can be fully tested by throwing different exception types and verifying that they provide appropriate error information.
+
+**Acceptance Scenarios**:
+
+1. **Given** repository operations, **When** errors occur, **Then** repository-specific exceptions are thrown with clear error messages
+2. **Given** factory operations, **When** object creation fails, **Then** factory-specific exceptions are thrown with construction details
+3. **Given** specification evaluation, **When** evaluation fails, **Then** specification-specific exceptions are thrown with evaluation context
+
+---
+
 ### Edge Cases
 
 - What happens when validation rules conflict with each other?
@@ -94,6 +174,11 @@ As a domain developer, I want to process domain events within the domain layer s
 - What occurs when domain event handlers throw exceptions?
 - How does the system handle validation of deeply nested value objects?
 - What happens when business operations have conflicting pre-conditions?
+- What occurs when repository operations fail due to data inconsistencies?
+- How does the system handle factory creation when required dependencies are missing?
+- What happens when specification evaluation encounters null or undefined values?
+- How does the system handle service registry conflicts when multiple services implement the same interface?
+- What occurs when domain model versioning encounters incompatible changes?
 
 ## Requirements _(mandatory)_
 
@@ -109,6 +194,16 @@ As a domain developer, I want to process domain events within the domain layer s
 - **FR-008**: System MUST support rule composition and complex validation scenarios
 - **FR-009**: System MUST enable event handler registration and management within domain objects
 - **FR-010**: System MUST provide coordination context and result tracking for complex operations
+- **FR-011**: System MUST provide repository interfaces for data access abstraction with standard CRUD operations
+- **FR-012**: System MUST support query repository interfaces for complex querying capabilities
+- **FR-013**: System MUST provide paginated repository interfaces for efficient data pagination
+- **FR-014**: System MUST support factory patterns for complex object creation and reconstruction
+- **FR-015**: System MUST provide specification patterns for composable business rules and queries
+- **FR-016**: System MUST support domain service registry for service management and discovery
+- **FR-017**: System MUST provide enhanced exception handling with specific exception types
+- **FR-018**: System MUST support value object validators for fine-grained validation control
+- **FR-019**: System MUST provide domain model versioning for long-term maintenance support
+- **FR-020**: System MUST maintain backward compatibility with existing domain kernel APIs
 
 ### Key Entities _(include if feature involves data)_
 
@@ -121,6 +216,15 @@ As a domain developer, I want to process domain events within the domain layer s
 - **BusinessRuleValidationResult**: Represents business rule validation with violations and context
 - **CoordinationContext**: Represents the context for coordinated operations with parameters and entities
 - **CoordinationResult**: Represents the result of coordinated operations with success status and data
+- **Repository**: Represents a data access interface with standard CRUD operations
+- **QueryRepository**: Represents a query interface for complex data retrieval operations
+- **PaginatedRepository**: Represents a paginated data access interface for efficient data pagination
+- **AggregateFactory**: Represents a factory for creating aggregates with proper initialization
+- **EntityFactory**: Represents a factory for creating entities with validation and dependencies
+- **ValueObjectFactory**: Represents a factory for creating value objects with validation
+- **Specification**: Represents a business rule or query condition that can be composed
+- **ServiceRegistry**: Represents a registry for managing domain services and dependencies
+- **ModelVersion**: Represents a version of the domain model for compatibility tracking
 
 ## Success Criteria _(mandatory)_
 
@@ -136,6 +240,16 @@ As a domain developer, I want to process domain events within the domain layer s
 - **SC-008**: Coordination operations maintain proper error handling and rollback for 100% of failures
 - **SC-009**: Domain layer remains completely independent of external frameworks
 - **SC-010**: All new domain features integrate seamlessly with existing domain kernel components
+- **SC-011**: Repository interfaces provide complete data access abstraction with 100% interface coverage
+- **SC-012**: Factory patterns support complex object creation with 100% initialization success rate
+- **SC-013**: Specification patterns enable composable business logic with 100% composition accuracy
+- **SC-014**: Service registry manages domain services with 100% service discovery success rate
+- **SC-015**: Enhanced exception handling provides specific error information for 100% of error cases
+- **SC-016**: Value object validators support fine-grained validation with 100% validation coverage
+- **SC-017**: Domain model versioning maintains compatibility tracking with 100% version accuracy
+- **SC-018**: All new DDD patterns integrate seamlessly with existing domain kernel architecture
+- **SC-019**: Backward compatibility is maintained with 100% API compatibility for existing features
+- **SC-020**: Performance goals are met for all new DDD pattern implementations
 
 ## Assumptions
 
@@ -149,6 +263,14 @@ As a domain developer, I want to process domain events within the domain layer s
 - Validation and business rule systems should support performance optimization for large-scale domains
 - The enhanced domain kernel should maintain backward compatibility with existing implementations
 - All new features should follow existing domain kernel patterns and conventions
+- Repository interfaces should provide complete data access abstraction without implementation details
+- Factory patterns should encapsulate complex object creation logic and validation
+- Specification patterns should support composable business logic and query conditions
+- Service registry should manage domain services without external framework dependencies
+- Enhanced exception handling should provide specific error types for different domain operations
+- Value object validators should support fine-grained validation control
+- Domain model versioning should support long-term maintenance and compatibility tracking
+- All new DDD patterns should integrate seamlessly with existing domain kernel architecture
 
 ## Background & Principles
 

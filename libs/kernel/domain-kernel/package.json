@@ -1,7 +1,7 @@
 {
   "name": "@hl8/domain-kernel",
   "version": "1.0.0",
-  "description": "Pure domain layer kernel - entities, value objects, domain events, and aggregates",
+  "description": "Enhanced domain layer kernel with DDD patterns - entities, value objects, domain events, aggregates, repositories, factories, specifications, and service management",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

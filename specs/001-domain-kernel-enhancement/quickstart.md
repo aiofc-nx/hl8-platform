@@ -1,431 +1,588 @@
-# Quick Start: Domain Kernel Enhancement
+# Quick Start Guide: Domain Kernel Enhancement with DDD Patterns
 
 **Feature**: Domain Kernel Enhancement  
 **Date**: 2024-12-19  
-**Phase**: 1 - Design & Contracts
+**Status**: Complete
 
 ## Overview
 
-The Domain Kernel Enhancement provides comprehensive validation frameworks, business rule management, domain service coordination, and enhanced aggregate root operations while maintaining complete domain layer purity.
-
-## Key Features
-
-- **Value Object Validation**: Composable validation rules with error collection
-- **Business Rule Management**: Severity-based rule validation with context tracking
-- **Domain Service Coordination**: Rule-based coordination with dependency management
-- **Aggregate Root Operations**: Pre/post condition validation with event handling
-- **Domain Event Processing**: Synchronous event processing with handler registry
+This guide provides a quick start for using the enhanced domain kernel with comprehensive DDD patterns including Repository interfaces, Factory patterns, Specification patterns, Domain Event Handlers, and service management.
 
 ## Installation
 
 ```bash
 # Install the enhanced domain kernel
-pnpm install @hl8/domain-kernel
+pnpm add @hl8/domain-kernel
 
-# Install development dependencies
-pnpm install -D @types/jest jest ts-jest
+# Install peer dependencies
+pnpm add class-validator class-transformer uuid
 ```
 
-## Value Object Validation
+## Basic Usage
 
-### Basic Usage
+### 1. Repository Pattern
 
 ```typescript
-import { ValueObject, ValidationRule, ValidationResult } from "@hl8/domain-kernel";
+import { IRepository, IQueryRepository, IPaginatedRepository } from "@hl8/domain-kernel";
 
-// Create a validation rule
-const emailRule: ValidationRule<string> = {
-  ruleName: "email-format",
-  validate: (value: string) => {
-    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-    return {
-      isValid,
-      errors: isValid
-        ? []
-        : [
-            {
-              field: "email",
-              message: "Invalid email format",
-              code: "INVALID_EMAIL_FORMAT",
-              value,
-              context: {},
-            },
-          ],
-    };
-  },
-  getRuleName: () => "email-format",
-  getDescription: () => "Validates email format",
-};
-
-// Use in value object
-class Email extends ValueObject<string> {
-  constructor(value: string) {
-    super(value);
-    this.addValidationRule(emailRule);
-  }
-
-  protected validateValue(value: string): void {
-    const result = this.validate(value);
-    if (!result.isValid) {
-      throw new Error(`Email validation failed: ${result.errors.map((e) => e.message).join(", ")}`);
-    }
-  }
+// Define repository interface
+interface IUserRepository extends IQueryRepository<User> {
+  findByEmail(email: string): Promise<User | null>;
+  findByAgeRange(minAge: number, maxAge: number): Promise<User[]>;
 }
-```
 
-### Advanced Usage
-
-```typescript
-// Create composite validation rules
-const compositeRule = ValidationRuleFactory.createCompositeRule("email-validation", [emailRule, lengthRule, domainRule], "Complete email validation");
-
-// Use in value object
-class AdvancedEmail extends ValueObject<string> {
-  constructor(value: string) {
-    super(value);
-    this.addValidationRule(compositeRule);
-  }
-}
-```
-
-## Business Rule Management
-
-### Basic Usage
-
-```typescript
-import { Entity, BusinessRule, BusinessRuleManager } from "@hl8/domain-kernel";
-
-// Create a business rule
-const ageRule: BusinessRule = {
-  ruleName: "minimum-age",
-  description: "User must be at least 18 years old",
-  severity: "ERROR",
-  validate: (entity: Entity) => {
-    const user = entity as User;
-    const isValid = user.age >= 18;
-    return {
-      isValid,
-      violations: isValid
-        ? []
-        : [
-            {
-              ruleName: "minimum-age",
-              message: "User must be at least 18 years old",
-              severity: "ERROR",
-              context: { age: user.age, minimumAge: 18 },
-            },
-          ],
-      entityType: "User",
-      entityId: user.id.toString(),
-    };
-  },
-  getRuleName: () => "minimum-age",
-  getDescription: () => "User must be at least 18 years old",
-  getSeverity: () => "ERROR",
-};
-
-// Use in entity
-class User extends Entity {
-  constructor(public age: number) {
+// Use repository in domain service
+class UserDomainService extends DomainService {
+  constructor(private readonly userRepository: IUserRepository) {
     super();
-    this.addBusinessRule(ageRule);
   }
 
-  public validateBusinessRules(): boolean {
-    const result = this.validateBusinessRules();
-    if (!result.isValid) {
-      console.error("Business rule violations:", result.violations);
-      return false;
+  async findUserByEmail(email: string): Promise<User | null> {
+    return await this.userRepository.findByEmail(email);
+  }
+
+  async findActiveUsers(): Promise<User[]> {
+    const spec = new ActiveUserSpecification();
+    return await this.userRepository.findBySpecification(spec);
+  }
+}
+```
+
+### 2. Factory Pattern
+
+```typescript
+import { IAggregateFactory, IEntityFactory, IValueObjectFactory } from "@hl8/domain-kernel";
+
+// Aggregate factory
+class UserAggregateFactory implements IAggregateFactory<UserAggregate> {
+  create(params: AggregateCreationParams): UserAggregate {
+    const { email, name } = params.data;
+    return new UserAggregate(email, name);
+  }
+
+  createFromEvents(events: DomainEvent[]): UserAggregate {
+    // Reconstruct aggregate from events
+    const aggregate = new UserAggregate("", "");
+    events.forEach(event => aggregate.applyEvent(event));
+    return aggregate;
+  }
+
+  validateCreationParams(params: AggregateCreationParams): ValidationResult {
+    // Validate creation parameters
+    return ValidationResult.success();
+  }
+}
+
+// Value object factory
+class EmailFactory implements IValueObjectFactory<Email> {
+  create(value: unknown): Email {
+    if (typeof value !== "string") {
+      throw new FactoryException("Email must be a string", "EmailFactory", value);
     }
-    return true;
+    return new Email(value);
   }
-}
-```
 
-### Advanced Usage
+  createWithValidation(value: unknown, rules: ValidationRule[]): Email {
+    const email = this.create(value);
+    // Apply additional validation rules
+    return email;
+  }
 
-```typescript
-// Create conditional business rules
-const conditionalRule = BusinessRuleFactory.createConditionalRule(
-  "premium-user-validation",
-  "Premium users must have valid payment method",
-  "ERROR",
-  (entity: Entity) => (entity as User).isPremium,
-  (entity: Entity) => (entity as User).hasValidPaymentMethod,
-);
-
-// Use business rule manager
-const ruleManager = new BusinessRuleManager();
-ruleManager.addRule(ageRule);
-ruleManager.addRule(conditionalRule);
-
-const result = ruleManager.validateEntity(user);
-if (!result.isValid) {
-  console.error("Validation failed:", result.violations);
-}
-```
-
-## Domain Service Coordination
-
-### Basic Usage
-
-```typescript
-import { CoordinationRule, CoordinationContext, CoordinationResult } from "@hl8/domain-kernel";
-
-// Create a coordination rule
-const orderProcessingRule: CoordinationRule = {
-  operationName: "process-order",
-  execute: async (context: CoordinationContext) => {
-    const { parameters, entities } = context;
-    const order = entities[0] as Order;
-
-    try {
-      // Validate inventory
-      const inventoryService = new InventoryService();
-      await inventoryService.reserveItems(order.items);
-
-      // Process payment
-      const paymentService = new PaymentService();
-      await paymentService.charge(order.totalAmount);
-
-      // Update order status
-      order.markAsProcessed();
-
-      return {
-        success: true,
-        data: { orderId: order.id, status: "processed" },
-        errors: [],
-        executionTime: Date.now() - context.timestamp.getTime(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        data: null,
-        errors: [error.message],
-        executionTime: Date.now() - context.timestamp.getTime(),
-      };
+  validateValue(value: unknown): ValidationResult {
+    if (typeof value !== "string") {
+      return ValidationResult.failure(["Email must be a string"]);
     }
-  },
-  getOperationName: () => "process-order",
-  getDependencies: () => ["inventory-service", "payment-service"],
-};
-
-// Use coordination manager
-const coordinationManager = new CoordinationManager();
-coordinationManager.registerRule(orderProcessingRule);
-
-const context: CoordinationContext = {
-  operation: "process-order",
-  parameters: { orderId: "123" },
-  entities: [order],
-  timestamp: new Date(),
-  correlationId: "corr-123",
-};
-
-const result = await coordinationManager.executeOperation("process-order", context);
-if (result.success) {
-  console.log("Order processed successfully:", result.getData());
-} else {
-  console.error("Order processing failed:", result.getErrors());
-}
-```
-
-## Aggregate Root Operations
-
-### Basic Usage
-
-```typescript
-import { AggregateRoot, BusinessOperation } from "@hl8/domain-kernel";
-
-// Create a business operation
-const createOrderOperation: BusinessOperation = {
-  operationName: "create-order",
-  execute: async (params: unknown, aggregate: AggregateRoot) => {
-    const order = aggregate as Order;
-    const { items, customerId } = params as { items: Item[]; customerId: string };
-
-    order.addItems(items);
-    order.setCustomerId(customerId);
-    order.calculateTotal();
-
-    return { orderId: order.id, total: order.totalAmount };
-  },
-  validatePreConditions: (params: unknown, aggregate: AggregateRoot) => {
-    const order = aggregate as Order;
-    const { items, customerId } = params as { items: Item[]; customerId: string };
-
-    return items.length > 0 && customerId.length > 0 && order.isActive();
-  },
-  validatePostConditions: (result: unknown, aggregate: AggregateRoot) => {
-    const order = aggregate as Order;
-    const { orderId, total } = result as { orderId: string; total: number };
-
-    return orderId === order.id.toString() && total > 0;
-  },
-  getOperationName: () => "create-order",
-};
-
-// Use in aggregate root
-class Order extends AggregateRoot {
-  private items: Item[] = [];
-  private customerId: string = "";
-  private totalAmount: number = 0;
-
-  constructor() {
-    super();
-    this.registerBusinessOperation(createOrderOperation);
-  }
-
-  public async createOrder(items: Item[], customerId: string): Promise<{ orderId: string; total: number }> {
-    return await this.executeBusinessOperation("create-order", { items, customerId });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+      return ValidationResult.failure(["Invalid email format"]);
+    }
+    return ValidationResult.success();
   }
 }
 ```
 
-## Domain Event Processing
-
-### Basic Usage
+### 3. Specification Pattern
 
 ```typescript
-import { DomainEvent, DomainEventHandler, EventProcessor } from "@hl8/domain-kernel";
+import { ISpecification, AndSpecification, OrSpecification } from "@hl8/domain-kernel";
 
-// Create an event handler
-const orderCreatedHandler: DomainEventHandler = {
-  eventType: "OrderCreated",
-  handle: (event: DomainEvent, aggregate: AggregateRoot) => {
-    const order = aggregate as Order;
-    console.log(`Order ${order.id} created with total ${order.totalAmount}`);
-
-    // Update read models
-    // Send notifications
-    // Trigger other domain events
-  },
-  getEventType: () => "OrderCreated",
-  canHandle: (event: DomainEvent) => event.eventType === "OrderCreated",
-};
-
-// Use event processor
-const eventProcessor = new EventProcessor();
-eventProcessor.registerHandler(orderCreatedHandler);
-
-// Process events
-const orderCreatedEvent = new DomainEvent(order.id, "OrderCreated", { orderId: order.id, total: order.totalAmount });
-
-eventProcessor.processEvent(orderCreatedEvent, order);
-```
-
-### Advanced Usage
-
-```typescript
-// Create conditional event handlers
-const conditionalHandler = EventHandlerFactory.createConditionalHandler(
-  "OrderCreated",
-  (event: DomainEvent, aggregate: AggregateRoot) => {
-    const order = aggregate as Order;
-    return order.totalAmount > 1000; // Only handle high-value orders
-  },
-  (event: DomainEvent, aggregate: AggregateRoot) => {
-    console.log("High-value order created:", event.data);
-  },
-);
-
-// Use event registry
-const eventRegistry = new EventRegistry();
-eventRegistry.register(orderCreatedHandler);
-eventRegistry.register(conditionalHandler);
-
-const handlers = eventRegistry.getHandlers("OrderCreated");
-handlers.forEach((handler) => {
-  if (handler.canHandle(event)) {
-    handler.handle(event, aggregate);
+// Business specification
+class ActiveUserSpecification implements IBusinessSpecification<User> {
+  isSatisfiedBy(candidate: User): boolean {
+    return candidate.status === "ACTIVE" && !candidate.isDeleted;
   }
-});
+
+  and(other: ISpecification<User>): ISpecification<User> {
+    return new AndSpecification(this, other);
+  }
+
+  or(other: ISpecification<User>): ISpecification<User> {
+    return new OrSpecification(this, other);
+  }
+
+  not(): ISpecification<User> {
+    return new NotSpecification(this);
+  }
+
+  getDescription(): string {
+    return "Active user specification";
+  }
+
+  getBusinessRule(): BusinessRule {
+    return new BusinessRule("activeUser", "User must be active", this.isSatisfiedBy);
+  }
+
+  getSeverity(): BusinessRuleSeverity {
+    return BusinessRuleSeverity.ERROR;
+  }
+
+  getErrorMessage(): string {
+    return "User must be active and not deleted";
+  }
+}
+
+// Query specification
+class UserEmailSpecification implements IQuerySpecification<User> {
+  constructor(private readonly email: string) {}
+
+  isSatisfiedBy(candidate: User): boolean {
+    return candidate.email === this.email;
+  }
+
+  getQueryCriteria(): QueryCriteria {
+    return {
+      conditions: [
+        {
+          field: "email",
+          operator: QueryOperator.EQUALS,
+          value: this.email,
+          logicalOperator: LogicalOperator.AND
+        }
+      ],
+      joins: [],
+      groupBy: [],
+      having: []
+    };
+  }
+
+  getSorting(): SortingCriteria[] {
+    return [];
+  }
+
+  getPagination(): PaginationCriteria {
+    return { page: 1, limit: 10, offset: 0 };
+  }
+}
+
+// Compose specifications
+const activeUsers = new ActiveUserSpecification();
+const emailSpec = new UserEmailSpecification("user@example.com");
+const activeUserWithEmail = activeUsers.and(emailSpec);
 ```
 
-## Error Handling
-
-### Validation Errors
+### 4. Domain Service Registry
 
 ```typescript
+import { IDomainServiceRegistry, IServiceLocator } from "@hl8/domain-kernel";
+
+// Service registry
+class DomainServiceRegistry implements IDomainServiceRegistry {
+  private services = new Map<string, unknown>();
+  private dependencies = new Map<string, string[]>();
+
+  register<T>(serviceType: string, service: T, dependencies?: string[]): void {
+    this.services.set(serviceType, service);
+    if (dependencies) {
+      this.dependencies.set(serviceType, dependencies);
+    }
+  }
+
+  get<T>(serviceType: string): T | null {
+    return this.services.get(serviceType) as T | null;
+  }
+
+  has(serviceType: string): boolean {
+    return this.services.has(serviceType);
+  }
+
+  validateDependencies(): ValidationResult {
+    // Validate all service dependencies
+    return ValidationResult.success();
+  }
+
+  getServiceDependencies(serviceType: string): string[] {
+    return this.dependencies.get(serviceType) || [];
+  }
+}
+
+// Service locator
+class ServiceLocator implements IServiceLocator {
+  constructor(private readonly registry: IDomainServiceRegistry) {}
+
+  locate<T>(serviceType: string): T | null {
+    return this.registry.get<T>(serviceType);
+  }
+
+  locateAll<T>(serviceType: string): T[] {
+    // Return all services of the given type
+    return [];
+  }
+
+  isAvailable(serviceType: string): boolean {
+    return this.registry.has(serviceType);
+  }
+}
+```
+
+### 5. Enhanced Exception Handling
+
+```typescript
+import { 
+  RepositoryException, 
+  FactoryException, 
+  SpecificationException,
+  AggregateException 
+} from "@hl8/domain-kernel";
+
+// Repository exception
 try {
-  const email = new Email("invalid-email");
+  await userRepository.findById(userId);
 } catch (error) {
-  if (error instanceof ValueObjectValidationException) {
-    console.error("Validation failed:", error.errors);
-    console.error("Field:", error.field);
-    console.error("Value:", error.value);
+  throw new RepositoryException(
+    "Failed to find user",
+    "findById",
+    "User",
+    userId,
+    error
+  );
+}
+
+// Factory exception
+try {
+  const user = userFactory.create(invalidParams);
+} catch (error) {
+  throw new FactoryException(
+    "Failed to create user",
+    "UserFactory",
+    invalidParams,
+    error
+  );
+}
+
+// Specification exception
+try {
+  const result = specification.isSatisfiedBy(candidate);
+} catch (error) {
+  throw new SpecificationException(
+    "Failed to evaluate specification",
+    "ActiveUserSpecification",
+    candidate,
+    error
+  );
+}
+```
+
+### 6. Value Object Validation
+
+```typescript
+import { IValueObjectValidator, IValueObjectValidationRule } from "@hl8/domain-kernel";
+
+// Value object validator
+class EmailValidator implements IValueObjectValidator<Email> {
+  private rules: IValueObjectValidationRule<Email>[] = [];
+
+  validate(value: Email, rules: IValueObjectValidationRule<Email>[]): IValueObjectValidationResult {
+    const violations: FieldViolation[] = [];
+    
+    for (const rule of rules) {
+      const result = rule.validate(value);
+      if (!result.isValid) {
+        violations.push({
+          field: "email",
+          value: value.value,
+          violation: result.errors[0],
+          rule: rule.name,
+          severity: ViolationSeverity.ERROR,
+          code: "INVALID_EMAIL",
+          context: {}
+        });
+      }
+    }
+
+    return {
+      isValid: violations.length === 0,
+      errors: violations.map(v => v.violation),
+      warnings: [],
+      valueObjectType: "Email",
+      validationRules: rules.map(r => r.name),
+      fieldViolations: violations,
+      statistics: {
+        startTime: new Date(),
+        endTime: new Date(),
+        duration: 0,
+        rulesCount: rules.length,
+        executedRulesCount: rules.length,
+        violationsCount: violations.length,
+        fieldsCount: 1,
+        validatedFieldsCount: 1
+      }
+    };
+  }
+
+  addRule(rule: IValueObjectValidationRule<Email>): void {
+    this.rules.push(rule);
+  }
+
+  removeRule(ruleName: string): boolean {
+    const index = this.rules.findIndex(r => r.name === ruleName);
+    if (index >= 0) {
+      this.rules.splice(index, 1);
+      return true;
+    }
+    return false;
   }
 }
 ```
 
-### Business Rule Violations
+### 7. Domain Model Versioning
 
 ```typescript
-const result = user.validateBusinessRules();
-if (!result.isValid) {
-  result.violations.forEach((violation) => {
-    console.error(`${violation.ruleName}: ${violation.message}`);
-    console.error("Severity:", violation.severity);
-    console.error("Context:", violation.context);
-  });
+import { IModelVersion, IVersionCompatibilityChecker } from "@hl8/domain-kernel";
+
+// Model version
+const version1: IModelVersion = {
+  major: 1,
+  minor: 0,
+  patch: 0,
+  metadata: { description: "Initial version" },
+  createdAt: new Date("2024-01-01"),
+  breakingChanges: [],
+  description: "Initial domain model",
+  tags: ["initial", "stable"]
+};
+
+const version2: IModelVersion = {
+  major: 2,
+  minor: 0,
+  patch: 0,
+  metadata: { description: "Major refactoring" },
+  createdAt: new Date("2024-06-01"),
+  breakingChanges: ["User.email field renamed to User.emailAddress"],
+  description: "Major refactoring with breaking changes",
+  tags: ["breaking", "refactor"]
+};
+
+// Version compatibility checker
+class VersionCompatibilityChecker implements IVersionCompatibilityChecker {
+  isCompatible(from: IModelVersion, to: IModelVersion): boolean {
+    // Same major version or newer major version
+    return to.major >= from.major;
+  }
+
+  getCompatibilityIssues(from: IModelVersion, to: IModelVersion): string[] {
+    const issues: string[] = [];
+    
+    if (to.major > from.major) {
+      issues.push(`Major version upgrade from ${from.major} to ${to.major}`);
+    }
+    
+    if (to.breakingChanges.length > 0) {
+      issues.push(...to.breakingChanges);
+    }
+    
+    return issues;
+  }
+
+  canMigrate(from: IModelVersion, to: IModelVersion): boolean {
+    return this.isCompatible(from, to) && to.breakingChanges.length === 0;
+  }
 }
 ```
 
-### Coordination Errors
+## Advanced Usage
+
+### Custom Repository Implementation
 
 ```typescript
-const result = await coordinationManager.executeOperation("process-order", context);
-if (!result.success) {
-  result.getErrors().forEach((error) => {
-    console.error("Coordination error:", error);
-  });
+class UserRepositoryImpl implements IUserRepository {
+  async findById(id: EntityId): Promise<User | null> {
+    // Implementation details
+    return null;
+  }
+
+  async save(entity: User): Promise<void> {
+    // Implementation details
+  }
+
+  async findBySpecification(spec: ISpecification<User>): Promise<User[]> {
+    // Implementation details
+    return [];
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    // Implementation details
+    return null;
+  }
 }
+```
+
+### Custom Factory Implementation
+
+```typescript
+class UserAggregateFactoryImpl implements IAggregateFactory<UserAggregate> {
+  create(params: AggregateCreationParams): UserAggregate {
+    const { email, name } = params.data;
+    return new UserAggregate(email, name);
+  }
+
+  createFromEvents(events: DomainEvent[]): UserAggregate {
+    const aggregate = new UserAggregate("", "");
+    events.forEach(event => aggregate.applyEvent(event));
+    return aggregate;
+  }
+
+  validateCreationParams(params: AggregateCreationParams): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!params.data.email) {
+      errors.push("Email is required");
+    }
+    
+    if (!params.data.name) {
+      errors.push("Name is required");
+    }
+    
+    return errors.length === 0 ? ValidationResult.success() : ValidationResult.failure(errors);
+  }
+}
+```
+
+### Custom Specification Implementation
+
+```typescript
+class UserAgeSpecification implements IBusinessSpecification<User> {
+  constructor(private readonly minAge: number, private readonly maxAge: number) {}
+
+  isSatisfiedBy(candidate: User): boolean {
+    return candidate.age >= this.minAge && candidate.age <= this.maxAge;
+  }
+
+  getDescription(): string {
+    return `User age between ${this.minAge} and ${this.maxAge}`;
+  }
+
+  getBusinessRule(): BusinessRule {
+    return new BusinessRule(
+      "userAge",
+      `User age must be between ${this.minAge} and ${this.maxAge}`,
+      this.isSatisfiedBy
+    );
+  }
+
+  getSeverity(): BusinessRuleSeverity {
+    return BusinessRuleSeverity.ERROR;
+  }
+
+  getErrorMessage(): string {
+    return `User age must be between ${this.minAge} and ${this.maxAge}`;
+  }
+}
+```
+
+## Testing
+
+```typescript
+import { describe, it, expect, beforeEach } from "@jest/globals";
+
+describe("Domain Kernel Enhancement", () => {
+  let userRepository: IUserRepository;
+  let userFactory: IAggregateFactory<UserAggregate>;
+  let serviceRegistry: IDomainServiceRegistry;
+
+  beforeEach(() => {
+    userRepository = new UserRepositoryImpl();
+    userFactory = new UserAggregateFactoryImpl();
+    serviceRegistry = new DomainServiceRegistry();
+  });
+
+  it("should create user aggregate using factory", () => {
+    const params: AggregateCreationParams = {
+      aggregateType: "UserAggregate",
+      data: { email: "user@example.com", name: "张三" },
+      dependencies: new Map(),
+      metadata: {}
+    };
+
+    const user = userFactory.create(params);
+    expect(user).toBeInstanceOf(UserAggregate);
+    expect(user.email).toBe("user@example.com");
+  });
+
+  it("should validate user specification", () => {
+    const spec = new ActiveUserSpecification();
+    const user = new User("user@example.com", 25);
+    user.status = "ACTIVE";
+    
+    expect(spec.isSatisfiedBy(user)).toBe(true);
+  });
+
+  it("should compose specifications", () => {
+    const activeSpec = new ActiveUserSpecification();
+    const ageSpec = new UserAgeSpecification(18, 65);
+    const composedSpec = activeSpec.and(ageSpec);
+    
+    const user = new User("user@example.com", 25);
+    user.status = "ACTIVE";
+    
+    expect(composedSpec.isSatisfiedBy(user)).toBe(true);
+  });
+
+  it("should handle repository exceptions", async () => {
+    const invalidId = new EntityId();
+    
+    await expect(userRepository.findById(invalidId))
+      .rejects
+      .toThrow(RepositoryException);
+  });
+});
 ```
 
 ## Best Practices
 
-1. **Validation Rules**: Keep validation rules focused and composable
-2. **Business Rules**: Use appropriate severity levels (ERROR vs WARNING)
-3. **Coordination**: Design coordination rules to be idempotent
-4. **Operations**: Always validate pre/post conditions
-5. **Events**: Keep event handlers lightweight and focused
-6. **Error Handling**: Provide clear error messages with context
-7. **Testing**: Write comprehensive tests for all validation and coordination logic
+1. **Use Repository Interfaces** for data access abstraction
+2. **Implement Factory Patterns** for complex object creation
+3. **Create Composable Specifications** for business rules and queries
+4. **Register Services** in a service registry for dependency management
+5. **Use Specific Exception Types** for better error handling
+6. **Validate Value Objects** with specialized validators
+7. **Version Your Domain Models** for long-term maintenance
+8. **Test All Patterns** with comprehensive unit and integration tests
 
-## Performance Considerations
+## Troubleshooting
 
-- Validation rules should be lightweight and fast
-- Business rule validation should complete in <10ms
-- Domain event processing should complete in <5ms
-- Use rule caching for frequently accessed rules
-- Implement early termination for validation failures
+### Common Issues
 
-## Migration Guide
+1. **Repository Interface Errors**: Ensure all required methods are implemented
+2. **Factory Creation Failures**: Check that all required parameters are provided
+3. **Specification Evaluation Errors**: Verify that specifications are properly composed
+4. **Service Registration Issues**: Ensure all dependencies are registered before use
+5. **Exception Handling Problems**: Use specific exception types for better error context
 
-The enhanced domain kernel maintains backward compatibility with existing implementations. To migrate:
+### Debug Tips
 
-1. **Value Objects**: Add validation rules using the new framework
-2. **Entities**: Add business rules using the new framework
-3. **Aggregate Roots**: Register business operations using the new framework
-4. **Domain Services**: Use coordination rules for complex operations
-5. **Domain Events**: Register event handlers using the new framework
+1. Enable detailed logging for all patterns
+2. Use validation results to understand failures
+3. Check service dependencies and registration
+4. Verify specification logic and composition
+5. Monitor exception context and stack traces
 
-All existing APIs remain unchanged, ensuring smooth migration.
+## Next Steps
 
-## Migration Mapping from Original Spec
-
-- **领域事件处理**：原规范默认异步；本增强规范领域层默认同步，异步由应用层/基础设施实现（消息队列/总线）。参见 `appendix-original-spec.md`。
-- **领域服务依赖注入**：原规范强调DI；本增强规范通过"依赖接口化 + 上下文入参"实现等价能力，保持领域层纯净。
-- **聚合根协调**：原规范强调"聚合根不直接执行业务逻辑"；本增强规范提供"业务操作 + 前/后置条件 + 事件处理"来强化该约束。
-- **值对象验证**：原规范要求值对象具备验证能力；本增强规范提供可组合的验证规则与错误收集机制。
-- **审计/标识符/分离原则**：保持一致，增强处仅补充契约清晰度与可测试性。
-
-### Migration Steps
-
-1. **Value Objects**: Add validation rules using the new framework
-2. **Entities**: Add business rules using the new framework
-3. **Aggregate Roots**: Register business operations using the new framework
-4. **Domain Services**: Use coordination rules for complex operations
-5. **Domain Events**: Register event handlers using the new framework
-
-All existing APIs remain unchanged, ensuring smooth migration.
+1. Explore the full API documentation for all patterns
+2. Implement custom repositories for your domain
+3. Create factory implementations for complex objects
+4. Design specification patterns for business rules
+5. Set up service registry and dependency management
+6. Implement comprehensive exception handling
+7. Add value object validation for data integrity
+8. Plan domain model versioning strategy
