@@ -40,13 +40,60 @@ export * from "./repositories/repository.interface.js";
 export * from "./repositories/query-repository.interface.js";
 export * from "./repositories/command-repository.interface.js";
 export * from "./repositories/paginated-repository.interface.js";
+export type {
+  PaginatedResult,
+  PaginationMetadata as RepositoryPaginationMetadata,
+  PaginatedResultBuilder,
+} from "./repositories/paginated-result.interface.js";
+export * from "./repositories/query-criteria.interface.js";
+export * from "./repositories/query-condition.interface.js";
+export * from "./repositories/query-operator.enum.js";
 
 // 工厂模式
 export * from "./factories/aggregate-factory.interface.js";
+export * from "./factories/entity-factory.interface.js";
+export * from "./factories/value-object-factory.interface.js";
+export * from "./factories/domain-event-factory.interface.js";
+export * from "./factories/aggregate-reconstruction-factory.interface.js";
+export type {
+  AggregateCreationParams,
+  AggregateCreationOptions,
+  AggregateCreationMetadata,
+  AggregateCreationResult,
+  CreationStatistics,
+  AggregateCreationValidationResult,
+  ValidationStatistics as AggregateValidationStatistics,
+  AggregateCreationParamsBuilder,
+} from "./factories/aggregate-creation-params.interface.js";
+export * from "./factories/entity-creation-params.interface.js";
+export * from "./factories/aggregate-snapshot.interface.js";
 
 // 规范模式
 export * from "./specifications/specification.interface.js";
 export * from "./specifications/and-specification.js";
+export * from "./specifications/or-specification.js";
+export * from "./specifications/not-specification.js";
+export * from "./specifications/query-specification.interface.js";
+export * from "./specifications/business-specification.interface.js";
+export * from "./specifications/sorting-criteria.interface.js";
+export type {
+  PaginationCriteria,
+  PaginationOptions,
+  PaginationMetadata,
+  PaginationStrategy,
+  PaginationResult,
+  PaginationInfo,
+  PaginationCursor,
+  CursorType,
+  PaginationStatistics,
+  PaginationResultMetadata,
+  IPaginationCriteriaBuilder,
+  IPaginationService,
+  PaginationValidationResult,
+  PaginationContext,
+  PerformanceRequirement as PaginationPerformanceRequirement,
+  UserPaginationPreferences,
+} from "./specifications/pagination-criteria.interface.js";
 
 // 增强异常处理
 export * from "./exceptions/repository-exceptions.js";

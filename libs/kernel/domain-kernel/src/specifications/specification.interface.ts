@@ -41,4 +41,17 @@ export interface ISpecification<T> {
    * @returns 人类可读的描述
    */
   getDescription(): string;
+
+  /**
+   * 检查规范是否相等
+   * @param other 另一个规范
+   * @returns 是否相等
+   */
+  equals(other: ISpecification<T>): boolean;
+
+  /**
+   * 将规范转换为JSON表示
+   * @returns JSON表示
+   */
+  toJSON(): Record<string, unknown>;
 }
