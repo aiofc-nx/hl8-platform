@@ -4,10 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import {
-  CoordinationManager,
-  CoordinationManagerException,
-} from "./coordination-manager.js";
+import { CoordinationManager } from "./coordination-manager.js";
+import { CoordinationManagerException } from "../exceptions/coordination-exceptions.js";
 import {
   ICoordinationRule,
   ICoordinationContext,

@@ -4,10 +4,11 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
+import { DomainServiceRegistry } from "./domain-service-registry.js";
 import {
-  DomainServiceRegistry,
   ServiceRegistryException,
-} from "./domain-service-registry.js";
+  ServiceRegistrationFailedException,
+} from "../exceptions/service-registry-exceptions.js";
 
 // 模拟服务类
 class MockUserService {
@@ -264,23 +265,22 @@ describe("DomainServiceRegistry", () => {
 });
 
 describe("ServiceRegistryException", () => {
-  it("应该正确创建异常实例", () => {
-    const message = "Test error message";
+  it("应该正确创建具体异常实例", () => {
     const serviceType = "TestService";
-    const operation = "testOperation";
+    const reason = "Test reason";
     const originalError = new Error("Original error");
 
-    const exception = new ServiceRegistryException(
-      message,
+    const exception = new ServiceRegistrationFailedException(
       serviceType,
-      operation,
+      reason,
       originalError,
     );
 
-    expect(exception.message).toBe(message);
+    expect(exception.message).toContain(serviceType);
+    expect(exception.message).toContain(reason);
     expect(exception.serviceType).toBe(serviceType);
-    expect(exception.operation).toBe(operation);
+    expect(exception.operation).toBe("register");
     expect(exception.originalError).toBe(originalError);
-    expect(exception.name).toBe("ServiceRegistryException");
+    expect(exception.name).toBe("ServiceRegistrationFailedException");
   });
 });

@@ -14,6 +14,13 @@ import {
   OperationHistoryType,
   OperationLogLevel,
 } from "./business-operation.interface.js";
+import {
+  OperationManagerException,
+  OperationExecutionException,
+  OperationNotFoundException,
+  OperationValidationException,
+} from "../exceptions/operation-exceptions.js";
+import { ExceptionHandler } from "../exceptions/exception-handler.js";
 
 /**
  * 操作管理器类
@@ -144,11 +151,7 @@ export class OperationManager {
   ): Promise<OperationResult> {
     const operation = this.operations.get(operationId);
     if (!operation) {
-      throw new OperationManagerException(
-        `Business operation '${operationId}' not found`,
-        "executeOperation",
-        operationId,
-      );
+      throw new OperationNotFoundException(operationId);
     }
 
     if (!operation.enabled) {
@@ -278,10 +281,9 @@ export class OperationManager {
    */
   private validateOperation(operation: IBusinessOperation<unknown>): void {
     if (!operation.id || !operation.name) {
-      throw new OperationManagerException(
+      throw new OperationValidationException(
+        operation.id || "unknown",
         "Business operation must have id and name",
-        "validateOperation",
-        operation.id,
       );
     }
 
@@ -290,10 +292,10 @@ export class OperationManager {
       null as unknown,
     );
     if (!validation.isValid) {
-      throw new OperationManagerException(
-        `Business operation '${operation.id}' validation failed: ${validation.getAllMessages().join(", ")}`,
-        "validateOperation",
+      throw new OperationValidationException(
         operation.id,
+        validation.getAllMessages().join(", "),
+        validation.getAllMessages(),
       );
     }
   }
@@ -353,11 +355,33 @@ export class OperationManager {
     try {
       result = await operation.execute(aggregate, parameters, context);
     } catch (error) {
+      // 使用异常处理工具转换错误
+      const domainException = ExceptionHandler.toDomainException(
+        error,
+        "OPERATION_EXECUTION_ERROR",
+        ExceptionHandler.createErrorContext("executeOperation", {
+          operationId: operation.id,
+          contextId: context.id,
+          aggregateType: aggregate?.constructor?.name,
+        }),
+        "操作执行失败",
+      );
+
+      // 如果是 OperationExecutionException，直接使用
+      if (error instanceof OperationExecutionException) {
+        return this.createFailureResult(
+          operation.id,
+          context.id,
+          startTime,
+          error,
+        );
+      }
+
       return this.createFailureResult(
         operation.id,
         context.id,
         startTime,
-        error instanceof Error ? error : new Error(String(error)),
+        domainException,
       );
     }
 
@@ -492,16 +516,7 @@ export class OperationManager {
  * 操作管理器异常类
  * @description 操作管理器操作相关的异常
  */
-export class OperationManagerException extends Error {
-  constructor(
-    message: string,
-    public readonly operation: string,
-    public readonly operationId?: string,
-  ) {
-    super(message);
-    this.name = "OperationManagerException";
-  }
-}
+// OperationManagerException 已移至 ../exceptions/operation-exceptions.ts
 
 /**
  * 操作执行上下文接口

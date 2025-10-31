@@ -14,6 +14,8 @@ import {
   ICoordinationContextBuilder,
 } from "./coordination-context.interface.js";
 import { CoordinationResultBuilder } from "./coordination-result.interface.js";
+import { CoordinationManagerException } from "../exceptions/coordination-exceptions.js";
+import { ExceptionHandler } from "../exceptions/exception-handler.js";
 
 /**
  * 协调管理器类
@@ -35,8 +37,10 @@ export class CoordinationManager {
     if (this.rules.has(rule.id)) {
       throw new CoordinationManagerException(
         `Coordination rule '${rule.id}' is already registered`,
-        "registerRule",
-        rule.id,
+        {
+          ruleId: rule.id,
+          operation: "registerRule",
+        },
       );
     }
 
@@ -219,8 +223,10 @@ export class CoordinationManager {
     if (!validation.isValid) {
       throw new CoordinationManagerException(
         `Coordination rule '${rule.id}' validation failed: ${validation.getAllMessages().join(", ")}`,
-        "validateRule",
-        rule.id,
+        {
+          ruleId: rule.id,
+          operation: "validateRule",
+        },
       );
     }
   }
@@ -273,15 +279,24 @@ export class CoordinationManager {
     } catch (error) {
       const endTime = new Date();
 
+      // 使用异常处理工具转换错误
+      const domainException = ExceptionHandler.toDomainException(
+        error,
+        "COORDINATION_RULE_EXECUTION_ERROR",
+        ExceptionHandler.createErrorContext("executeRule", {
+          ruleId: rule.id,
+          contextId: context.id,
+        }),
+        "规则执行失败",
+      );
+
       return new CoordinationResultBuilder()
         .withRuleId(rule.id)
         .withContextId(context.id)
         .withSuccess(false)
-        .withMessage(
-          `Rule execution failed: ${error instanceof Error ? error.message : String(error)}`,
-        )
+        .withMessage(`Rule execution failed: ${domainException.message}`)
         .withExecutionTime(startTime, endTime)
-        .withError(error instanceof Error ? error : new Error(String(error)))
+        .withError(domainException)
         .build();
     }
   }
@@ -345,20 +360,7 @@ export class CoordinationManager {
   }
 }
 
-/**
- * 协调管理器异常类
- * @description 协调管理器操作相关的异常
- */
-export class CoordinationManagerException extends Error {
-  constructor(
-    message: string,
-    public readonly operation: string,
-    public readonly ruleId?: string,
-  ) {
-    super(message);
-    this.name = "CoordinationManagerException";
-  }
-}
+// CoordinationManagerException 已移至 ../exceptions/coordination-exceptions.ts
 
 /**
  * 协调执行历史接口

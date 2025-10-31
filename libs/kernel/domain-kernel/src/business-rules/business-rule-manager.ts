@@ -10,6 +10,7 @@ import { BusinessRuleViolation } from "./business-rule-violation.interface.js";
 import { BusinessRuleSeverity as BusinessRuleSeverityEnum } from "./business-rule.interface.js";
 import { BusinessRuleSeverityUtils } from "./business-rule-severity.enum.js";
 import { Entity } from "../entities/base/entity.base.js";
+import { ExceptionHandler } from "../exceptions/exception-handler.js";
 
 /**
  * 业务规则管理器类
@@ -124,16 +125,30 @@ export class BusinessRuleManager<T extends Entity> {
           skippedRules.push(rule.name);
         }
       } catch (error) {
+        // 使用异常处理工具转换错误
+        const domainException = ExceptionHandler.toDomainException(
+          error,
+          "BUSINESS_RULE_EXECUTION_ERROR",
+          ExceptionHandler.createErrorContext("validateEntity", {
+            ruleName: rule.name,
+            entityId: entity?.id?.toString() || "unknown",
+            entityType: entity?.constructor?.name,
+          }),
+          "业务规则执行失败",
+        );
+
         // 创建错误违规
         const errorViolation = {
-          message: `Rule execution failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+          message: `Rule execution failed: ${domainException.message}`,
           code: "RULE_EXECUTION_ERROR",
           ruleName: rule.name,
           severity: BusinessRuleSeverityEnum.ERROR,
           entityId: entity?.id?.toString() || "unknown",
           timestamp: new Date(),
           details: {
-            error: error instanceof Error ? error.stack : String(error),
+            error: domainException.message,
+            errorCode: domainException.errorCode,
+            context: domainException.context,
           },
         } as unknown as BusinessRuleViolation;
         violations.push(errorViolation);

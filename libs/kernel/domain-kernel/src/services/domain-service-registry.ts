@@ -11,6 +11,10 @@ import {
   ValidationErrorLevel,
 } from "../validation/rules/validation-result.interface.js";
 import { ValidationError } from "../validation/rules/validation-error.interface.js";
+import {
+  ServiceAlreadyExistsException,
+  ServiceRegistrationFailedException,
+} from "../exceptions/service-registry-exceptions.js";
 
 /**
  * 领域服务注册表实现类
@@ -37,10 +41,9 @@ export class DomainServiceRegistry implements IDomainServiceRegistry {
     this.validateDependencyList(dependencies);
 
     if (this.services.has(serviceType)) {
-      throw new ServiceRegistryException(
-        `Service '${serviceType}' is already registered`,
+      throw new ServiceAlreadyExistsException(
         serviceType,
-        "register",
+        `Service '${serviceType}' is already registered`,
       );
     }
 
@@ -569,18 +572,16 @@ export class DomainServiceRegistry implements IDomainServiceRegistry {
    */
   private validateServiceType(serviceType: string): void {
     if (!serviceType || typeof serviceType !== "string") {
-      throw new ServiceRegistryException(
+      throw new ServiceRegistrationFailedException(
+        serviceType || "unknown",
         "Service type must be a non-empty string",
-        serviceType,
-        "validateServiceType",
       );
     }
 
     if (serviceType.trim().length === 0) {
-      throw new ServiceRegistryException(
+      throw new ServiceRegistrationFailedException(
+        serviceType || "unknown",
         "Service type cannot be empty or whitespace",
-        serviceType,
-        "validateServiceType",
       );
     }
   }
@@ -592,10 +593,9 @@ export class DomainServiceRegistry implements IDomainServiceRegistry {
    */
   private validateService(service: unknown): void {
     if (service === null || service === undefined) {
-      throw new ServiceRegistryException(
-        "Service instance cannot be null or undefined",
+      throw new ServiceRegistrationFailedException(
         "unknown",
-        "validateService",
+        "Service instance cannot be null or undefined",
       );
     }
   }
@@ -607,19 +607,17 @@ export class DomainServiceRegistry implements IDomainServiceRegistry {
    */
   private validateDependencyList(dependencies: string[]): void {
     if (!Array.isArray(dependencies)) {
-      throw new ServiceRegistryException(
-        "Dependencies must be an array",
+      throw new ServiceRegistrationFailedException(
         "unknown",
-        "validateDependencies",
+        "Dependencies must be an array",
       );
     }
 
     for (const dependency of dependencies) {
       if (!dependency || typeof dependency !== "string") {
-        throw new ServiceRegistryException(
+        throw new ServiceRegistrationFailedException(
+          String(dependency) || "unknown",
           "All dependencies must be non-empty strings",
-          dependency,
-          "validateDependencies",
         );
       }
     }
@@ -666,18 +664,4 @@ export class DomainServiceRegistry implements IDomainServiceRegistry {
   }
 }
 
-/**
- * 服务注册表异常类
- * @description 服务注册表操作相关的异常
- */
-export class ServiceRegistryException extends Error {
-  constructor(
-    message: string,
-    public readonly serviceType: string,
-    public readonly operation: string,
-    public readonly originalError?: Error,
-  ) {
-    super(message);
-    this.name = "ServiceRegistryException";
-  }
-}
+// ServiceRegistryException 及其子类已移至 ../exceptions/service-registry-exceptions.ts

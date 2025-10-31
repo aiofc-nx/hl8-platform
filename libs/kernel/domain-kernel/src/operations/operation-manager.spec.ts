@@ -2,10 +2,11 @@
  * @fileoverview 操作管理器单元测试
  * @description 测试操作管理器的功能和业务操作执行
  */
+import { OperationManager } from "./operation-manager.js";
 import {
-  OperationManager,
   OperationManagerException,
-} from "./operation-manager.js";
+  OperationNotFoundException,
+} from "../exceptions/operation-exceptions.js";
 import {
   IBusinessOperation,
   OperationParameters,
@@ -370,7 +371,7 @@ describe("OperationManager", () => {
           parameters,
           context,
         ),
-      ).rejects.toThrow(OperationManagerException);
+      ).rejects.toThrow(OperationNotFoundException);
     });
 
     it("应该拒绝执行禁用的操作", async () => {
