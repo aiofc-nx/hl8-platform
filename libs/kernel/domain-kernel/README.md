@@ -246,11 +246,7 @@ class EmailFormatRule implements BusinessRule<UserAggregate> {
   validate(entity: UserAggregate): BusinessRuleValidationResult {
     // 验证逻辑
     if (!entity.email.includes("@")) {
-      return BusinessRuleValidationResult.failure(
-        "User",
-        entity.id.value,
-        [BusinessRuleViolation.error("无效邮箱格式", "INVALID_EMAIL", this.name)],
-      );
+      return BusinessRuleValidationResult.failure("User", entity.id.value, [BusinessRuleViolation.error("无效邮箱格式", "INVALID_EMAIL", this.name)]);
     }
     return BusinessRuleValidationResult.success("User", entity.id.value);
   }
@@ -277,15 +273,13 @@ class ValidationRule implements ICoordinationRule {
   // 实现接口...
   async execute(context: ICoordinationContext): Promise<ICoordinationResult> {
     // 执行验证逻辑
-    return { success: true, /* ... */ };
+    return { success: true /* ... */ };
   }
 }
 
 // 注册规则并执行协调
 coordinationManager.registerRule(new ValidationRule());
-const context = coordinationManager
-  .createContext("user-operation", { userId: "123" }, ["UserService", "EmailService"])
-  .build();
+const context = coordinationManager.createContext("user-operation", { userId: "123" }, ["UserService", "EmailService"]).build();
 const results = await coordinationManager.executeCoordination(context);
 ```
 
@@ -303,26 +297,17 @@ class UpdateUserOperation implements IBusinessOperation<UserAggregate> {
   readonly name = "更新用户";
   readonly operationType = BusinessOperationType.UPDATE;
   // 实现接口方法...
-  
-  async execute(
-    aggregate: UserAggregate,
-    parameters: OperationParameters,
-    context: OperationContext,
-  ): Promise<OperationResult> {
+
+  async execute(aggregate: UserAggregate, parameters: OperationParameters, context: OperationContext): Promise<OperationResult> {
     // 执行操作逻辑
-    return { success: true, /* ... */ };
+    return { success: true /* ... */ };
   }
 }
 
 // 注册并执行操作
 operationManager.registerOperation(new UpdateUserOperation());
 const context = operationManager.createContext("admin", "更新用户资料").build();
-const result = await operationManager.executeOperation(
-  "update-user",
-  user,
-  { name: "新名称" },
-  context,
-);
+const result = await operationManager.executeOperation("update-user", user, { name: "新名称" }, context);
 ```
 
 ### 使用增强的事件处理
@@ -358,7 +343,7 @@ class UserCreatedHandler implements IDomainEventHandler {
 
   async handle(event: DomainEvent): Promise<EventProcessingResult> {
     // 处理事件逻辑
-    return { success: true, /* ... */ };
+    return { success: true /* ... */ };
   }
 
   validateEvent(event: DomainEvent): boolean {

@@ -75,7 +75,7 @@
 ```json
 {
   "dependencies": {
-    "@hl8/domain-kernel": "^1.0.0"  // 使用增强版本
+    "@hl8/domain-kernel": "^1.0.0" // 使用增强版本
   }
 }
 ```
@@ -99,18 +99,7 @@ import { Entity, AggregateRoot, DomainEvent } from "@hl8/domain-kernel";
 import { Entity, AggregateRoot, DomainEvent } from "@hl8/domain-kernel";
 
 // 新增的 DDD 模式
-import {
-  IRepository,
-  IRepositoryFactory,
-  IFactory,
-  ISpecification,
-  BusinessRuleManager,
-  DomainServiceRegistry,
-  CoordinationManager,
-  OperationManager,
-  EventProcessor,
-  ExceptionHandler,
-} from "@hl8/domain-kernel";
+import { IRepository, IRepositoryFactory, IFactory, ISpecification, BusinessRuleManager, DomainServiceRegistry, CoordinationManager, OperationManager, EventProcessor, ExceptionHandler } from "@hl8/domain-kernel";
 ```
 
 ---
@@ -121,12 +110,7 @@ import {
 
 ```typescript
 class User extends AggregateRoot {
-  constructor(
-    id?: EntityId,
-    auditInfo?: AuditInfo,
-    lifecycleState: EntityLifecycle = EntityLifecycle.CREATED,
-    version: number = 1,
-  ) {
+  constructor(id?: EntityId, auditInfo?: AuditInfo, lifecycleState: EntityLifecycle = EntityLifecycle.CREATED, version: number = 1) {
     super(id, auditInfo, lifecycleState, version);
   }
 
@@ -141,36 +125,21 @@ class User extends AggregateRoot {
 
 ```typescript
 class User extends AggregateRoot {
-  constructor(
-    id?: EntityId,
-    auditInfo?: AuditInfo,
-    lifecycleState: EntityLifecycle = EntityLifecycle.CREATED,
-    version: number = 1,
-  ) {
+  constructor(id?: EntityId, auditInfo?: AuditInfo, lifecycleState: EntityLifecycle = EntityLifecycle.CREATED, version: number = 1) {
     super(id, auditInfo, lifecycleState, version);
   }
 
   // 使用业务操作管理器执行操作
-  async changeEmail(
-    newEmail: string,
-    operationManager: OperationManager,
-  ): Promise<void> {
-    const result = await operationManager.executeOperation(
-      "changeEmail",
-      this,
-      { newEmail },
-    );
-    
+  async changeEmail(newEmail: string, operationManager: OperationManager): Promise<void> {
+    const result = await operationManager.executeOperation("changeEmail", this, { newEmail });
+
     if (!result.success) {
       throw new Error(result.error?.message);
     }
   }
 
   // 必须实现协调方法
-  protected performCoordination(
-    operation: string,
-    params: unknown,
-  ): unknown {
+  protected performCoordination(operation: string, params: unknown): unknown {
     // 协调逻辑
     return { success: true };
   }
@@ -332,17 +301,7 @@ class EmailFormatRule implements BusinessRule<User> {
 
   validate(entity: User): BusinessRuleValidationResult {
     if (!entity.email.includes("@")) {
-      return BusinessRuleValidationResult.failure(
-        "User",
-        entity.id.value,
-        [
-          BusinessRuleViolation.error(
-            "无效的邮箱格式",
-            "INVALID_EMAIL",
-            this.name,
-          ),
-        ],
-      );
+      return BusinessRuleValidationResult.failure("User", entity.id.value, [BusinessRuleViolation.error("无效的邮箱格式", "INVALID_EMAIL", this.name)]);
     }
     return BusinessRuleValidationResult.success("User", entity.id.value);
   }
@@ -423,13 +382,13 @@ class OrderService {
   async createOrder(orderData: OrderData): Promise<Order> {
     // 调用用户服务
     const user = await userService.getUser(orderData.userId);
-    
+
     // 调用库存服务
     const available = await inventoryService.checkAvailability(orderData.items);
-    
+
     // 调用支付服务
     const payment = await paymentService.processPayment(orderData.payment);
-    
+
     // 创建订单
     return new Order(orderData);
   }
@@ -464,13 +423,7 @@ class CreateOrderCoordinationRule implements ICoordinationRule {
 const coordinationManager = new CoordinationManager();
 coordinationManager.registerRule(new CreateOrderCoordinationRule());
 
-const context = coordinationManager
-  .createContext("createOrder", orderData, [
-    "UserService",
-    "InventoryService",
-    "PaymentService",
-  ])
-  .build();
+const context = coordinationManager.createContext("createOrder", orderData, ["UserService", "InventoryService", "PaymentService"]).build();
 
 const results = await coordinationManager.executeCoordination(context);
 ```
@@ -483,12 +436,7 @@ const results = await coordinationManager.executeCoordination(context);
 
 ```typescript
 // 直接创建对象
-const user = new User(
-  new EntityId(),
-  AuditInfo.create(new EntityId()),
-  EntityLifecycle.CREATED,
-  1,
-);
+const user = new User(new EntityId(), AuditInfo.create(new EntityId()), EntityLifecycle.CREATED, 1);
 ```
 
 #### 增强版本
@@ -500,12 +448,7 @@ import { IFactory, IFactoryBuilder } from "@hl8/domain-kernel";
 class UserFactory implements IFactory<User> {
   create(config: UserFactoryConfig): User {
     // 复杂的创建逻辑
-    return new User(
-      config.id || new EntityId(),
-      config.auditInfo || AuditInfo.create(new EntityId()),
-      config.lifecycleState || EntityLifecycle.CREATED,
-      config.version || 1,
-    );
+    return new User(config.id || new EntityId(), config.auditInfo || AuditInfo.create(new EntityId()), config.lifecycleState || EntityLifecycle.CREATED, config.version || 1);
   }
 }
 
@@ -539,15 +482,8 @@ class Order extends AggregateRoot {
 import { OperationManager } from "@hl8/domain-kernel";
 
 class Order extends AggregateRoot {
-  async addItem(
-    item: OrderItem,
-    operationManager: OperationManager,
-  ): Promise<void> {
-    const result = await operationManager.executeOperation(
-      "addItem",
-      this,
-      { item },
-    );
+  async addItem(item: OrderItem, operationManager: OperationManager): Promise<void> {
+    const result = await operationManager.executeOperation("addItem", this, { item });
 
     if (!result.success) {
       throw result.error;
@@ -586,9 +522,7 @@ class Email extends ValueObject {
       .length(value, 1, 255, "邮箱长度必须在1-255之间");
 
     if (!validator.isValid()) {
-      throw new ValueObjectValidationFailedException(
-        validator.getAllErrors().join(", "),
-      );
+      throw new ValueObjectValidationFailedException(validator.getAllErrors().join(", "));
     }
   }
 }
@@ -603,9 +537,7 @@ class Email extends ValueObject {
 ```typescript
 // 手动查询
 function findActiveUsers(users: User[]): User[] {
-  return users.filter(
-    (user) => user.status === "active" && user.emailVerified,
-  );
+  return users.filter((user) => user.status === "active" && user.emailVerified);
 }
 ```
 
@@ -627,10 +559,7 @@ class EmailVerifiedSpecification implements ISpecification<User> {
 }
 
 // 组合规约
-const activeAndVerifiedSpec = new AndSpecification(
-  new ActiveUserSpecification(),
-  new EmailVerifiedSpecification(),
-);
+const activeAndVerifiedSpec = new AndSpecification(new ActiveUserSpecification(), new EmailVerifiedSpecification());
 
 // 使用规约查询
 function findActiveUsers(users: User[]): User[] {
@@ -692,11 +621,7 @@ await eventProcessor.processEvent(event);
 try {
   // 现有代码
 } catch (error) {
-  throw ExceptionHandler.toDomainException(
-    error,
-    "CUSTOM_ERROR",
-    { context: "value" },
-  );
+  throw ExceptionHandler.toDomainException(error, "CUSTOM_ERROR", { context: "value" });
 }
 ```
 
