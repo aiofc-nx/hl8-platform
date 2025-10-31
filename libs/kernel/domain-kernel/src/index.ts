@@ -20,7 +20,7 @@ export * from "./events/index.js";
 // 领域服务
 export * from "./services/index.js";
 
-// 异常处理
+// 异常处理（基础异常）
 export * from "./exceptions/index.js";
 
 // 审计
@@ -95,11 +95,146 @@ export type {
   UserPaginationPreferences,
 } from "./specifications/pagination-criteria.interface.js";
 
+// 业务规则验证框架
+export {
+  BusinessRuleSeverity as BusinessRuleSeverityLevel,
+  BusinessRuleSeverityUtils,
+  BusinessRuleSeverityInfoMap,
+} from "./business-rules/business-rule-severity.enum.js";
+export type { BusinessRuleSeverityInfo } from "./business-rules/business-rule-severity.enum.js";
+export { BusinessRuleManager as BusinessRuleManagerImpl } from "./business-rules/business-rule-manager.js";
+export * from "./business-rules/business-rule-composition.js";
+export {
+  BusinessRuleValidationContextBuilder,
+  BusinessRuleValidationContextManager,
+  ValidationMode,
+  ValidationPriority,
+} from "./business-rules/business-rule-validation-context.js";
+export type {
+  ValidationOptions as BusinessRuleValidationOptions,
+  ValidationResult,
+  ValidationStatistics,
+  IBusinessRuleValidationContext,
+} from "./business-rules/business-rule-validation-context.js";
+export * from "./business-rules/business-rule-execution-engine.js";
+
 // 增强异常处理
-export * from "./exceptions/repository-exceptions.js";
-export * from "./exceptions/factory-exceptions.js";
+export {
+  RepositoryException,
+  RepositoryOperationFailedException,
+  EntityNotFoundException,
+  EntityAlreadyExistsException,
+  RepositoryConnectionException,
+  RepositoryTransactionException,
+  RepositoryQueryException,
+  RepositoryConfigurationException,
+} from "./exceptions/repository-exceptions.js";
+export {
+  FactoryException,
+  FactoryCreationFailedException,
+  FactoryInvalidParametersException,
+  FactoryMissingDependencyException,
+  FactoryConfigurationException,
+  FactoryUnsupportedTypeException,
+  FactoryInitializationException,
+} from "./exceptions/factory-exceptions.js";
+export {
+  SpecificationException,
+  SpecificationEvaluationFailedException,
+  SpecificationCompositionException,
+  SpecificationValidationException,
+  SpecificationConfigurationException,
+  SpecificationUnsupportedTypeException,
+  SpecificationExecutionException,
+} from "./exceptions/specification-exceptions.js";
+export {
+  AggregateException,
+  AggregateOperationFailedException,
+  AggregateInvalidStateException,
+  AggregateBusinessRuleViolationException,
+  AggregateEventHandlingException,
+  AggregateReconstructionException,
+  AggregateVersionConflictException,
+  AggregateConcurrencyException,
+} from "./exceptions/aggregate-exceptions.js";
+export {
+  ServiceRegistryException,
+  ServiceRegistrationFailedException,
+  ServiceNotFoundException,
+  ServiceAlreadyExistsException,
+  ServiceMissingDependencyException,
+  ServiceCircularDependencyException,
+  ServiceConfigurationException,
+  ServiceLifecycleException,
+  ServiceValidationException,
+} from "./exceptions/service-registry-exceptions.js";
+export {
+  ValueObjectValidationException,
+  ValueObjectValidationFailedException,
+  ValueObjectRuleViolationException,
+  ValueObjectTypeMismatchException,
+  ValueObjectInvalidFormatException,
+  ValueObjectRangeException,
+  ValueObjectLengthException,
+  ValueObjectRequiredFieldMissingException,
+} from "./exceptions/value-object-validation-exceptions.js";
+export {
+  ModelVersionException,
+  ModelVersionIncompatibleException,
+  ModelVersionMigrationFailedException,
+  ModelVersionNotFoundException,
+  ModelVersionInvalidFormatException,
+  ModelVersionRollbackFailedException,
+  ModelVersionValidationFailedException,
+  ModelVersionConflictException,
+} from "./exceptions/model-version-exceptions.js";
+export * from "./exceptions/exception-context.interface.js";
 
 // 值对象验证增强
 export * from "./validation/value-object-validator.interface.js";
 export * from "./validation/value-object-validator.js";
 export * from "./validation/rules/value-object-validation-rules.js";
+
+// 领域服务管理
+export * from "./services/domain-service-registry.interface.js";
+export * from "./services/domain-service-registry.js";
+export type {
+  IServiceLocator,
+  ServiceMetadata,
+} from "./services/service-locator.interface.js";
+export { ServiceLifecycle as ServiceLocatorLifecycle } from "./services/service-locator.interface.js";
+export * from "./services/service-locator.js";
+export type {
+  IDependencyContainer,
+  DependencyMetadata,
+  DependencyGraph,
+  DependencyNode as DependencyContainerNode,
+  DependencyEdge as DependencyContainerEdge,
+} from "./services/dependency-container.interface.js";
+export {
+  DependencyLifecycle,
+  DependencyEdgeType,
+} from "./services/dependency-container.interface.js";
+export * from "./services/service-registration.interface.js";
+export { ServiceLifecycle } from "./services/service-lifecycle.enum.js";
+export type {
+  IServiceLifecycleManager,
+  ServiceInstanceStats,
+} from "./services/service-lifecycle.enum.js";
+export { DependencyValidator } from "./services/dependency-validation.js";
+export type {
+  DependencyGraphInfo,
+  DependencyNode as DependencyValidationNode,
+  DependencyEdge as DependencyValidationEdge,
+} from "./services/dependency-validation.js";
+
+// 领域服务协调
+export * from "./coordination/coordination-rule.interface.js";
+export * from "./coordination/coordination-context.interface.js";
+export * from "./coordination/coordination-result.interface.js";
+export * from "./coordination/coordination-manager.js";
+
+// 聚合根业务操作
+export * from "./operations/business-operation.interface.js";
+export * from "./operations/operation-handler.interface.js";
+export * from "./operations/operation-manager.js";

@@ -26,7 +26,6 @@ export abstract class BusinessRuleException extends DomainException {
     details?: Record<string, unknown>,
   ) {
     super(message, ExceptionType.BUSINESS_RULE, code, details);
-    this.name = "BusinessRuleException";
   }
 
   public abstract clone(): BusinessRuleException;
@@ -60,7 +59,6 @@ export class BusinessRuleViolationException extends BusinessRuleException {
       "BUSINESS_RULE_VIOLATION",
       { ruleName, entityType, entityId, ...details },
     );
-    this.name = "BusinessRuleViolationException";
   }
 
   public clone(): BusinessRuleViolationException {
@@ -102,7 +100,6 @@ export class BusinessRuleManagerException extends BusinessRuleException {
       "BUSINESS_RULE_MANAGER_ERROR",
       details,
     );
-    this.name = "BusinessRuleManagerException";
   }
 
   public clone(): BusinessRuleManagerException {
@@ -143,7 +140,6 @@ export class BusinessRuleFactoryException extends BusinessRuleException {
       "BUSINESS_RULE_FACTORY_ERROR",
       { ruleType, ...details },
     );
-    this.name = "BusinessRuleFactoryException";
   }
 
   public clone(): BusinessRuleFactoryException {
@@ -183,7 +179,6 @@ export class BusinessRuleValidationResultException extends BusinessRuleException
       "BUSINESS_RULE_VALIDATION_RESULT_ERROR",
       details,
     );
-    this.name = "BusinessRuleValidationResultException";
   }
 
   public clone(): BusinessRuleValidationResultException {
@@ -222,7 +217,6 @@ export class BusinessRuleViolationBuilderException extends BusinessRuleException
       "BUSINESS_RULE_VIOLATION_BUILDER_ERROR",
       details,
     );
-    this.name = "BusinessRuleViolationBuilderException";
   }
 
   public clone(): BusinessRuleViolationBuilderException {
