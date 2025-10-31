@@ -44,6 +44,13 @@ class NameSpecification implements ISpecification<TestEntity> {
     return `Name equals "${this.expectedName}"`;
   }
 
+  equals(other: ISpecification<TestEntity>): boolean {
+    return (
+      other instanceof NameSpecification &&
+      this.expectedName === other.expectedName
+    );
+  }
+
   toJSON(): Record<string, unknown> {
     return {
       type: "NameSpecification",
@@ -75,6 +82,12 @@ class ValueSpecification implements ISpecification<TestEntity> {
     return `Value >= ${this.minValue}`;
   }
 
+  equals(other: ISpecification<TestEntity>): boolean {
+    return (
+      other instanceof ValueSpecification && this.minValue === other.minValue
+    );
+  }
+
   toJSON(): Record<string, unknown> {
     return {
       type: "ValueSpecification",
@@ -102,6 +115,10 @@ class ActiveSpecification implements ISpecification<TestEntity> {
 
   getDescription(): string {
     return "Is active";
+  }
+
+  equals(other: ISpecification<TestEntity>): boolean {
+    return other instanceof ActiveSpecification;
   }
 
   toJSON(): Record<string, unknown> {

@@ -26,7 +26,6 @@ export abstract class ValidationException extends DomainException {
     details?: Record<string, unknown>,
   ) {
     super(message, ExceptionType.VALIDATION, code, details);
-    this.name = "ValidationException";
   }
 
   public clone(): ValidationException {
@@ -71,7 +70,6 @@ export class ValidationRuleException extends ValidationException {
       "VALIDATION_RULE_ERROR",
       { ruleName, ...details },
     );
-    this.name = "ValidationRuleException";
   }
 }
 
@@ -91,7 +89,6 @@ export class ValidationResultException extends ValidationException {
       "VALIDATION_RESULT_ERROR",
       details,
     );
-    this.name = "ValidationResultException";
   }
 }
 
@@ -116,7 +113,6 @@ export class ValueObjectValidationException extends ValidationException {
       "VALUE_OBJECT_VALIDATION_ERROR",
       { valueObjectType, ...details },
     );
-    this.name = "ValueObjectValidationException";
   }
 }
 
@@ -141,7 +137,6 @@ export class ValidationRuleFactoryException extends ValidationException {
       "VALIDATION_RULE_FACTORY_ERROR",
       { ruleType, ...details },
     );
-    this.name = "ValidationRuleFactoryException";
   }
 }
 
@@ -161,6 +156,5 @@ export class ValidationErrorBuilderException extends ValidationException {
       "VALIDATION_ERROR_BUILDER_ERROR",
       details,
     );
-    this.name = "ValidationErrorBuilderException";
   }
 }

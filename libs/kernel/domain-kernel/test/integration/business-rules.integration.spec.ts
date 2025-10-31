@@ -94,6 +94,13 @@ class MockBusinessRule {
       let emailValue = value;
       if (typeof value === "object" && value !== null && "email" in value) {
         emailValue = (value as any).email;
+      } else if (
+        typeof value === "object" &&
+        value !== null &&
+        "value" in value
+      ) {
+        // 支持 validateRule 方法传入的 { value: "..." } 格式
+        emailValue = (value as any).value;
       }
       if (typeof emailValue === "string" && !emailValue.includes("@")) {
         const violation = BusinessRuleViolation.error(
@@ -110,6 +117,13 @@ class MockBusinessRule {
       let passwordValue = value;
       if (typeof value === "object" && value !== null && "password" in value) {
         passwordValue = (value as any).password;
+      } else if (
+        typeof value === "object" &&
+        value !== null &&
+        "value" in value
+      ) {
+        // 支持 validateRule 方法传入的 { value: "..." } 格式
+        passwordValue = (value as any).value;
       }
       if (typeof passwordValue === "string" && passwordValue.length < 8) {
         const violation = BusinessRuleViolation.warning(
@@ -179,7 +193,7 @@ class MockBusinessRule {
 }
 
 describe("Business Rules Integration Tests", () => {
-  let manager: BusinessRuleManager;
+  let manager: BusinessRuleManager<any>;
   let factory: BusinessRuleFactory;
 
   beforeEach(() => {

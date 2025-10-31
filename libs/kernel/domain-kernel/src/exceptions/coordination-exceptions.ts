@@ -26,7 +26,6 @@ export abstract class CoordinationException extends DomainException {
     details?: Record<string, unknown>,
   ) {
     super(message, ExceptionType.COORDINATION, code, details);
-    this.name = "CoordinationException";
   }
 
   public abstract clone(): CoordinationException;
@@ -56,7 +55,6 @@ export class CoordinationRuleException extends CoordinationException {
       "COORDINATION_RULE_ERROR",
       { ruleName, ...details },
     );
-    this.name = "CoordinationRuleException";
   }
 
   public clone(): CoordinationRuleException {
@@ -96,7 +94,6 @@ export class CoordinationContextException extends CoordinationException {
       "COORDINATION_CONTEXT_ERROR",
       details,
     );
-    this.name = "CoordinationContextException";
   }
 
   public clone(): CoordinationContextException {
@@ -132,7 +129,6 @@ export class CoordinationResultException extends CoordinationException {
       "COORDINATION_RESULT_ERROR",
       details,
     );
-    this.name = "CoordinationResultException";
   }
 
   public clone(): CoordinationResultException {
@@ -168,7 +164,6 @@ export class CoordinationManagerException extends CoordinationException {
       "COORDINATION_MANAGER_ERROR",
       details,
     );
-    this.name = "CoordinationManagerException";
   }
 
   public clone(): CoordinationManagerException {
@@ -209,7 +204,6 @@ export class CoordinationRuleFactoryException extends CoordinationException {
       "COORDINATION_RULE_FACTORY_ERROR",
       { ruleType, ...details },
     );
-    this.name = "CoordinationRuleFactoryException";
   }
 
   public clone(): CoordinationRuleFactoryException {
@@ -254,7 +248,6 @@ export class CoordinationPatternException extends CoordinationException {
       "COORDINATION_PATTERN_ERROR",
       { patternName, ...details },
     );
-    this.name = "CoordinationPatternException";
   }
 
   public clone(): CoordinationPatternException {

@@ -1,1169 +1,686 @@
 /**
- * @fileoverview 业务规则管理器实现
- * @description 提供业务规则管理器的完整实现
+ * @fileoverview Business Rule Manager - 业务规则管理器
+ * @description 管理业务规则的注册、执行和验证
  */
 
-import type {
-  BusinessRuleManager as IBusinessRuleManager,
-  BusinessRuleValidationStats,
-  BusinessRuleConfiguration,
-  BusinessRuleConfigurationItem,
-  BusinessRuleManagerJSON,
-  BusinessRuleValidationStatsJSON,
-  BusinessRuleConfigurationJSON,
-  BusinessRuleConfigurationItemJSON,
-} from "./business-rule-manager.interface.js";
-import type {
-  BusinessRule,
-  BusinessRuleContext,
-} from "./business-rule.interface.js";
-import type { BusinessRuleValidationResult } from "./business-rule-validation-result.interface.js";
-import type { BusinessRuleViolation } from "./business-rule-violation.interface.js";
-import { BusinessRuleViolation as BusinessRuleViolationImpl } from "./business-rule-violation.js";
-import { BusinessRuleSeverity } from "./business-rule.interface.js";
-import { BusinessRuleManagerException } from "../exceptions/business-rule-exceptions.js";
-import { BusinessRuleValidationResult as BusinessRuleValidationResultImpl } from "./business-rule-validation-result.js";
+import { BusinessRule } from "./business-rule.interface.js";
+import { BusinessRuleValidationResult } from "./business-rule-validation-result.interface.js";
+import { BusinessRuleValidationResultImpl } from "./business-rule-validation-result.impl.js";
+import { BusinessRuleViolation } from "./business-rule-violation.interface.js";
+import { BusinessRuleSeverity as BusinessRuleSeverityEnum } from "./business-rule.interface.js";
+import { BusinessRuleSeverityUtils } from "./business-rule-severity.enum.js";
+import { Entity } from "../entities/base/entity.base.js";
 
 /**
- * 业务规则管理器实现类
- * @description 提供业务规则管理器的完整实现
+ * 业务规则管理器类
+ * @description 管理业务规则的注册、执行和验证
+ * @template T 实体类型
  */
-export class BusinessRuleManager implements IBusinessRuleManager {
-  private rules: Map<
-    string,
-    | BusinessRule
-    | {
-        name: string;
-        description: string;
-        priority: number;
-        enabled: boolean;
-        validate: (
-          entity: unknown,
-          context?: BusinessRuleContext,
-        ) => BusinessRuleValidationResult;
-      }
-  > = new Map();
-  private validationStats: BusinessRuleValidationStatsImpl =
-    new BusinessRuleValidationStatsImpl();
-
-  // 业务规则层级直接使用 BusinessRuleLevel，无需从验证模块转换
-  private globalConfig: {
-    enableValidation: boolean;
-    enableWarnings: boolean;
-    enableInfo: boolean;
-    maxViolations: number;
-    validationTimeout: number;
+export class BusinessRuleManager<T extends Entity> {
+  private rules: Map<string, BusinessRule<T>> = new Map();
+  private ruleGroups: Map<string, string[]> = new Map();
+  private ruleDependencies: Map<string, string[]> = new Map();
+  private ruleExecutionOrder: string[] = [];
+  private validationStats: {
+    totalValidations: number;
+    successfulValidations: number;
+    failedValidations: number;
+    warningValidations: number;
   } = {
-    enableValidation: true,
-    enableWarnings: true,
-    enableInfo: true,
-    maxViolations: 100,
-    validationTimeout: 5000,
+    totalValidations: 0,
+    successfulValidations: 0,
+    failedValidations: 0,
+    warningValidations: 0,
   };
 
   /**
    * 注册业务规则
    * @param rule 业务规则
-   * @returns 是否注册成功
    */
-  public registerRule(
-    rule:
-      | BusinessRule
-      | {
-          name: string;
-          description: string;
-          priority: number;
-          enabled: boolean;
-          validate: (
-            entity: unknown,
-            context?: BusinessRuleContext,
-          ) => BusinessRuleValidationResult;
-        },
-  ): boolean {
-    try {
-      if (this.rules.has(rule.name)) {
-        throw new Error(`Rule with name '${rule.name}' already exists`);
-      }
-
-      this.rules.set(rule.name, rule);
-      return true;
-    } catch (error) {
-      throw new BusinessRuleManagerException(
-        `Failed to register rule '${rule.name}': ${error instanceof Error ? error.message : String(error)}`,
-        { ruleName: rule.name, originalError: error },
-      );
-    }
+  registerRule(rule: BusinessRule<T>): boolean {
+    this.rules.set(rule.name, rule);
+    this.updateExecutionOrder();
+    return true;
   }
 
   /**
    * 注销业务规则
-   * @param ruleName 规则名称
-   * @returns 是否注销成功
+   * @param ruleId 规则ID
    */
-  public unregisterRule(ruleName: string): boolean {
-    try {
-      if (!this.rules.has(ruleName)) {
-        return false;
-      }
-
-      this.rules.delete(ruleName);
-      return true;
-    } catch (error) {
-      throw new BusinessRuleManagerException(
-        `Failed to unregister rule '${ruleName}': ${error instanceof Error ? error.message : String(error)}`,
-        { ruleName, originalError: error },
-      );
-    }
+  unregisterRule(ruleName: string): void {
+    this.rules.delete(ruleName);
+    this.updateExecutionOrder();
   }
 
   /**
    * 获取业务规则
-   * @param ruleName 规则名称
+   * @param ruleId 规则ID
    * @returns 业务规则或undefined
    */
-  public getRule(ruleName: string):
-    | (
-        | BusinessRule
-        | {
-            name: string;
-            description: string;
-            priority: number;
-            enabled: boolean;
-            validate: (
-              entity: unknown,
-              context?: BusinessRuleContext,
-            ) => BusinessRuleValidationResult;
-          }
-      )
-    | undefined {
+  getRule(ruleName: string): BusinessRule<T> | undefined {
     return this.rules.get(ruleName);
   }
 
   /**
    * 获取所有业务规则
-   * @returns 所有业务规则列表
+   * @returns 业务规则列表
    */
-  public getAllRules(): Array<
-    | BusinessRule
-    | {
-        name: string;
-        description: string;
-        priority: number;
-        enabled: boolean;
-        validate: (
-          entity: unknown,
-          context?: BusinessRuleContext,
-        ) => BusinessRuleValidationResult;
-      }
-  > {
+  getAllRules(): BusinessRule<T>[] {
     return Array.from(this.rules.values());
   }
 
   /**
-   * 获取启用的业务规则
-   * @returns 启用的业务规则列表
+   * 创建规则组
+   * @param groupName 组名称
+   * @param ruleIds 规则ID列表
    */
-  public getEnabledRules(): Array<
-    | BusinessRule
-    | {
-        name: string;
-        description: string;
-        priority: number;
-        enabled: boolean;
-        validate: (
-          entity: unknown,
-          context?: BusinessRuleContext,
-        ) => BusinessRuleValidationResult;
-      }
-  > {
-    return Array.from(this.rules.values()).filter((rule) => rule.enabled);
+  createRuleGroup(groupName: string, ruleIds: string[]): void {
+    this.ruleGroups.set(groupName, ruleIds);
   }
 
   /**
-   * 获取禁用的业务规则
-   * @returns 禁用的业务规则列表
+   * 添加规则依赖
+   * @param ruleId 规则ID
+   * @param dependencyRuleIds 依赖的规则ID列表
    */
-  public getDisabledRules(): Array<
-    | BusinessRule
-    | {
-        name: string;
-        description: string;
-        priority: number;
-        enabled: boolean;
-        validate: (
-          entity: unknown,
-          context?: BusinessRuleContext,
-        ) => BusinessRuleValidationResult;
-      }
-  > {
-    return Array.from(this.rules.values()).filter((rule) => !rule.enabled);
+  addRuleDependencies(ruleId: string, dependencyRuleIds: string[]): void {
+    this.ruleDependencies.set(ruleId, dependencyRuleIds);
   }
 
   /**
-   * 获取指定类型的业务规则
-   * @param ruleType 规则类型
-   * @returns 指定类型的业务规则列表
+   * 验证实体
+   * @param entity 实体
+   * @param ruleIdsOrContext 要验证的规则ID列表或上下文，如果未提供则验证所有规则
+   * @returns 验证结果
    */
-  public getRulesByType(ruleType: string): Array<
-    | BusinessRule
-    | {
-        name: string;
-        description: string;
-        priority: number;
-        enabled: boolean;
-        validate: (
-          entity: unknown,
-          context?: BusinessRuleContext,
-        ) => BusinessRuleValidationResult;
+  validateEntity(
+    entity: T,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ruleIdsOrContext?: string[] | any,
+  ): BusinessRuleValidationResult {
+    const startTime = Date.now();
+    const violations: BusinessRuleViolation[] = [];
+    const warnings: BusinessRuleViolation[] = [];
+    const info: BusinessRuleViolation[] = [];
+    const executedRules: string[] = [];
+    const skippedRules: string[] = [];
+
+    const rulesToExecute =
+      ruleIdsOrContext && Array.isArray(ruleIdsOrContext)
+        ? (ruleIdsOrContext
+            .map((id) => this.rules.get(id))
+            .filter((rule) => rule !== undefined) as BusinessRule<T>[])
+        : this.getAllRules();
+
+    for (const rule of rulesToExecute) {
+      try {
+        if (this.shouldExecuteRule(rule, executedRules)) {
+          const ruleResult = rule.validate(entity);
+          violations.push(...ruleResult.violations);
+          warnings.push(...ruleResult.warnings);
+          info.push(...ruleResult.info);
+          executedRules.push(rule.name);
+        } else {
+          skippedRules.push(rule.name);
+        }
+      } catch (error) {
+        // 创建错误违规
+        const errorViolation = {
+          message: `Rule execution failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+          code: "RULE_EXECUTION_ERROR",
+          ruleName: rule.name,
+          severity: BusinessRuleSeverityEnum.ERROR,
+          entityId: entity?.id?.toString() || "unknown",
+          timestamp: new Date(),
+          details: {
+            error: error instanceof Error ? error.stack : String(error),
+          },
+        } as unknown as BusinessRuleViolation;
+        violations.push(errorViolation);
+        executedRules.push(rule.name);
       }
-  > {
+    }
+
+    const endTime = Date.now();
+    const _mostSevereViolation = this.getMostSevereViolation(violations);
+
+    const isValid = violations.length === 0;
+    const result = new BusinessRuleValidationResultImpl(
+      isValid,
+      entity?.constructor?.name || "Unknown",
+      entity?.id?.toString() || "unknown",
+      violations,
+      warnings,
+      info,
+      endTime - startTime,
+      executedRules.length,
+      1,
+      {
+        startTime,
+        endTime,
+        validatedEntities: [entity?.id?.toString() || "unknown"],
+        executedRules,
+        operationType: "VALIDATION",
+      },
+    );
+
+    // 更新统计信息
+    this.validationStats.totalValidations++;
+    if (isValid) {
+      this.validationStats.successfulValidations++;
+    } else {
+      this.validationStats.failedValidations++;
+    }
+    if (warnings.length > 0) {
+      this.validationStats.warningValidations++;
+    }
+
+    return result;
+  }
+
+  /**
+   * 验证规则组
+   * @param entity 实体
+   * @param groupName 组名称
+   * @returns 验证结果
+   */
+  validateRuleGroup(
+    entity: T,
+    groupName: string,
+  ): BusinessRuleValidationResult {
+    const ruleIds = this.ruleGroups.get(groupName);
+    if (!ruleIds) {
+      throw new Error(`Rule group '${groupName}' not found`);
+    }
+    return this.validateEntity(entity, ruleIds);
+  }
+
+  /**
+   * 检查规则是否应该执行
+   * @param rule 规则
+   * @param executedRules 已执行的规则列表
+   * @returns 是否应该执行
+   */
+  private shouldExecuteRule(
+    rule: BusinessRule<T>,
+    executedRules: string[],
+  ): boolean {
+    const dependencies = this.ruleDependencies.get(rule.name);
+    if (!dependencies) {
+      return true;
+    }
+    return dependencies.every((depId) => executedRules.includes(depId));
+  }
+
+  /**
+   * 更新规则执行顺序
+   */
+  private updateExecutionOrder(): void {
+    const visited = new Set<string>();
+    const visiting = new Set<string>();
+    const order: string[] = [];
+
+    const visit = (ruleId: string): void => {
+      if (visiting.has(ruleId)) {
+        throw new Error(
+          `Circular dependency detected involving rule: ${ruleId}`,
+        );
+      }
+      if (visited.has(ruleId)) {
+        return;
+      }
+
+      visiting.add(ruleId);
+      const dependencies = this.ruleDependencies.get(ruleId) || [];
+      for (const depId of dependencies) {
+        if (this.rules.has(depId)) {
+          visit(depId);
+        }
+      }
+      visiting.delete(ruleId);
+      visited.add(ruleId);
+      order.push(ruleId);
+    };
+
+    for (const ruleId of this.rules.keys()) {
+      if (!visited.has(ruleId)) {
+        visit(ruleId);
+      }
+    }
+
+    this.ruleExecutionOrder = order;
+  }
+
+  /**
+   * 获取最严重的违规
+   * @param violations 违规列表
+   * @returns 最严重的违规或undefined
+   */
+  private getMostSevereViolation(
+    violations: BusinessRuleViolation[],
+  ): BusinessRuleViolation | undefined {
+    if (violations.length === 0) {
+      return undefined;
+    }
+
+    return violations.reduce((mostSevere, current) => {
+      const currentSeverity = BusinessRuleSeverityUtils.compare(
+        current.severity,
+        mostSevere.severity,
+      );
+      return currentSeverity > 0 ? current : mostSevere;
+    });
+  }
+
+  /**
+   * 创建验证摘要
+   * @param violations 违规列表
+   * @param executedRules 已执行的规则列表
+   * @param skippedRules 跳过的规则列表
+   * @returns 验证摘要
+   */
+  private createValidationSummary(
+    violations: BusinessRuleViolation[],
+    executedRules: string[],
+    skippedRules: string[],
+  ): Record<string, unknown> {
+    const severityCounts = violations.reduce(
+      (counts, violation) => {
+        counts[violation.severity] = (counts[violation.severity] || 0) + 1;
+        return counts;
+      },
+      {} as Record<string, number>,
+    );
+
+    return {
+      totalViolations: violations.length,
+      totalRulesExecuted: executedRules.length,
+      totalRulesSkipped: skippedRules.length,
+      severityCounts,
+      hasBlockingViolations: violations.some((v) =>
+        BusinessRuleSeverityUtils.blocksOperation(
+          v.severity as BusinessRuleSeverityEnum,
+        ),
+      ),
+      hasImmediateActionRequired: violations.some((v) =>
+        BusinessRuleSeverityUtils.requiresImmediateAction(
+          v.severity as BusinessRuleSeverityEnum,
+        ),
+      ),
+    };
+  }
+
+  /**
+   * 检查规则是否存在
+   * @param ruleName 规则名称
+   * @returns 是否存在
+   */
+  hasRule(ruleName: string): boolean {
+    return this.rules.has(ruleName);
+  }
+
+  /**
+   * 启用规则
+   * @param ruleName 规则名称
+   * @returns 是否成功启用
+   */
+  enableRule(ruleName: string): boolean {
+    const rule = this.rules.get(ruleName);
+    if (rule) {
+      rule.enable();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * 禁用规则
+   * @param ruleName 规则名称
+   * @returns 是否成功禁用
+   */
+  disableRule(ruleName: string): boolean {
+    const rule = this.rules.get(ruleName);
+    if (rule) {
+      rule.disable();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * 检查规则是否启用
+   * @param ruleName 规则名称
+   * @returns 是否启用
+   */
+  isRuleEnabled(ruleName: string): boolean {
+    const rule = this.rules.get(ruleName);
+    return rule ? rule.enabled : false;
+  }
+
+  /**
+   * 获取规则数量
+   * @returns 规则数量
+   */
+  getRuleCount(): number {
+    return this.rules.size;
+  }
+
+  /**
+   * 获取启用的规则数量
+   * @returns 启用的规则数量
+   */
+  getEnabledRuleCount(): number {
+    return Array.from(this.rules.values()).filter((rule) => rule.enabled)
+      .length;
+  }
+
+  /**
+   * 获取禁用的规则数量
+   * @returns 禁用的规则数量
+   */
+  getDisabledRuleCount(): number {
+    return Array.from(this.rules.values()).filter((rule) => !rule.enabled)
+      .length;
+  }
+
+  /**
+   * 按类型获取规则
+   * @param type 规则类型
+   * @returns 规则列表
+   */
+  getRulesByType(type: string): BusinessRule<T>[] {
     return Array.from(this.rules.values()).filter(
       (rule) =>
-        (rule as BusinessRule & { ruleType?: string }).ruleType === ruleType,
+        rule.type === type ||
+        (rule as unknown as { ruleType?: string }).ruleType === type,
     );
   }
 
   /**
-   * 获取指定优先级的业务规则
+   * 按优先级获取规则
    * @param priority 优先级
-   * @returns 指定优先级的业务规则列表
+   * @returns 规则列表
    */
-  public getRulesByPriority(priority: number): Array<
-    | BusinessRule
-    | {
-        name: string;
-        description: string;
-        priority: number;
-        enabled: boolean;
-        validate: (
-          entity: unknown,
-          context?: BusinessRuleContext,
-        ) => BusinessRuleValidationResult;
-      }
-  > {
+  getRulesByPriority(priority: number): BusinessRule<T>[] {
     return Array.from(this.rules.values()).filter(
       (rule) => rule.priority === priority,
     );
   }
 
   /**
-   * 获取指定严重程度的业务规则
-   * @param severity 严重程度
-   * @returns 指定严重程度的业务规则列表
+   * 清空所有规则
+   * @returns 清空的规则数量
    */
-  public getRulesBySeverity(severity: string): Array<
-    | BusinessRule
-    | {
-        name: string;
-        description: string;
-        priority: number;
-        enabled: boolean;
-        validate: (
-          entity: unknown,
-          context?: BusinessRuleContext,
-        ) => BusinessRuleValidationResult;
-      }
-  > {
-    return Array.from(this.rules.values()).filter(
-      (rule) =>
-        (rule as BusinessRule & { severity?: string }).severity === severity,
-    );
-  }
-
-  /**
-   * 启用业务规则
-   * @param ruleName 规则名称
-   * @returns 是否启用成功
-   */
-  public enableRule(ruleName: string): boolean {
-    const rule = this.rules.get(ruleName);
-    if (!rule) {
-      return false;
-    }
-
-    if (rule.enabled) {
-      return true; // 已经启用
-    }
-
-    // 检查规则是否有 enable 方法
-    if ("enable" in rule && typeof rule.enable === "function") {
-      rule.enable();
-      // this.emitRuleStateChanged(ruleName, true);
-      return true;
-    }
-
-    return false; // 规则不支持动态启用
-  }
-
-  /**
-   * 禁用业务规则
-   * @param ruleName 规则名称
-   * @returns 是否禁用成功
-   */
-  public disableRule(ruleName: string): boolean {
-    const rule = this.rules.get(ruleName);
-    if (!rule) {
-      return false;
-    }
-
-    if (!rule.enabled) {
-      return true; // 已经禁用
-    }
-
-    // 检查规则是否有 disable 方法
-    if ("disable" in rule && typeof rule.disable === "function") {
-      rule.disable();
-      // this.emitRuleStateChanged(ruleName, false);
-      return true;
-    }
-
-    return false; // 规则不支持动态禁用
-  }
-
-  /**
-   * 检查业务规则是否存在
-   * @param ruleName 规则名称
-   * @returns 是否存在
-   */
-  public hasRule(ruleName: string): boolean {
-    return this.rules.has(ruleName);
-  }
-
-  /**
-   * 检查业务规则是否启用
-   * @param ruleName 规则名称
-   * @returns 是否启用
-   */
-  public isRuleEnabled(ruleName: string): boolean {
-    const rule = this.rules.get(ruleName);
-    return rule ? rule.enabled : false;
-  }
-
-  /**
-   * 获取业务规则数量
-   * @returns 业务规则数量
-   */
-  public getRuleCount(): number {
-    return this.rules.size;
-  }
-
-  /**
-   * 获取启用的业务规则数量
-   * @returns 启用的业务规则数量
-   */
-  public getEnabledRuleCount(): number {
-    return this.getEnabledRules().length;
-  }
-
-  /**
-   * 获取禁用的业务规则数量
-   * @returns 禁用的业务规则数量
-   */
-  public getDisabledRuleCount(): number {
-    return this.getDisabledRules().length;
-  }
-
-  /**
-   * 清空所有业务规则
-   * @returns 清空的业务规则数量
-   */
-  public clearRules(): number {
+  clearRules(): number {
     const count = this.rules.size;
     this.rules.clear();
+    this.ruleGroups.clear();
+    this.ruleDependencies.clear();
+    this.ruleExecutionOrder = [];
     return count;
   }
 
   /**
-   * 验证实体
-   * @param entity 要验证的实体
-   * @param context 验证上下文
-   * @returns 验证结果
-   */
-  public validateEntity(
-    entity: unknown,
-    context?: BusinessRuleContext,
-  ): BusinessRuleValidationResult {
-    const startTime = Date.now();
-
-    try {
-      if (!this.globalConfig.enableValidation) {
-        return BusinessRuleValidationResultImpl.success(
-          context?.entityType ?? "Unknown",
-          context?.entityId ?? "Unknown",
-          { executionTime: 0, rulesExecuted: 0, entitiesValidated: 1 },
-        );
-      }
-
-      const enabledRules = this.getEnabledRules();
-      const violations: BusinessRuleViolation[] = [];
-      const warnings: BusinessRuleViolation[] = [];
-      const info: BusinessRuleViolation[] = [];
-
-      for (const rule of enabledRules) {
-        try {
-          console.log(`Validating with rule: ${rule.name}`);
-          const result = rule.validate(entity, context);
-
-          // 收集违规（无论验证是否成功）
-          for (const violation of result.violations) {
-            if (
-              violation.severity === BusinessRuleSeverity.ERROR ||
-              violation.severity === BusinessRuleSeverity.CRITICAL
-            ) {
-              violations.push(violation);
-            } else if (violation.severity === BusinessRuleSeverity.WARNING) {
-              warnings.push(violation);
-            } else if (violation.severity === BusinessRuleSeverity.INFO) {
-              info.push(violation);
-            }
-          }
-
-          // 收集警告和信息（无论验证是否成功）
-          for (const warning of result.warnings) {
-            warnings.push(warning);
-          }
-          for (const infoItem of result.info) {
-            info.push(infoItem);
-          }
-        } catch (error) {
-          // 规则执行失败，记录为错误
-          violations.push(
-            new BusinessRuleViolationImpl({
-              message: `Rule execution failed: ${error instanceof Error ? error.message : String(error)}`,
-              code: "RULE_EXECUTION_ERROR",
-              ruleName: rule.name,
-              severity: BusinessRuleSeverity.ERROR,
-              timestamp: new Date(),
-              details: { originalError: error },
-            }),
-          );
-        }
-      }
-
-      const executionTime = Date.now() - startTime;
-      const isValid = violations.length === 0;
-
-      const result = isValid
-        ? BusinessRuleValidationResultImpl.success(
-            context?.entityType ?? "Unknown",
-            context?.entityId ?? "Unknown",
-            {
-              executionTime,
-              rulesExecuted: enabledRules.length,
-              entitiesValidated: 1,
-            },
-          )
-        : BusinessRuleValidationResultImpl.failure(
-            context?.entityType ?? "Unknown",
-            context?.entityId ?? "Unknown",
-            violations,
-            {
-              warnings,
-              info,
-              executionTime,
-              rulesExecuted: enabledRules.length,
-              entitiesValidated: 1,
-            },
-          );
-
-      // 更新统计信息
-      this.validationStats.updateStats(result, executionTime);
-
-      return result;
-    } catch (error) {
-      const executionTime = Date.now() - startTime;
-      throw new BusinessRuleManagerException(
-        `Entity validation failed: ${error instanceof Error ? error.message : String(error)}`,
-        { originalError: error, executionTime },
-      );
-    }
-  }
-
-  /**
    * 验证实体属性
-   * @param entity 要验证的实体
-   * @param propertyName 属性名称
-   * @param context 验证上下文
+   * @param entity 实体
+   * @param property 属性名
+   * @param context 上下文
    * @returns 验证结果
    */
-  public validateEntityProperty(
-    entity: unknown,
-    propertyName: string,
-    context?: BusinessRuleContext,
+  validateEntityProperty(
+    entity: T,
+    property: string,
+    context?: unknown,
   ): BusinessRuleValidationResult {
-    const propertyContext: BusinessRuleContext = {
-      ...context,
-      fieldName: propertyName,
-      entityType: context?.entityType ?? "Unknown",
-      entityId: context?.entityId ?? "Unknown",
-    };
-
-    return this.validateEntity(entity, propertyContext);
+    // 简化实现，实际应该根据属性过滤规则
+    return this.validateEntity(entity, context);
   }
 
   /**
    * 验证实体集合
-   * @param entities 要验证的实体集合
-   * @param context 验证上下文
+   * @param entities 实体集合
+   * @param context 上下文
    * @returns 验证结果
    */
-  public validateEntityCollection(
-    entities: unknown[],
-    context?: BusinessRuleContext,
+  validateEntityCollection(
+    entities: T[],
+    context?: unknown,
   ): BusinessRuleValidationResult {
-    const startTime = Date.now();
+    const allViolations: BusinessRuleViolation[] = [];
+    let totalExecutionTime = 0;
+    let totalRulesExecuted = 0;
 
-    try {
-      if (!this.globalConfig.enableValidation) {
-        return BusinessRuleValidationResultImpl.success(
-          context?.entityType ?? "Collection",
-          context?.entityId ?? "Unknown",
-          {
-            executionTime: 0,
-            rulesExecuted: 0,
-            entitiesValidated: entities.length,
-          },
-        );
-      }
-
-      const allViolations: BusinessRuleViolation[] = [];
-      const allWarnings: BusinessRuleViolation[] = [];
-      const allInfo: BusinessRuleViolation[] = [];
-      let totalRulesExecuted = 0;
-
-      for (let i = 0; i < entities.length; i++) {
-        const entity = entities[i];
-        const entityContext: BusinessRuleContext = {
-          ...context,
-          entityType: context?.entityType ?? "Unknown",
-          entityId: context?.entityId ?? `Entity_${i}`,
-        };
-
-        const result = this.validateEntity(entity, entityContext);
-        totalRulesExecuted += result.rulesExecuted;
-
-        allViolations.push(...result.violations);
-        allWarnings.push(...result.warnings);
-        allInfo.push(...result.info);
-      }
-
-      const executionTime = Date.now() - startTime;
-      const isValid = allViolations.length === 0;
-
-      const result = isValid
-        ? BusinessRuleValidationResultImpl.success(
-            context?.entityType ?? "Collection",
-            context?.entityId ?? "Unknown",
-            {
-              executionTime,
-              rulesExecuted: totalRulesExecuted,
-              entitiesValidated: entities.length,
-            },
-          )
-        : BusinessRuleValidationResultImpl.failure(
-            context?.entityType ?? "Collection",
-            context?.entityId ?? "Unknown",
-            allViolations,
-            {
-              warnings: allWarnings,
-              info: allInfo,
-              executionTime,
-              rulesExecuted: totalRulesExecuted,
-              entitiesValidated: entities.length,
-            },
-          );
-
-      // 更新统计信息
-      this.validationStats.updateStats(result, executionTime);
-
-      return result;
-    } catch (error) {
-      const executionTime = Date.now() - startTime;
-      throw new BusinessRuleManagerException(
-        `Entity collection validation failed: ${error instanceof Error ? error.message : String(error)}`,
-        { originalError: error, executionTime },
-      );
+    for (const entity of entities) {
+      const result = this.validateEntity(entity, context);
+      allViolations.push(...result.violations);
+      totalExecutionTime += result.executionTime;
+      totalRulesExecuted += result.rulesExecuted;
     }
+
+    return new BusinessRuleValidationResultImpl(
+      allViolations.length === 0,
+      entities[0]?.constructor.name || "Unknown",
+      "collection",
+      allViolations,
+      [],
+      [],
+      totalExecutionTime,
+      totalRulesExecuted,
+      entities.length,
+      {
+        startTime: Date.now(),
+        endTime: Date.now(),
+        validatedEntities: entities.map((e) => e?.id?.toString() || "unknown"),
+        executedRules: [],
+        operationType: "COLLECTION_VALIDATION",
+      },
+    );
   }
 
   /**
    * 验证指定规则
    * @param ruleName 规则名称
-   * @param value 要验证的值
-   * @param context 验证上下文
+   * @param value 值
+   * @param context 上下文
    * @returns 验证结果
    */
-  public validateRule(
+  validateRule(
     ruleName: string,
     value: unknown,
-    context?: BusinessRuleContext,
+    context?: unknown,
   ): BusinessRuleValidationResult {
-    const startTime = Date.now();
-
-    try {
-      const rule = this.rules.get(ruleName);
-      if (!rule) {
-        throw new Error(`Rule '${ruleName}' not found`);
-      }
-
-      if (!rule.enabled) {
-        return BusinessRuleValidationResultImpl.success(
-          context?.entityType ?? "Unknown",
-          context?.entityId ?? "Unknown",
-          { executionTime: 0, rulesExecuted: 0, entitiesValidated: 1 },
-        );
-      }
-
-      const result = rule.validate(value, context);
-      const executionTime = Date.now() - startTime;
-
-      // 更新统计信息
-      this.validationStats.updateStats(result, executionTime);
-
-      return result;
-    } catch (error) {
-      const executionTime = Date.now() - startTime;
-      throw new BusinessRuleManagerException(
-        `Rule validation failed for '${ruleName}': ${error instanceof Error ? error.message : String(error)}`,
-        { ruleName, originalError: error, executionTime },
-      );
+    const rule = this.rules.get(ruleName);
+    if (!rule) {
+      throw new Error(`Rule '${ruleName}' not found`);
     }
+
+    // 创建一个临时实体，将 value 作为实体内容
+    // 如果 value 是字符串，尝试将其作为实体属性
+    const tempEntity = (
+      typeof value === "string"
+        ? { value, id: { toString: () => "temp" } }
+        : value
+    ) as T;
+    return rule.validate(tempEntity, context);
   }
 
   /**
    * 验证指定规则集合
-   * @param ruleNames 规则名称集合
-   * @param value 要验证的值
-   * @param context 验证上下文
+   * @param ruleNames 规则名称列表
+   * @param value 值
+   * @param context 上下文
    * @returns 验证结果
    */
-  public validateRules(
+  validateRules(
     ruleNames: string[],
     value: unknown,
-    context?: BusinessRuleContext,
+    context?: unknown,
   ): BusinessRuleValidationResult {
-    const startTime = Date.now();
-
-    try {
-      const violations: BusinessRuleViolation[] = [];
-      const warnings: BusinessRuleViolation[] = [];
-      const info: BusinessRuleViolation[] = [];
-      let rulesExecuted = 0;
-
-      for (const ruleName of ruleNames) {
-        const rule = this.rules.get(ruleName);
-        if (!rule || !rule.enabled) {
-          continue;
-        }
-
-        try {
-          const result = rule.validate(value, context);
-          rulesExecuted++;
-
-          // 收集违规（无论验证是否成功）
-          for (const violation of result.violations) {
-            if (
-              violation.severity === BusinessRuleSeverity.ERROR ||
-              violation.severity === BusinessRuleSeverity.CRITICAL
-            ) {
-              violations.push(violation);
-            } else if (violation.severity === BusinessRuleSeverity.WARNING) {
-              warnings.push(violation);
-            } else if (violation.severity === BusinessRuleSeverity.INFO) {
-              info.push(violation);
-            }
-          }
-
-          // 收集警告和信息（无论验证是否成功）
-          for (const warning of result.warnings) {
-            warnings.push(warning);
-          }
-          for (const infoItem of result.info) {
-            info.push(infoItem);
-          }
-        } catch (error) {
-          // 规则执行失败，记录为错误
-          violations.push(
-            new BusinessRuleViolationImpl({
-              message: `Rule execution failed: ${error instanceof Error ? error.message : String(error)}`,
-              code: "RULE_EXECUTION_ERROR",
-              ruleName: rule.name,
-              severity: BusinessRuleSeverity.ERROR,
-              timestamp: new Date(),
-              details: { originalError: error },
-            }),
-          );
-        }
-      }
-
-      const executionTime = Date.now() - startTime;
-      const isValid = violations.length === 0;
-
-      const result = isValid
-        ? BusinessRuleValidationResultImpl.success(
-            context?.entityType ?? "Unknown",
-            context?.entityId ?? "Unknown",
-            { executionTime, rulesExecuted, entitiesValidated: 1 },
-          )
-        : BusinessRuleValidationResultImpl.failure(
-            context?.entityType ?? "Unknown",
-            context?.entityId ?? "Unknown",
-            violations,
-            {
-              warnings,
-              info,
-              executionTime,
-              rulesExecuted,
-              entitiesValidated: 1,
-            },
-          );
-
-      // 更新统计信息
-      this.validationStats.updateStats(result, executionTime);
-
-      return result;
-    } catch (error) {
-      const executionTime = Date.now() - startTime;
-      throw new BusinessRuleManagerException(
-        `Rules validation failed: ${error instanceof Error ? error.message : String(error)}`,
-        { ruleNames, originalError: error, executionTime },
-      );
+    const rules = ruleNames
+      .map((name) => this.rules.get(name))
+      .filter((rule) => rule !== undefined) as BusinessRule<T>[];
+    if (rules.length === 0) {
+      throw new Error("No valid rules found");
     }
+
+    // 创建一个临时实体，将 value 作为实体内容
+    const tempEntity = (
+      typeof value === "string"
+        ? { value, id: { toString: () => "temp" } }
+        : value
+    ) as T;
+    const allViolations: BusinessRuleViolation[] = [];
+    const allWarnings: BusinessRuleViolation[] = [];
+    const allInfo: BusinessRuleViolation[] = [];
+    let totalExecutionTime = 0;
+
+    for (const rule of rules) {
+      const result = rule.validate(tempEntity, context);
+      allViolations.push(...result.violations);
+      allWarnings.push(...result.warnings);
+      allInfo.push(...result.info);
+      totalExecutionTime += result.executionTime;
+    }
+
+    return new BusinessRuleValidationResultImpl(
+      allViolations.length === 0,
+      "Unknown",
+      "temp",
+      allViolations,
+      allWarnings,
+      allInfo,
+      totalExecutionTime,
+      rules.length,
+      1,
+      {
+        startTime: Date.now(),
+        endTime: Date.now(),
+        validatedEntities: ["temp"],
+        executedRules: ruleNames,
+        operationType: "RULES_VALIDATION",
+      },
+    );
   }
 
   /**
    * 验证所有规则
-   * @param value 要验证的值
-   * @param context 验证上下文
+   * @param value 值
+   * @param context 上下文
    * @returns 验证结果
    */
-  public validateAllRules(
+  validateAllRules(
     value: unknown,
-    context?: BusinessRuleContext,
+    context?: unknown,
   ): BusinessRuleValidationResult {
-    const enabledRules = this.getEnabledRules();
-    const ruleNames = enabledRules.map((rule) => rule.name);
-    return this.validateRules(ruleNames, value, context);
+    // 创建一个临时实体，将 value 作为实体内容
+    const tempEntity = (
+      typeof value === "string"
+        ? { value, id: { toString: () => "temp" } }
+        : value
+    ) as T;
+    return this.validateEntity(tempEntity, context);
   }
 
   /**
-   * 验证指定类型的规则
-   * @param ruleType 规则类型
-   * @param value 要验证的值
-   * @param context 验证上下文
-   * @returns 验证结果
+   * 获取规则统计信息
+   * @returns 规则统计信息
    */
-  public validateRulesByType(
-    ruleType: string,
-    value: unknown,
-    context?: BusinessRuleContext,
-  ): BusinessRuleValidationResult {
-    const rules = this.getRulesByType(ruleType);
-    const ruleNames = rules.map((rule) => rule.name);
-    return this.validateRules(ruleNames, value, context);
-  }
+  getRuleStatistics(): Record<string, unknown> {
+    const rules = this.getAllRules();
+    const severityCounts = rules.reduce(
+      (counts, rule) => {
+        const severity = rule.severity as string;
+        counts[severity] = (counts[severity] || 0) + 1;
+        return counts;
+      },
+      {} as Record<string, number>,
+    );
 
-  /**
-   * 验证指定优先级的规则
-   * @param priority 优先级
-   * @param value 要验证的值
-   * @param context 验证上下文
-   * @returns 验证结果
-   */
-  public validateRulesByPriority(
-    priority: number,
-    value: unknown,
-    context?: BusinessRuleContext,
-  ): BusinessRuleValidationResult {
-    const rules = this.getRulesByPriority(priority);
-    const ruleNames = rules.map((rule) => rule.name);
-    return this.validateRules(ruleNames, value, context);
-  }
-
-  /**
-   * 验证指定严重程度的规则
-   * @param severity 严重程度
-   * @param value 要验证的值
-   * @param context 验证上下文
-   * @returns 验证结果
-   */
-  public validateRulesBySeverity(
-    severity: string,
-    value: unknown,
-    context?: BusinessRuleContext,
-  ): BusinessRuleValidationResult {
-    const rules = this.getRulesBySeverity(severity);
-    const ruleNames = rules.map((rule) => rule.name);
-    return this.validateRules(ruleNames, value, context);
+    return {
+      totalRules: rules.length,
+      severityCounts,
+      ruleGroups: this.ruleGroups.size,
+      ruleDependencies: this.ruleDependencies.size,
+      executionOrder: this.ruleExecutionOrder,
+    };
   }
 
   /**
    * 获取验证统计信息
    * @returns 验证统计信息
    */
-  public getValidationStats(): BusinessRuleValidationStats {
-    return this.validationStats;
+  getValidationStats(): {
+    totalValidations: number;
+    successfulValidations: number;
+    failedValidations: number;
+    warningValidations: number;
+  } {
+    return { ...this.validationStats };
   }
 
   /**
    * 重置验证统计信息
    * @returns 是否重置成功
    */
-  public resetValidationStats(): boolean {
-    return this.validationStats.reset();
+  resetValidationStats(): boolean {
+    this.validationStats = {
+      totalValidations: 0,
+      successfulValidations: 0,
+      failedValidations: 0,
+      warningValidations: 0,
+    };
+    return true;
   }
 
   /**
-   * 导出业务规则配置
-   * @returns 业务规则配置
+   * 清空所有规则
    */
-  public exportConfiguration(): BusinessRuleConfiguration {
-    const rules: BusinessRuleConfigurationItem[] = Array.from(
-      this.rules.values(),
-    ).map((rule) => ({
-      name: rule.name,
-      type:
-        (rule as BusinessRule & { ruleType?: string }).ruleType || "Unknown",
-      description: rule.description,
-      priority: rule.priority,
-      enabled: rule.enabled,
-      config:
-        (rule as BusinessRule & { config?: Record<string, unknown> }).config ||
-        {},
-      dependencies:
-        (rule as BusinessRule & { dependencies?: string[] }).dependencies || [],
-      tags: (rule as BusinessRule & { tags?: string[] }).tags || [],
-      toJSON: (): BusinessRuleConfigurationItemJSON => ({
-        name: rule.name,
-        type:
-          (rule as BusinessRule & { ruleType?: string }).ruleType || "Unknown",
-        description: rule.description,
-        priority: rule.priority,
-        enabled: rule.enabled,
-        config:
-          (rule as BusinessRule & { config?: Record<string, unknown> })
-            .config || {},
-        dependencies:
-          (rule as BusinessRule & { dependencies?: string[] }).dependencies ||
-          [],
-        tags: (rule as BusinessRule & { tags?: string[] }).tags || [],
-      }),
-    }));
+  clearAllRules(): void {
+    this.rules.clear();
+    this.ruleGroups.clear();
+    this.ruleDependencies.clear();
+    this.ruleExecutionOrder = [];
+  }
 
-    const createdAt = new Date();
-    const updatedAt = new Date();
-
+  /**
+   * 导出规则配置
+   * @returns 规则配置
+   */
+  exportConfiguration(): Record<string, unknown> {
     return {
-      rules,
-      globalConfig: this.globalConfig,
-      version: "1.0.0",
-      createdAt,
-      updatedAt,
-      toJSON: (): BusinessRuleConfigurationJSON => ({
-        rules: rules.map((r) => r.toJSON()),
-        globalConfig: this.globalConfig,
-        version: "1.0.0",
-        createdAt: createdAt.toISOString(),
-        updatedAt: updatedAt.toISOString(),
-      }),
+      rules: Array.from(this.rules.entries()).map(([name, rule]) => ({
+        name,
+        description: rule.description,
+        severity: rule.severity as string,
+        isEnabled: rule.enabled,
+      })),
+      ruleGroups: Object.fromEntries(this.ruleGroups),
+      ruleDependencies: Object.fromEntries(this.ruleDependencies),
+      executionOrder: this.ruleExecutionOrder,
     };
   }
 
   /**
-   * 导入业务规则配置
-   * @param configuration 业务规则配置
-   * @returns 是否导入成功
+   * 导入规则配置
+   * @param configuration 规则配置
    */
-  public importConfiguration(
-    configuration: BusinessRuleConfiguration,
-  ): boolean {
-    try {
-      // 清空现有规则
-      this.clearRules();
-
-      // 导入全局配置
-      this.globalConfig = configuration.globalConfig;
-
-      // 导入规则配置
-      for (const ruleConfig of configuration.rules) {
-        // 这里需要根据实际的规则类型创建规则实例
-        // 由于我们只有接口，这里只是示例
-        console.log(`Importing rule: ${ruleConfig.name}`);
-      }
-
-      return true;
-    } catch (error) {
-      throw new BusinessRuleManagerException(
-        `Failed to import configuration: ${error instanceof Error ? error.message : String(error)}`,
-        { originalError: error },
+  importConfiguration(configuration: Record<string, unknown>): void {
+    // 注意：这里只导入配置信息，不导入规则实现
+    // 实际的规则实现需要单独注册
+    if (configuration.ruleGroups) {
+      this.ruleGroups = new Map(
+        Object.entries(configuration.ruleGroups as Record<string, string[]>),
       );
     }
-  }
-
-  /**
-   * 转换为JSON格式
-   * @returns JSON格式的业务规则管理器
-   */
-  public toJSON(): BusinessRuleManagerJSON {
-    return {
-      ruleCount: this.getRuleCount(),
-      enabledRuleCount: this.getEnabledRuleCount(),
-      disabledRuleCount: this.getDisabledRuleCount(),
-      rules: Array.from(this.rules.values()).map((rule) => ({
-        name: rule.name,
-        type:
-          (rule as BusinessRule & { ruleType?: string }).ruleType || "Unknown",
-        description: rule.description,
-        priority: rule.priority,
-        enabled: rule.enabled,
-      })),
-      validationStats: this.validationStats.toJSON(),
-      configuration: this.exportConfiguration().toJSON(),
-    };
-  }
-}
-
-/**
- * 业务规则验证统计信息实现类
- * @description 提供业务规则验证统计信息的完整实现
- */
-class BusinessRuleValidationStatsImpl implements BusinessRuleValidationStats {
-  private _totalValidations: number = 0;
-  private _successfulValidations: number = 0;
-  private _failedValidations: number = 0;
-  private _warningValidations: number = 0;
-  private _infoValidations: number = 0;
-  private _totalExecutionTime: number = 0;
-  private _maxExecutionTime: number = 0;
-  private _minExecutionTime: number = Number.MAX_SAFE_INTEGER;
-  private _ruleExecutionStats: Map<
-    string,
-    {
-      executionCount: number;
-      successCount: number;
-      failureCount: number;
-      totalTime: number;
+    if (configuration.ruleDependencies) {
+      this.ruleDependencies = new Map(
+        Object.entries(
+          configuration.ruleDependencies as Record<string, string[]>,
+        ),
+      );
     }
-  > = new Map();
-  private _severityStats: Map<string, number> = new Map();
-  private _ruleTypeStats: Map<string, number> = new Map();
-  private _lastValidationTime?: Date;
-
-  public get totalValidations(): number {
-    return this._totalValidations;
-  }
-
-  public get successfulValidations(): number {
-    return this._successfulValidations;
-  }
-
-  public get failedValidations(): number {
-    return this._failedValidations;
-  }
-
-  public get warningValidations(): number {
-    return this._warningValidations;
-  }
-
-  public get infoValidations(): number {
-    return this._infoValidations;
-  }
-
-  public get averageValidationTime(): number {
-    return this._totalValidations > 0
-      ? this._totalExecutionTime / this._totalValidations
-      : 0;
-  }
-
-  public get maxValidationTime(): number {
-    return this._maxExecutionTime;
-  }
-
-  public get minValidationTime(): number {
-    return this._minExecutionTime === Number.MAX_SAFE_INTEGER
-      ? 0
-      : this._minExecutionTime;
-  }
-
-  public get ruleExecutionStats(): Record<
-    string,
-    {
-      executionCount: number;
-      successCount: number;
-      failureCount: number;
-      averageTime: number;
+    if (configuration.executionOrder) {
+      this.ruleExecutionOrder = configuration.executionOrder as string[];
     }
-  > {
-    const stats: Record<
-      string,
-      {
-        executionCount: number;
-        successCount: number;
-        failureCount: number;
-        averageTime: number;
-      }
-    > = {};
-    for (const [ruleName, ruleStats] of this._ruleExecutionStats) {
-      stats[ruleName] = {
-        executionCount: ruleStats.executionCount,
-        successCount: ruleStats.successCount,
-        failureCount: ruleStats.failureCount,
-        averageTime:
-          ruleStats.executionCount > 0
-            ? ruleStats.totalTime / ruleStats.executionCount
-            : 0,
-      };
-    }
-    return stats;
-  }
-
-  public get severityStats(): Record<string, number> {
-    const stats: Record<string, number> = {};
-    for (const [severity, count] of this._severityStats) {
-      stats[severity] = count;
-    }
-    return stats;
-  }
-
-  public get ruleTypeStats(): Record<string, number> {
-    const stats: Record<string, number> = {};
-    for (const [ruleType, count] of this._ruleTypeStats) {
-      stats[ruleType] = count;
-    }
-    return stats;
-  }
-
-  public get lastValidationTime(): Date | undefined {
-    return this._lastValidationTime;
-  }
-
-  public reset(): boolean {
-    try {
-      this._totalValidations = 0;
-      this._successfulValidations = 0;
-      this._failedValidations = 0;
-      this._warningValidations = 0;
-      this._infoValidations = 0;
-      this._totalExecutionTime = 0;
-      this._maxExecutionTime = 0;
-      this._minExecutionTime = Number.MAX_SAFE_INTEGER;
-      this._ruleExecutionStats.clear();
-      this._severityStats.clear();
-      this._ruleTypeStats.clear();
-      this._lastValidationTime = undefined;
-      return true;
-    } catch (_error) {
-      return false;
-    }
-  }
-
-  public updateStats(
-    validationResult: BusinessRuleValidationResult,
-    executionTime: number,
-  ): boolean {
-    try {
-      this._totalValidations++;
-      this._lastValidationTime = new Date();
-
-      if (validationResult.isValid) {
-        this._successfulValidations++;
-      } else {
-        this._failedValidations++;
-      }
-
-      // 更新严重程度统计
-      for (const violation of validationResult.violations) {
-        const severity = violation.severity;
-        this._severityStats.set(
-          severity,
-          (this._severityStats.get(severity) || 0) + 1,
-        );
-
-        if (severity === BusinessRuleSeverity.WARNING) {
-          this._warningValidations++;
-        } else if (severity === BusinessRuleSeverity.INFO) {
-          this._infoValidations++;
-        }
-      }
-
-      // 更新警告和信息统计（从 warnings 和 info 数组）
-      for (const _warning of validationResult.warnings) {
-        this._warningValidations++;
-        this._severityStats.set(
-          BusinessRuleSeverity.WARNING,
-          (this._severityStats.get(BusinessRuleSeverity.WARNING) || 0) + 1,
-        );
-      }
-
-      for (const _infoItem of validationResult.info) {
-        this._infoValidations++;
-        this._severityStats.set(
-          BusinessRuleSeverity.INFO,
-          (this._severityStats.get(BusinessRuleSeverity.INFO) || 0) + 1,
-        );
-      }
-
-      // 更新执行时间统计
-      this._totalExecutionTime += executionTime;
-      this._maxExecutionTime = Math.max(this._maxExecutionTime, executionTime);
-      this._minExecutionTime = Math.min(this._minExecutionTime, executionTime);
-
-      // 更新规则执行统计
-      for (const violation of validationResult.violations) {
-        const ruleName = violation.ruleName;
-        const ruleStats = this._ruleExecutionStats.get(ruleName) || {
-          executionCount: 0,
-          successCount: 0,
-          failureCount: 0,
-          totalTime: 0,
-        };
-
-        ruleStats.executionCount++;
-        ruleStats.totalTime += executionTime;
-
-        if (validationResult.isValid) {
-          ruleStats.successCount++;
-        } else {
-          ruleStats.failureCount++;
-        }
-
-        this._ruleExecutionStats.set(ruleName, ruleStats);
-      }
-
-      return true;
-    } catch (_error) {
-      return false;
-    }
-  }
-
-  public toJSON(): BusinessRuleValidationStatsJSON {
-    return {
-      totalValidations: this._totalValidations,
-      successfulValidations: this._successfulValidations,
-      failedValidations: this._failedValidations,
-      warningValidations: this._warningValidations,
-      infoValidations: this._infoValidations,
-      averageValidationTime: this.averageValidationTime,
-      maxValidationTime: this._maxExecutionTime,
-      minValidationTime: this.minValidationTime,
-      ruleExecutionStats: this.ruleExecutionStats,
-      severityStats: this.severityStats,
-      ruleTypeStats: this.ruleTypeStats,
-      lastValidationTime: this._lastValidationTime?.toISOString(),
-    };
-  }
-
-  /**
-   * 发射规则状态变更事件
-   * @param ruleName 规则名称
-   * @param enabled 是否启用
-   * @private
-   */
-  private emitRuleStateChanged(ruleName: string, enabled: boolean): void {
-    // 这里可以添加事件发射逻辑，比如使用 EventEmitter
-    // 目前只是占位符实现
-    console.log(
-      `Rule ${ruleName} state changed to ${enabled ? "enabled" : "disabled"}`,
-    );
   }
 }
