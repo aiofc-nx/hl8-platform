@@ -524,6 +524,10 @@ node examples/basic-usage.cjs
 
 hl8-platform 团队
 
+## 开发指引
+
+如果你正在开发新的业务模块，请查看 [DOMAIN_LAYER_GUIDE.md](./DOMAIN_LAYER_GUIDE.md) 获取详细的领域层开发指引。该文档以用户管理为例，展示了如何使用所有 DDD 模式进行领域层开发。
+
 ## 迁移指南
 
 如果你正在从原始版本的 domain kernel 迁移到增强版本，请查看 [MIGRATION.md](./MIGRATION.md) 获取详细的迁移指南。

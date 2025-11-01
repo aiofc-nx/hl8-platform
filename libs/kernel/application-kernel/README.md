@@ -1,4 +1,4 @@
-## Application Kernel
+# Application Kernel
 
 本库提供在 HL8 平台中实现 Clean Architecture + CQRS + 事件溯源(ES) + 事件驱动架构(EDA) 的应用层核心能力，基于 NestJS 与 `@nestjs/cqrs` 实现，集成平台级配置与日志能力（`@hl8/config`, `@hl8/logger`）。
 
@@ -10,7 +10,15 @@ pnpm add @hl8/application-kernel @hl8/domain-kernel @hl8/config @hl8/logger @nes
 
 ### 快速开始
 
-参考功能规格的 `quickstart.md`，在应用模块中引入 `ApplicationKernelModule` 并完成配置加载与校验。
+查看 [快速入门指南](./QUICKSTART.md) 了解如何使用应用内核：
+
+- ✅ 用例（Use Cases）基础用法
+- ✅ 命令（Commands）和查询（Queries）实现
+- ✅ 事件存储和事件总线使用
+- ✅ 投影器（Projectors）和 Saga 模式
+- ✅ 完整示例代码
+
+或参考功能规格的 `quickstart.md`，在应用模块中引入 `ApplicationKernelModule` 并完成配置加载与校验。
 
 ---
 
@@ -152,3 +160,116 @@ pnpm test --testPathPatterns="api.contract"
 
 - Node.js >= 20，TypeScript 5.9+
 - 严格遵循语义化版本；公共异常码、公共类型与装饰器为稳定契约
+
+## 评价报告
+
+详细的项目评价报告请查看 [EVALUATION.md](./EVALUATION.md)，包含：
+
+- 架构设计评价
+- 代码质量分析
+- 模块实现完整性
+- 测试覆盖情况
+- 改进建议和优先级
+
+## 改进总结
+
+基于规格文档 `specs/002-application-kernel` 的改进工作已完成，详细内容请查看：
+
+- [改进计划](./IMPROVEMENT_PLAN.md) - 完整的改进计划
+- [改进总结](./IMPROVEMENT_SUMMARY.md) - 已完成的改进工作详情
+
+### 主要改进成果
+
+- ✅ 所有模块导出已启用（projectors, sagas, bus, cache, monitoring）
+- ✅ 所有类型错误已修复（TypeScript 严格模式通过）
+- ✅ 所有测试通过（42 个测试套件，537 个测试用例）
+- ✅ 代码质量提升（优化导出结构，避免命名冲突）
+
+## API 参考
+
+完整的 API 参考文档请查看 [API.md](./API.md)，包含：
+
+- 所有公共类和接口的详细说明
+- 方法、属性、参数和返回值
+- 类型定义和枚举
+- 使用示例和最佳实践
+
+## 故障排除
+
+遇到问题时，请查看 [故障排除指南](./TROUBLESHOOTING.md)，包含：
+
+- 常见错误和解决方案
+- 用例、命令、查询问题诊断
+- 事件和 Saga 问题处理
+- 配置和性能问题排查
+- 集成问题解决
+- 调试技巧和工具
+
+## 性能调优
+
+性能优化指南请查看 [性能调优指南](./PERFORMANCE.md)，包含：
+
+- 性能目标和指标
+- 性能监控和诊断
+- 用例、命令、查询优化
+- 事件处理和缓存策略
+- 数据库和并发优化
+- 性能调优最佳实践
+
+## 迁移指南
+
+从现有系统迁移到 application-kernel 的指南请查看 [迁移指南](./MIGRATION.md)，包含：
+
+- 迁移概述和策略
+- 用例、命令、查询迁移步骤
+- 事件处理和配置迁移
+- 异常处理和测试迁移
+- 迁移检查清单和示例
+
+## 安全考虑
+
+安全最佳实践和考虑事项请查看 [安全考虑文档](./SECURITY.md)，包含：
+
+- 输入验证和身份认证
+- 数据安全和加密
+- 事件和 Saga 安全
+- 缓存和日志安全
+- 配置安全
+- 安全测试和合规性
+
+## 部署和配置
+
+部署和配置指南请查看 [部署和配置指南](./DEPLOYMENT.md)，包含：
+
+- 环境配置和模块配置
+- 事件存储和总线配置
+- 缓存和监控配置
+- 生产环境部署
+- 容器化和 Kubernetes 部署
+- 配置管理和健康检查
+
+---
+
+## 📚 文档索引
+
+完整的文档集合：
+
+| 文档                                 | 说明                 |
+| ------------------------------------ | -------------------- |
+| [快速入门指南](./QUICKSTART.md)      | 快速上手使用应用内核 |
+| [API 参考](./API.md)                 | 完整的 API 文档      |
+| [故障排除指南](./TROUBLESHOOTING.md) | 常见问题解决方案     |
+| [性能调优指南](./PERFORMANCE.md)     | 性能优化最佳实践     |
+| [迁移指南](./MIGRATION.md)           | 从现有系统迁移       |
+| [安全考虑文档](./SECURITY.md)        | 安全最佳实践         |
+| [部署和配置指南](./DEPLOYMENT.md)    | 部署和配置详解       |
+| [项目评价报告](./EVALUATION.md)      | 项目评价和改进建议   |
+
+---
+
+## 🚀 快速链接
+
+- [开始使用](./QUICKSTART.md) - 5分钟快速上手
+- [查看 API](./API.md) - 完整 API 参考
+- [解决问题](./TROUBLESHOOTING.md) - 遇到问题？看这里
+- [优化性能](./PERFORMANCE.md) - 提升应用性能
