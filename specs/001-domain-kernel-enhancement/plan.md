@@ -1,154 +1,99 @@
-# Implementation Plan: Domain Kernel Enhancement
+# Implementation Plan: [FEATURE]
 
-**Branch**: `001-domain-kernel-enhancement` | **Date**: 2024-12-19 | **Spec**: [spec.md](./spec.md)
-**Input**: Feature specification from `/specs/001-domain-kernel-enhancement/spec.md`
+**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
 ## Summary
 
-Enhance the domain kernel with comprehensive validation frameworks, business rule management, domain service coordination, and enhanced aggregate root operations while maintaining complete domain layer purity. The enhancement provides value object validation, business rule validation, domain service coordination, aggregate root business operations, domain event processing capabilities, and critical DDD patterns including Repository interfaces, Factory patterns, Specification patterns, and Domain Event Handlers.
+[Extract from feature spec: primary requirement + technical approach from research]
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.9.3, Node.js >=20  
-**Primary Dependencies**: @hl8/config, class-validator, class-transformer, uuid  
-**Storage**: N/A (domain layer only)  
-**Testing**: Jest with ts-jest, NODE_OPTIONS=--experimental-vm-modules  
-**Target Platform**: Node.js runtime (domain kernel library)  
-**Project Type**: single (domain kernel library)  
-**Performance Goals**: <10ms business rule validation, <5ms domain event processing, 100% error detection accuracy  
-**Constraints**: Must maintain domain layer purity, no external framework dependencies, backward compatibility  
-**Scale/Scope**: Domain kernel library supporting complex business logic across multiple domain modules  
-**Missing DDD Components**: Repository interfaces, Factory patterns, Specification patterns, Domain Event Handlers, Aggregate Factories, Domain Service Registry, Enhanced Exception Categories, Value Object Validators, Domain Model Versioning
+<!--
+  ACTION REQUIRED: Replace the content in this section with the technical details
+  for the project. The structure here is presented in advisory capacity to guide
+  the iteration process.
+-->
+
+**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
+**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
+**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
+**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
+**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Project Type**: [single/web/mobile - determines source structure]  
+**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
+**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
+**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
 
 ## Constitution Check
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-### Core Principles Compliance
-
-✅ **Library-First**: Domain kernel enhancement is a standalone library with clear purpose  
-✅ **Test-First (NON-NEGOTIABLE)**: All new features will be developed with TDD approach  
-✅ **Integration Testing**: Focus on contract tests for new validation and coordination APIs  
-✅ **Observability**: Comprehensive error reporting and validation result tracking  
-✅ **Simplicity**: Maintain clean, focused domain layer without external dependencies
-
-### Quality Gates
-
-✅ **Domain Purity**: No external framework dependencies introduced  
-✅ **Backward Compatibility**: Existing domain kernel APIs remain unchanged  
-✅ **Performance**: Meets specified performance goals (<10ms validation, <5ms events)  
-✅ **Test Coverage**: 100% test coverage for new validation and coordination features  
-✅ **Documentation**: Complete TSDoc documentation for all new APIs
-
-### Post-Design Constitution Check
-
-✅ **Design Completeness**: All research tasks completed, data model defined, API contracts generated  
-✅ **Technical Feasibility**: All enhancements maintain domain layer purity and performance goals  
-✅ **Integration Readiness**: Contracts provide clear integration points for application layer  
-✅ **Migration Path**: Clear migration steps from original spec to enhanced capabilities  
-✅ **Documentation Quality**: Comprehensive quickstart guide and API documentation generated
+[Gates determined based on constitution file]
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/001-domain-kernel-enhancement/
+specs/[###-feature]/
 ├── plan.md              # This file (/speckit.plan command output)
 ├── research.md          # Phase 0 output (/speckit.plan command)
 ├── data-model.md        # Phase 1 output (/speckit.plan command)
 ├── quickstart.md        # Phase 1 output (/speckit.plan command)
 ├── contracts/           # Phase 1 output (/speckit.plan command)
-├── appendix-original-spec.md  # Original spec archive
 └── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
 
 ### Source Code (repository root)
 
+<!--
+  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
+  for this feature. Delete unused options and expand the chosen structure with
+  real paths (e.g., apps/admin, packages/something). The delivered plan must
+  not include Option labels.
+-->
+
 ```text
-libs/kernel/domain-kernel/
+# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
+src/
+├── models/
+├── services/
+├── cli/
+└── lib/
+
+tests/
+├── contract/
+├── integration/
+└── unit/
+
+# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
+backend/
 ├── src/
-│   ├── validation/
-│   │   ├── rules/
-│   │   │   ├── validation-rule.interface.ts
-│   │   │   ├── validation-result.interface.ts
-│   │   │   └── validation-error.interface.ts
-│   │   ├── value-object-validator.ts
-│   │   └── value-object-validator.interface.ts
-│   ├── business-rules/
-│   │   ├── business-rule.interface.ts
-│   │   ├── business-rule-validation-result.interface.ts
-│   │   ├── business-rule-violation.interface.ts
-│   │   └── business-rule-manager.ts
-│   ├── coordination/
-│   │   ├── coordination-rule.interface.ts
-│   │   ├── coordination-context.interface.ts
-│   │   ├── coordination-result.interface.ts
-│   │   └── coordination-manager.ts
-│   ├── operations/
-│   │   ├── business-operation.interface.ts
-│   │   ├── operation-handler.interface.ts
-│   │   └── operation-manager.ts
-│   ├── events/
-│   │   ├── domain-event-handler.interface.ts
-│   │   ├── event-processor.ts
-│   │   └── event-registry.ts
-│   ├── repositories/
-│   │   ├── repository.interface.ts
-│   │   ├── query-repository.interface.ts
-│   │   ├── command-repository.interface.ts
-│   │   └── paginated-repository.interface.ts
-│   ├── factories/
-│   │   ├── aggregate-factory.interface.ts
-│   │   ├── entity-factory.interface.ts
-│   │   ├── value-object-factory.interface.ts
-│   │   ├── domain-event-factory.interface.ts
-│   │   └── aggregate-reconstruction-factory.interface.ts
-│   ├── specifications/
-│   │   ├── specification.interface.ts
-│   │   ├── and-specification.ts
-│   │   ├── or-specification.ts
-│   │   ├── not-specification.ts
-│   │   ├── query-specification.interface.ts
-│   │   └── business-specification.interface.ts
+│   ├── models/
 │   ├── services/
-│   │   ├── domain-service-registry.interface.ts
-│   │   ├── service-locator.interface.ts
-│   │   └── dependency-container.interface.ts
-│   ├── versioning/
-│   │   ├── model-version.interface.ts
-│   │   ├── version-compatibility-checker.interface.ts
-│   │   └── model-migrator.interface.ts
-│   └── exceptions/
-│       ├── validation-exceptions.ts
-│       ├── business-rule-exceptions.ts
-│       ├── coordination-exceptions.ts
-│       ├── repository-exceptions.ts
-│       ├── factory-exceptions.ts
-│       ├── specification-exceptions.ts
-│       └── aggregate-exceptions.ts
-├── test/
-│   ├── unit/
-│   │   ├── validation/
-│   │   ├── business-rules/
-│   │   ├── coordination/
-│   │   ├── operations/
-│   │   ├── events/
-│   │   ├── repositories/
-│   │   ├── factories/
-│   │   ├── specifications/
-│   │   ├── services/
-│   │   └── versioning/
-│   ├── integration/
-│   │   └── domain-kernel.integration.spec.ts
-│   └── e2e/
-│       └── domain-kernel.e2e.spec.ts
-└── package.json
+│   └── api/
+└── tests/
+
+frontend/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   └── services/
+└── tests/
+
+# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
+api/
+└── [same as backend above]
+
+ios/ or android/
+└── [platform-specific structure: feature modules, UI flows, platform tests]
 ```
 
-**Structure Decision**: Single domain kernel library with modular enhancement features. The structure follows the existing domain kernel pattern while adding new validation, business rules, coordination, operations, event processing modules, and critical DDD patterns including Repository interfaces, Factory patterns, Specification patterns, Domain Event Handlers, and service management. All enhancements maintain domain layer purity without external framework dependencies.
+**Structure Decision**: [Document the selected structure and reference the real
+directories captured above]
 
 ## Complexity Tracking
 
