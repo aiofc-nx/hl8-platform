@@ -290,16 +290,19 @@ export abstract class Saga<TData = unknown> {
       // 执行前置处理
       await this.onBeforeExecute(data);
 
-      // 执行步骤
+      // 执行步骤（可能在执行过程中被外部取消）
+      // 注意：虽然 TypeScript 流分析认为状态不会从 RUNNING 变为 CANCELLED，
+      // 但实际上在执行过程中可能通过 cancel() 方法被外部调用而改变状态
       await this.executeSteps();
 
-      // TODO: 检查是否被取消（这里的写法是对的，出现错误提示时再修改）
-      if (this.status === SagaStatus.CANCELLED) {
+      // 检查是否被取消（执行步骤期间可能被外部取消）
+      // 使用类型断言来处理 TypeScript 的流分析限制
+      if ((this.status as SagaStatus) === SagaStatus.CANCELLED) {
         this.logger.debug(`Saga已取消: ${this.config.name}`, {
           sagaId: this.context.sagaId.toString(),
           executionTime: Date.now() - startTime,
         });
-        return;
+        return; // Saga 已被取消，停止执行
       }
 
       // 执行后置处理

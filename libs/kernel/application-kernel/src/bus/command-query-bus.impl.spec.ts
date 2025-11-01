@@ -202,11 +202,11 @@ describe("CommandQueryBusImpl", () => {
             queryBus: QueryBus,
           ) => {
             const bus = new CommandQueryBusImpl(logger, commandBus, queryBus);
-            // 手动注册处理器
+            // 手动注册处理器（同步注册，不使用await）
             const commandHandler = new TestCommandHandler("TestCommandHandler");
             const queryHandler = new TestQueryHandler("TestQueryHandler");
-            bus.registerCommandHandler(commandHandler);
-            bus.registerQueryHandler(queryHandler);
+            void bus.registerCommandHandler("TestCommand", commandHandler);
+            void bus.registerQueryHandler("TestQuery", queryHandler);
 
             // 模拟executeCommandInternal方法
             (bus as any).executeCommandInternal = async (
