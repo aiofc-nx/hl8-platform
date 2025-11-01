@@ -480,7 +480,7 @@ CREATE TABLE tenant_isolated_entities (
   updated_at TIMESTAMP NOT NULL,
   deleted_at TIMESTAMP,
   version INTEGER NOT NULL DEFAULT 1,
-  
+
   -- 索引
   INDEX idx_tenant_id (tenant_id),
   INDEX idx_organization_id (organization_id),
@@ -507,7 +507,7 @@ CREATE TABLE event_store (
   event_data JSONB NOT NULL,
   event_version INTEGER NOT NULL,
   timestamp TIMESTAMP NOT NULL,
-  
+
   -- 索引
   INDEX idx_aggregate_tenant (aggregate_id, tenant_id),
   INDEX idx_tenant_timestamp (tenant_id, timestamp),

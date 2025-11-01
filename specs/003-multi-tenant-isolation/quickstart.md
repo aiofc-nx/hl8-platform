@@ -39,17 +39,7 @@ export class User extends TenantIsolatedEntity {
    * 实现抽象方法
    */
   clone(): User {
-    return new User(
-      this.tenantId,
-      this.organizationId!,
-      this.departmentId!,
-      this.email,
-      this.name,
-      this.id,
-      this.auditInfo,
-      this.lifecycleState,
-      this.version,
-    );
+    return new User(this.tenantId, this.organizationId!, this.departmentId!, this.email, this.name, this.id, this.auditInfo, this.lifecycleState, this.version);
   }
 
   validateBusinessRules(): boolean {
@@ -83,13 +73,7 @@ const tenantId = TenantId.generate();
 const organizationId = new OrganizationId(tenantId);
 const departmentId = new DepartmentId(organizationId);
 
-const user = new User(
-  tenantId,
-  organizationId,
-  departmentId,
-  "user@example.com",
-  "张三",
-);
+const user = new User(tenantId, organizationId, departmentId, "user@example.com", "张三");
 ```
 
 ### 2. 创建租户隔离聚合根
@@ -136,16 +120,7 @@ export class Order extends TenantIsolatedAggregateRoot {
   }
 
   clone(): Order {
-    return new Order(
-      this.tenantId,
-      this.organizationId!,
-      this.departmentId!,
-      [...this.items],
-      this.id,
-      this.auditInfo,
-      this.lifecycleState,
-      this.version,
-    );
+    return new Order(this.tenantId, this.organizationId!, this.departmentId!, [...this.items], this.id, this.auditInfo, this.lifecycleState, this.version);
   }
 
   validateBusinessRules(): boolean {
@@ -164,14 +139,11 @@ export class Order extends TenantIsolatedAggregateRoot {
 import { TenantContext } from "@hl8/domain-kernel";
 
 // 创建租户上下文
-const context = new TenantContext(
-  tenantId,
-  {
-    organizationId,
-    departmentId,
-    permissions: ["read", "write"],
-  },
-);
+const context = new TenantContext(tenantId, {
+  organizationId,
+  departmentId,
+  permissions: ["read", "write"],
+});
 
 // 验证权限
 if (context.hasPermission("read")) {
@@ -191,10 +163,7 @@ import { ITenantIsolatedRepository } from "@hl8/domain-kernel";
 import { User } from "./user.entity.js";
 
 export class UserRepository implements ITenantIsolatedRepository<User> {
-  async findByIdWithContext(
-    id: EntityId,
-    context: TenantContext,
-  ): Promise<User | null> {
+  async findByIdWithContext(id: EntityId, context: TenantContext): Promise<User | null> {
     // 自动应用租户过滤条件
     const query = `
       SELECT * FROM users 
@@ -204,13 +173,8 @@ export class UserRepository implements ITenantIsolatedRepository<User> {
         AND department_id = $4
         AND lifecycle_state != 'DELETED'
     `;
-    
-    const result = await db.query(query, [
-      id.value,
-      context.tenantId.value,
-      context.organizationId?.value,
-      context.departmentId?.value,
-    ]);
+
+    const result = await db.query(query, [id.value, context.tenantId.value, context.organizationId?.value, context.departmentId?.value]);
 
     return result ? this.mapToEntity(result) : null;
   }
@@ -297,10 +261,7 @@ export class CreateUserHandler extends BaseCommandHandler<CreateUserCommand> {
   async executeCommand(command: CreateUserCommand): Promise<CommandResult> {
     // 验证租户上下文
     if (!command.tenantContext) {
-      return CommandResult.failure(
-        "缺少租户上下文",
-        "MISSING_TENANT_CONTEXT",
-      );
+      return CommandResult.failure("缺少租户上下文", "MISSING_TENANT_CONTEXT");
     }
 
     // 使用租户上下文创建用户
@@ -308,13 +269,7 @@ export class CreateUserHandler extends BaseCommandHandler<CreateUserCommand> {
     const organizationId = command.tenantContext.organizationId;
     const departmentId = command.tenantContext.departmentId;
 
-    const user = new User(
-      tenantId,
-      organizationId!,
-      departmentId!,
-      command.email,
-      command.name,
-    );
+    const user = new User(tenantId, organizationId!, departmentId!, command.email, command.name);
 
     // 保存用户（仓储自动验证租户隔离）
     await this.userRepository.save(user);
@@ -332,12 +287,7 @@ import { BaseQuery } from "@hl8/application-kernel";
 export class GetUsersQuery extends BaseQuery<User[]> {
   public readonly tenantContext?: TenantContext; // 自动注入
 
-  constructor(
-    options?: {
-      tenantContext?: TenantContext;
-      pagination?: { page: number; limit: number };
-    },
-  ) {
+  constructor(options?: { tenantContext?: TenantContext; pagination?: { page: number; limit: number } }) {
     super("GetUsers", options);
     this.tenantContext = options?.tenantContext;
   }
@@ -358,9 +308,7 @@ export class GetUsersHandler extends BaseQueryHandler<GetUsersQuery, User[]> {
     }
 
     // 仓储自动应用租户过滤
-    const users = await this.userRepository.findAllByContext(
-      query.tenantContext,
-    );
+    const users = await this.userRepository.findAllByContext(query.tenantContext);
 
     return QueryResult.success(users);
   }
@@ -411,8 +359,8 @@ export class AppModule {
 ## 更多示例
 
 查看完整示例和最佳实践，请参考：
+
 - [规范文档](./spec.md)
 - [数据模型文档](./data-model.md)
 - [Domain Kernel 文档](../../libs/kernel/domain-kernel/README.md)
 - [Application Kernel 文档](../../libs/kernel/application-kernel/README.md)
-

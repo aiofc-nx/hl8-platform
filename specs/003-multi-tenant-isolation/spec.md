@@ -134,15 +134,17 @@
 租户标识符是一个值对象，封装租户的唯一标识。类似于 `EntityId`，使用 UUID v4 格式。
 
 **职责**:
+
 - 封装租户唯一标识
 - 提供租户ID的验证和比较功能
 - 支持从字符串创建和序列化
 
 **接口设计**:
+
 ```typescript
 export class TenantId {
   private readonly _value: string;
-  
+
   constructor(value?: string);
   get value(): string;
   equals(other: TenantId): boolean;
@@ -162,17 +164,19 @@ export class TenantId {
 组织标识符用于标识租户内的组织层级。支持多层级组织结构。
 
 **职责**:
+
 - 封装组织唯一标识
 - 提供组织ID的验证和比较功能
 - 支持组织层级关系管理
 
 **接口设计**:
+
 ```typescript
 export class OrganizationId {
   private readonly _value: string;
   private readonly _tenantId: TenantId;
   private readonly _parentId?: OrganizationId;
-  
+
   constructor(tenantId: TenantId, value?: string, parentId?: OrganizationId);
   get value(): string;
   get tenantId(): TenantId;
@@ -192,18 +196,20 @@ export class OrganizationId {
 部门标识符用于标识组织内的部门层级。支持多层级部门结构。
 
 **职责**:
+
 - 封装部门唯一标识
 - 提供部门ID的验证和比较功能
 - 支持部门层级关系管理
 - 确保部门属于指定的组织
 
 **接口设计**:
+
 ```typescript
 export class DepartmentId {
   private readonly _value: string;
   private readonly _organizationId: OrganizationId;
   private readonly _parentId?: DepartmentId;
-  
+
   constructor(organizationId: OrganizationId, value?: string, parentId?: DepartmentId);
   get value(): string;
   get organizationId(): OrganizationId;
@@ -224,11 +230,13 @@ export class DepartmentId {
 租户上下文值对象，承载当前请求的租户和多层级隔离信息。
 
 **职责**:
+
 - 封装租户、组织和部门信息
 - 提供隔离规则验证
 - 支持上下文序列化和传递
 
 **接口设计**:
+
 ```typescript
 export class TenantContext {
   private readonly _tenantId: TenantId;
@@ -236,21 +244,15 @@ export class TenantContext {
   private readonly _departmentId?: DepartmentId;
   private readonly _isCrossTenant: boolean;
   private readonly _permissions: string[];
-  
-  constructor(
-    tenantId: TenantId,
-    organizationId?: OrganizationId,
-    departmentId?: DepartmentId,
-    isCrossTenant?: boolean,
-    permissions?: string[]
-  );
-  
+
+  constructor(tenantId: TenantId, organizationId?: OrganizationId, departmentId?: DepartmentId, isCrossTenant?: boolean, permissions?: string[]);
+
   get tenantId(): TenantId;
   get organizationId(): OrganizationId | undefined;
   get departmentId(): DepartmentId | undefined;
   get isCrossTenant(): boolean;
   get permissions(): string[];
-  
+
   hasPermission(permission: string): boolean;
   canAccessTenant(tenantId: TenantId): boolean;
   canAccessOrganization(orgId: OrganizationId): boolean;
@@ -268,27 +270,21 @@ export class TenantContext {
 支持租户隔离的实体基类，扩展自 `Entity` 基类。
 
 **职责**:
+
 - 为实体添加租户ID、组织ID和部门ID属性
 - 提供租户隔离验证
 - 确保实体创建时自动设置租户信息
 
 **接口设计**:
+
 ```typescript
 export abstract class TenantIsolatedEntity extends Entity {
   protected readonly _tenantId: TenantId;
   protected readonly _organizationId?: OrganizationId;
   protected readonly _departmentId?: DepartmentId;
-  
-  constructor(
-    tenantId: TenantId,
-    organizationId?: OrganizationId,
-    departmentId?: DepartmentId,
-    id?: EntityId,
-    auditInfo?: AuditInfo,
-    lifecycleState?: EntityLifecycle,
-    version?: number
-  );
-  
+
+  constructor(tenantId: TenantId, organizationId?: OrganizationId, departmentId?: DepartmentId, id?: EntityId, auditInfo?: AuditInfo, lifecycleState?: EntityLifecycle, version?: number);
+
   get tenantId(): TenantId;
   get organizationId(): OrganizationId | undefined;
   get departmentId(): DepartmentId | undefined;
@@ -306,27 +302,21 @@ export abstract class TenantIsolatedEntity extends Entity {
 支持租户隔离的聚合根基类，扩展自 `AggregateRoot` 基类。
 
 **职责**:
+
 - 为聚合根添加租户隔离能力
 - 确保领域事件包含租户信息
 - 协调内部实体的租户隔离验证
 
 **接口设计**:
+
 ```typescript
 export abstract class TenantIsolatedAggregateRoot extends AggregateRoot {
   protected readonly _tenantId: TenantId;
   protected readonly _organizationId?: OrganizationId;
   protected readonly _departmentId?: DepartmentId;
-  
-  constructor(
-    tenantId: TenantId,
-    organizationId?: OrganizationId,
-    departmentId?: DepartmentId,
-    id?: EntityId,
-    auditInfo?: AuditInfo,
-    lifecycleState?: EntityLifecycle,
-    version?: number
-  );
-  
+
+  constructor(tenantId: TenantId, organizationId?: OrganizationId, departmentId?: DepartmentId, id?: EntityId, auditInfo?: AuditInfo, lifecycleState?: EntityLifecycle, version?: number);
+
   get tenantId(): TenantId;
   get organizationId(): OrganizationId | undefined;
   get departmentId(): DepartmentId | undefined;
@@ -334,7 +324,7 @@ export abstract class TenantIsolatedAggregateRoot extends AggregateRoot {
   belongsToOrganization(orgId: OrganizationId): boolean;
   belongsToDepartment(deptId: DepartmentId): boolean;
   validateTenantIsolation(context: TenantContext): boolean;
-  
+
   // 重写 addDomainEvent，自动添加租户、组织、部门信息
   protected addDomainEventWithTenant(event: DomainEvent): void;
 }
@@ -347,39 +337,34 @@ export abstract class TenantIsolatedAggregateRoot extends AggregateRoot {
 支持租户隔离的仓储接口，扩展自 `IRepository` 接口。
 
 **职责**:
+
 - 定义租户隔离查询方法
 - 支持跨租户查询（管理员权限）
 - 自动应用隔离过滤条件
 
 **接口设计**:
+
 ```typescript
-export interface ITenantIsolatedRepository<T extends TenantIsolatedEntity>
-  extends IRepository<T> {
+export interface ITenantIsolatedRepository<T extends TenantIsolatedEntity> extends IRepository<T> {
   /**
    * 根据ID和租户上下文查找实体
    */
-  findByIdWithContext(
-    id: EntityId,
-    context: TenantContext
-  ): Promise<T | null>;
-  
+  findByIdWithContext(id: EntityId, context: TenantContext): Promise<T | null>;
+
   /**
    * 根据租户上下文查找所有实体
    */
   findAllByContext(context: TenantContext): Promise<T[]>;
-  
+
   /**
    * 检查实体是否属于指定租户
    */
   belongsToTenant(id: EntityId, tenantId: TenantId): Promise<boolean>;
-  
+
   /**
    * 跨租户查询（需要管理员权限）
    */
-  findByIdCrossTenant(
-    id: EntityId,
-    context: TenantContext
-  ): Promise<T | null>;
+  findByIdCrossTenant(id: EntityId, context: TenantContext): Promise<T | null>;
 }
 ```
 
@@ -390,12 +375,14 @@ export interface ITenantIsolatedRepository<T extends TenantIsolatedEntity>
 应用层中间件，自动提取和注入租户上下文。
 
 **职责**:
+
 - 从HTTP请求中提取租户信息
 - 创建租户上下文对象
 - 将上下文注入到命令/查询对象
 - 验证租户权限
 
 **接口设计**:
+
 ```typescript
 export class TenantContextMiddleware implements BusMiddleware {
   constructor(
@@ -403,12 +390,12 @@ export class TenantContextMiddleware implements BusMiddleware {
     private readonly permissionValidator: ITenantPermissionValidator,
     private readonly logger: Hl8Logger
   );
-  
+
   async before(
     commandOrQuery: BaseCommand | BaseQuery,
     context: ExecutionContext
   ): Promise<boolean>;
-  
+
   async after(
     commandOrQuery: BaseCommand | BaseQuery,
     result: CommandResult | QueryResult,
@@ -424,24 +411,26 @@ export class TenantContextMiddleware implements BusMiddleware {
 定义从各种来源提取租户上下文的接口。
 
 **职责**:
+
 - 从HTTP请求头提取租户信息
 - 从JWT Token提取租户信息
 - 从请求参数提取租户信息
 - 创建租户上下文对象
 
 **接口设计**:
+
 ```typescript
 export interface ITenantContextExtractor {
   /**
    * 从请求中提取租户上下文
    */
   extractFromRequest(request: any): Promise<TenantContext | null>;
-  
+
   /**
    * 从JWT Token提取租户上下文
    */
   extractFromToken(token: string): Promise<TenantContext | null>;
-  
+
   /**
    * 从用户信息提取租户上下文
    */
@@ -463,7 +452,7 @@ TenantIsolatedEntity {
   auditInfo: AuditInfo;
   lifecycleState: EntityLifecycle;
   version: number;
-  
+
   // 新增租户隔离属性
   tenantId: TenantId;              // 必需：租户ID
   organizationId?: OrganizationId;  // 可选：组织ID（支持多层级）
@@ -482,7 +471,7 @@ TenantIsolatedAggregateRoot {
   id: EntityId;
   internalEntities: Map<string, InternalEntity>;
   domainEvents: DomainEvent[];
-  
+
   // 新增租户隔离属性
   tenantId: TenantId;              // 必需：租户ID
   organizationId?: OrganizationId;  // 可选：组织ID
@@ -500,7 +489,7 @@ BaseCommand {
   aggregateId: string;
   commandType: string;
   userId?: string;
-  
+
   // 新增租户上下文
   tenantContext?: TenantContext;  // 自动注入的租户上下文
 }
@@ -511,7 +500,7 @@ BaseQuery {
   queryId: string;
   queryType: string;
   userId?: string;
-  
+
   // 新增租户上下文
   tenantContext?: TenantContext;  // 自动注入的租户上下文
 }
@@ -561,22 +550,22 @@ BaseQuery {
 ```sql
 -- 自动生成的查询示例（三层隔离，严格匹配）
 -- 场景1：上下文包含租户、组织、部门
-SELECT * FROM entities 
-WHERE tenant_id = ? 
+SELECT * FROM entities
+WHERE tenant_id = ?
   AND organization_id = ?
   AND department_id = ?
   AND lifecycle_state != 'DELETED'
 
 -- 场景2：上下文包含租户、组织（无部门）
-SELECT * FROM entities 
-WHERE tenant_id = ? 
+SELECT * FROM entities
+WHERE tenant_id = ?
   AND organization_id = ?
   AND (department_id IS NULL OR department_id IS NOT NULL)  -- 属于该组织的所有数据
   AND lifecycle_state != 'DELETED'
 
 -- 场景3：上下文仅包含租户（无组织、无部门）
-SELECT * FROM entities 
-WHERE tenant_id = ? 
+SELECT * FROM entities
+WHERE tenant_id = ?
   AND (organization_id IS NULL OR organization_id IS NOT NULL)  -- 租户下所有数据
   AND lifecycle_state != 'DELETED'
 ```
@@ -584,6 +573,7 @@ WHERE tenant_id = ?
 #### 2. 上下文传递机制
 
 租户上下文在以下链路中自动传递：
+
 - HTTP 请求 → 中间件提取
 - 中间件 → Command/Query 注入
 - Command/Query → 仓储自动应用
@@ -762,4 +752,3 @@ WHERE tenant_id = ?
 - Domain-Driven Design patterns
 - Multi-tenant architecture best practices
 - Data isolation strategies for SAAS platforms
-

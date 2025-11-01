@@ -122,26 +122,21 @@ class User extends TenantIsolatedEntity {
     tenantId: TenantId,
     organizationId: OrganizationId,
     private readonly email: string,
-    private readonly name: string
+    private readonly name: string,
   ) {
     super(tenantId, organizationId);
   }
-  
+
   // 实现抽象方法
   clone(): User {
-    return new User(
-      this.tenantId,
-      this.organizationId!,
-      this.email,
-      this.name
-    );
+    return new User(this.tenantId, this.organizationId!, this.email, this.name);
   }
-  
+
   validateBusinessRules(): boolean {
     // 业务规则验证
-    return this.email.includes('@') && this.name.length > 0;
+    return this.email.includes("@") && this.name.length > 0;
   }
-  
+
   executeBusinessLogic(operation: string, params: unknown): unknown {
     // 业务逻辑执行
     return {};
@@ -157,34 +152,30 @@ class Order extends TenantIsolatedAggregateRoot {
   constructor(
     tenantId: TenantId,
     organizationId: OrganizationId,
-    private readonly items: OrderItem[]
+    private readonly items: OrderItem[],
   ) {
     super(tenantId, organizationId);
   }
-  
+
   // 实现抽象方法
   protected performCoordination(operation: string, params: unknown): unknown {
     // 协调业务操作
     return {};
   }
-  
+
   protected performBusinessInvariantValidation(): boolean {
     // 业务不变量验证
     return this.items.length > 0;
   }
-  
+
   clone(): Order {
-    return new Order(
-      this.tenantId,
-      this.organizationId!,
-      [...this.items]
-    );
+    return new Order(this.tenantId, this.organizationId!, [...this.items]);
   }
-  
+
   validateBusinessRules(): boolean {
     return true;
   }
-  
+
   executeBusinessLogic(operation: string, params: unknown): unknown {
     return {};
   }
@@ -196,30 +187,24 @@ class Order extends TenantIsolatedAggregateRoot {
 ```typescript
 // 仓储实现自动应用租户过滤
 class UserRepository implements ITenantIsolatedRepository<User> {
-  async findByIdWithContext(
-    id: EntityId,
-    context: TenantContext
-  ): Promise<User | null> {
+  async findByIdWithContext(id: EntityId, context: TenantContext): Promise<User | null> {
     // 自动添加租户过滤条件
-    const user = await db.query(
-      'SELECT * FROM users WHERE id = ? AND tenant_id = ?',
-      [id.value, context.tenantId.value]
-    );
+    const user = await db.query("SELECT * FROM users WHERE id = ? AND tenant_id = ?", [id.value, context.tenantId.value]);
     return user ? this.mapToEntity(user) : null;
   }
-  
+
   async findAllByContext(context: TenantContext): Promise<User[]> {
     // 自动应用租户和组织过滤
-    let query = 'SELECT * FROM users WHERE tenant_id = ?';
+    let query = "SELECT * FROM users WHERE tenant_id = ?";
     const params = [context.tenantId.value];
-    
+
     if (context.organizationId) {
-      query += ' AND organization_id = ?';
+      query += " AND organization_id = ?";
       params.push(context.organizationId.value);
     }
-    
+
     const users = await db.query(query, params);
-    return users.map(u => this.mapToEntity(u));
+    return users.map((u) => this.mapToEntity(u));
   }
 }
 ```
@@ -240,7 +225,7 @@ class UserRepository implements ITenantIsolatedRepository<User> {
 ✅ **安全可靠**: 多层验证确保数据安全  
 ✅ **性能优化**: 索引和查询优化确保性能  
 ✅ **透明使用**: 开发者无需关心隔离细节  
-✅ **可扩展性**: 支持未来扩展更多层级和功能  
+✅ **可扩展性**: 支持未来扩展更多层级和功能
 
 ## 相关文档
 
