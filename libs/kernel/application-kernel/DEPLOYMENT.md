@@ -490,24 +490,26 @@ node dist/main.js
 ```json
 // ecosystem.config.js
 {
-  "apps": [{
-    "name": "hl8-app",
-    "script": "dist/main.js",
-    "instances": "max", // ✅ 使用所有CPU核心
-    "exec_mode": "cluster",
-    "env": {
-      "NODE_ENV": "production"
-    },
-    "env_production": {
-      "NODE_ENV": "production",
-      "LOG_LEVEL": "info"
-    },
-    "error_file": "./logs/err.log",
-    "out_file": "./logs/out.log",
-    "log_date_format": "YYYY-MM-DD HH:mm:ss Z",
-    "merge_logs": true,
-    "max_memory_restart": "1G" // ✅ 内存超过1G重启
-  }]
+  "apps": [
+    {
+      "name": "hl8-app",
+      "script": "dist/main.js",
+      "instances": "max", // ✅ 使用所有CPU核心
+      "exec_mode": "cluster",
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "env_production": {
+        "NODE_ENV": "production",
+        "LOG_LEVEL": "info"
+      },
+      "error_file": "./logs/err.log",
+      "out_file": "./logs/out.log",
+      "log_date_format": "YYYY-MM-DD HH:mm:ss Z",
+      "merge_logs": true,
+      "max_memory_restart": "1G" // ✅ 内存超过1G重启
+    }
+  ]
 }
 ```
 
@@ -564,7 +566,7 @@ CMD ["node", "dist/main.js"]
 
 ```yaml
 # docker-compose.yml
-version: '3.8'
+version: "3.8"
 
 services:
   app:
@@ -636,42 +638,42 @@ spec:
         app: hl8-app
     spec:
       containers:
-      - name: app
-        image: hl8/app:latest
-        ports:
-        - containerPort: 3000
-        env:
-        - name: NODE_ENV
-          value: "production"
-        - name: POSTGRES_URL
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: postgres-url
-        - name: MONGODB_URL
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: mongodb-url
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "500m"
-          limits:
-            memory: "2Gi"
-            cpu: "2000m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 3000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 3000
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: app
+          image: hl8/app:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: POSTGRES_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: postgres-url
+            - name: MONGODB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: mongodb-url
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
 ---
 apiVersion: v1
 kind: Service
@@ -681,8 +683,8 @@ spec:
   selector:
     app: hl8-app
   ports:
-  - port: 80
-    targetPort: 3000
+    - port: 80
+      targetPort: 3000
   type: LoadBalancer
 ```
 
@@ -934,4 +936,3 @@ eventBus: {
 ---
 
 **提示**: 更多部署相关问题，请参考 [故障排除指南](./TROUBLESHOOTING.md) 和 [性能调优指南](./PERFORMANCE.md)。
-

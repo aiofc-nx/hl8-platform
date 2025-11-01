@@ -134,7 +134,7 @@ class GetUserQuery extends BaseQuery {
 export class GetUserQueryHandler extends BaseQueryHandler<GetUserQuery> {
   async handle(query: GetUserQuery): Promise<QueryResult> {
     // ✅ 验证用户权限
-    if (!await this.hasPermission(query.userId, "read")) {
+    if (!(await this.hasPermission(query.userId, "read"))) {
       return QueryResult.failure("无权限访问", "PERMISSION_DENIED");
     }
 
@@ -156,26 +156,14 @@ class CreateUserUseCase extends UseCase<CreateUserInput, CreateUserOutput> {
   protected async executeBusinessLogic(input: CreateUserInput): Promise<CreateUserOutput> {
     // ✅ 验证用户身份
     if (!input.userId) {
-      throw new UseCaseValidationException(
-        "用户未认证",
-        ExceptionCodes.USE_CASE_VALIDATION_FAILED,
-        this.useCaseName,
-        input,
-      );
+      throw new UseCaseValidationException("用户未认证", ExceptionCodes.USE_CASE_VALIDATION_FAILED, this.useCaseName, input);
     }
 
     // ✅ 验证用户是否存在且有效
-    const user = await this.userRepository.findById(
-      EntityId.fromString(input.userId),
-    );
+    const user = await this.userRepository.findById(EntityId.fromString(input.userId));
 
     if (!user || !user.isActive()) {
-      throw new UseCaseValidationException(
-        "用户无效",
-        ExceptionCodes.USE_CASE_VALIDATION_FAILED,
-        this.useCaseName,
-        input,
-      );
+      throw new UseCaseValidationException("用户无效", ExceptionCodes.USE_CASE_VALIDATION_FAILED, this.useCaseName, input);
     }
 
     // 执行业务逻辑
@@ -194,15 +182,10 @@ function RequirePermission(permission: string) {
 
     descriptor.value = async function (...args: unknown[]) {
       const input = args[0] as UseCaseInput;
-      
+
       // ✅ 验证权限
-      if (!await this.permissionService.hasPermission(input.userId, permission)) {
-        throw new UseCaseValidationException(
-          "权限不足",
-          ExceptionCodes.USE_CASE_VALIDATION_FAILED,
-          target.constructor.name,
-          input,
-        );
+      if (!(await this.permissionService.hasPermission(input.userId, permission))) {
+        throw new UseCaseValidationException("权限不足", ExceptionCodes.USE_CASE_VALIDATION_FAILED, target.constructor.name, input);
       }
 
       return originalMethod.apply(this, args);
@@ -227,21 +210,11 @@ export class DeleteUserUseCase extends UseCase<Input, Output> {
 // ✅ 验证资源所有权
 class UpdateUserUseCase extends UseCase<UpdateUserInput, UpdateUserOutput> {
   protected async executeBusinessLogic(input: UpdateUserInput): Promise<UpdateUserOutput> {
-    const user = await this.userRepository.findById(
-      EntityId.fromString(input.userId),
-    );
+    const user = await this.userRepository.findById(EntityId.fromString(input.userId));
 
     // ✅ 验证资源所有权或管理员权限
-    if (
-      user.getId().toString() !== input.currentUserId &&
-      !await this.isAdmin(input.currentUserId)
-    ) {
-      throw new UseCaseValidationException(
-        "无权限修改此用户",
-        ExceptionCodes.USE_CASE_VALIDATION_FAILED,
-        this.useCaseName,
-        input,
-      );
+    if (user.getId().toString() !== input.currentUserId && !(await this.isAdmin(input.currentUserId))) {
+      throw new UseCaseValidationException("无权限修改此用户", ExceptionCodes.USE_CASE_VALIDATION_FAILED, this.useCaseName, input);
     }
 
     // 执行业务逻辑
@@ -327,9 +300,12 @@ class UserRepository implements IUserRepository {
 class EventRepository {
   async findByAggregateId(aggregateId: EntityId): Promise<DomainEvent[]> {
     // ✅ 使用类型安全的查询
-    return await this.mongo.collection("events").find({
-      aggregateId: aggregateId.toString(), // ✅ 直接使用值，不要拼接
-    }).toArray();
+    return await this.mongo
+      .collection("events")
+      .find({
+        aggregateId: aggregateId.toString(), // ✅ 直接使用值，不要拼接
+      })
+      .toArray();
 
     // ❌ 不要拼接查询
     // const query = `{ aggregateId: "${aggregateId.toString()}" }`; // 危险！
@@ -385,18 +361,11 @@ export class CreateUserUseCase extends UseCase<Input, Output> {
 ```typescript
 // ✅ 事件存储访问控制
 class SecureEventStore implements IEventStore {
-  async saveEvents(
-    aggregateId: EntityId,
-    events: DomainEvent[],
-    expectedVersion: number,
-  ): Promise<EventStoreResult> {
+  async saveEvents(aggregateId: EntityId, events: DomainEvent[], expectedVersion: number): Promise<EventStoreResult> {
     // ✅ 验证用户权限
     const context = this.getCurrentContext();
-    if (!await this.hasPermission(context.userId, "event:write")) {
-      throw new EventStoreException(
-        "无权限保存事件",
-        ExceptionCodes.EVENT_STORE_ERROR,
-      );
+    if (!(await this.hasPermission(context.userId, "event:write"))) {
+      throw new EventStoreException("无权限保存事件", ExceptionCodes.EVENT_STORE_ERROR);
     }
 
     // ✅ 验证事件数据
@@ -411,10 +380,7 @@ class SecureEventStore implements IEventStore {
   private validateEvent(event: DomainEvent): void {
     // ✅ 验证事件类型
     if (!this.isAllowedEventType(event.eventType)) {
-      throw new EventStoreException(
-        `不允许的事件类型: ${event.eventType}`,
-        ExceptionCodes.EVENT_VALIDATION_FAILED,
-      );
+      throw new EventStoreException(`不允许的事件类型: ${event.eventType}`, ExceptionCodes.EVENT_VALIDATION_FAILED);
     }
 
     // ✅ 验证事件数据
@@ -434,11 +400,8 @@ class SecureEventStore implements IEventStore {
 class OrderProcessingSaga extends Saga<OrderData> {
   async execute(data: OrderData): Promise<void> {
     // ✅ 验证用户权限
-    if (!await this.hasPermission(data.userId, "order:create")) {
-      throw new SagaExecutionException(
-        "无权限创建订单",
-        ExceptionCodes.SAGA_EXECUTION_FAILED,
-      );
+    if (!(await this.hasPermission(data.userId, "order:create"))) {
+      throw new SagaExecutionException("无权限创建订单", ExceptionCodes.SAGA_EXECUTION_FAILED);
     }
 
     // 执行 Saga
@@ -529,9 +492,7 @@ class SecureCacheHandler extends BaseQueryHandler<GetUserQuery> {
 // ✅ 使用安全的缓存键生成
 function generateCacheKey(userId: string): string {
   // ✅ 使用哈希防止键冲突和注入
-  const hash = crypto.createHash("sha256")
-    .update(`user:${userId}`)
-    .digest("hex");
+  const hash = crypto.createHash("sha256").update(`user:${userId}`).digest("hex");
 
   return `user:${hash}`;
 }
@@ -596,15 +557,9 @@ class SecureUseCase extends UseCase<Input, Output> {
 // ✅ 配置日志访问控制
 LoggerModule.forRoot({
   level: process.env.NODE_ENV === "production" ? "info" : "debug",
-  
+
   // ✅ 生产环境不记录敏感信息
-  redact: [
-    "password",
-    "token",
-    "secret",
-    "apiKey",
-    "creditCard",
-  ],
+  redact: ["password", "token", "secret", "apiKey", "creditCard"],
 });
 ```
 
@@ -741,9 +696,7 @@ describe("安全测试", () => {
       // ❌ 没有 userId
     });
 
-    await expect(useCase.execute(input)).rejects.toThrow(
-      UseCaseValidationException
-    );
+    await expect(useCase.execute(input)).rejects.toThrow(UseCaseValidationException);
   });
 
   it("应该拒绝无效的输入", async () => {
@@ -752,9 +705,7 @@ describe("安全测试", () => {
       password: "123", // ❌ 密码太短
     });
 
-    await expect(useCase.execute(input)).rejects.toThrow(
-      UseCaseValidationException
-    );
+    await expect(useCase.execute(input)).rejects.toThrow(UseCaseValidationException);
   });
 
   it("应该拒绝SQL注入攻击", async () => {
@@ -775,9 +726,7 @@ describe("安全测试", () => {
     });
 
     // ✅ 应该被验证拒绝
-    await expect(useCase.execute(input)).rejects.toThrow(
-      UseCaseValidationException
-    );
+    await expect(useCase.execute(input)).rejects.toThrow(UseCaseValidationException);
   });
 });
 ```
@@ -849,4 +798,3 @@ class DataRetentionService {
 ---
 
 **提示**: 更多安全相关的问题，请参考 [故障排除指南](./TROUBLESHOOTING.md) 和安全最佳实践。
-

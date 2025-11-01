@@ -28,18 +28,18 @@
 
 ### 核心指标
 
-| 指标 | 目标值 | 说明 |
-|------|--------|------|
-| 并发用例执行 | ≥ 1000 | 支持至少 1000 个并发用例 |
-| 命令执行成功率 | ≥ 99.9% | 命令执行的成功率 |
-| 查询响应延迟 | ≤ 100ms | 查询平均响应时间 |
-| 事件存储容量 | ≥ 100万条 | 支持至少 100 万条事件 |
-| 事件重放性能 | 提升 ≥ 50% | 通过快照机制提升 |
-| 事件总线延迟 | ≤ 50ms | 消息处理延迟 |
-| 总线并发请求 | ≥ 10000 | 支持至少 10000 个并发请求 |
-| 投影器处理延迟 | ≤ 20ms | 处理单个事件的延迟 |
-| Saga 步骤成功率 | ≥ 99.5% | Saga 步骤执行成功率 |
-| Saga 类型支持 | ≥ 100个 | 支持至少 100 种不同类型的 Saga |
+| 指标            | 目标值     | 说明                           |
+| --------------- | ---------- | ------------------------------ |
+| 并发用例执行    | ≥ 1000     | 支持至少 1000 个并发用例       |
+| 命令执行成功率  | ≥ 99.9%    | 命令执行的成功率               |
+| 查询响应延迟    | ≤ 100ms    | 查询平均响应时间               |
+| 事件存储容量    | ≥ 100万条  | 支持至少 100 万条事件          |
+| 事件重放性能    | 提升 ≥ 50% | 通过快照机制提升               |
+| 事件总线延迟    | ≤ 50ms     | 消息处理延迟                   |
+| 总线并发请求    | ≥ 10000    | 支持至少 10000 个并发请求      |
+| 投影器处理延迟  | ≤ 20ms     | 处理单个事件的延迟             |
+| Saga 步骤成功率 | ≥ 99.5%    | Saga 步骤执行成功率            |
+| Saga 类型支持   | ≥ 100个    | 支持至少 100 种不同类型的 Saga |
 
 ---
 
@@ -51,12 +51,15 @@
 import { MonitoringService } from "@hl8/application-kernel";
 
 // 配置监控服务
-const monitoring = new MonitoringService({
-  enabled: true,
-  collectionInterval: 1000, // 1秒收集一次
-  alertCheckInterval: 5000, // 5秒检查一次警报
-  dataRetentionTime: 24 * 60 * 60 * 1000, // 保留24小时
-}, logger);
+const monitoring = new MonitoringService(
+  {
+    enabled: true,
+    collectionInterval: 1000, // 1秒收集一次
+    alertCheckInterval: 5000, // 5秒检查一次警报
+    dataRetentionTime: 24 * 60 * 60 * 1000, // 保留24小时
+  },
+  logger,
+);
 
 // 启动监控
 await monitoring.start();
@@ -138,9 +141,7 @@ class SlowInput extends UseCaseInput {
 class BatchCreateUsersUseCase extends UseCase<BatchInput, BatchOutput> {
   protected async executeBusinessLogic(input: BatchInput): Promise<BatchOutput> {
     // ✅ 批量处理，而不是逐个处理
-    const users = await Promise.all(
-      input.users.map((userData) => this.createUser(userData))
-    );
+    const users = await Promise.all(input.users.map((userData) => this.createUser(userData)));
 
     // ✅ 批量保存
     await this.userRepository.saveMany(users);
@@ -199,9 +200,7 @@ class IdempotentCommand extends BaseCommand {
 // ✅ 2. 批量执行命令
 async function executeBatch(commands: BaseCommand[]) {
   // 并行执行独立的命令
-  const results = await Promise.all(
-    commands.map((cmd) => commandBus.executeCommand(cmd))
-  );
+  const results = await Promise.all(commands.map((cmd) => commandBus.executeCommand(cmd)));
   return results;
 }
 ```
@@ -262,14 +261,11 @@ class OptimizedQueryHandler extends BaseQueryHandler<GetUserQuery> {
 async function optimizeEventReplay(aggregateId: string): Promise<Aggregate> {
   // 先尝试获取快照
   const snapshot = await eventStore.getSnapshot(aggregateId);
-  
+
   if (snapshot) {
     // ✅ 从快照恢复，只重放之后的事件
     const aggregate = restoreFromSnapshot(snapshot);
-    const events = await eventStore.getEvents(
-      aggregateId,
-      snapshot.version + 1
-    );
+    const events = await eventStore.getEvents(aggregateId, snapshot.version + 1);
     events.forEach((e) => aggregate.applyDomainEvent(e));
     return aggregate;
   }
@@ -280,9 +276,7 @@ async function optimizeEventReplay(aggregateId: string): Promise<Aggregate> {
 }
 
 // ✅ 2. 批量保存事件
-async function saveEventsBatch(
-  events: DomainEvent[]
-): Promise<void> {
+async function saveEventsBatch(events: DomainEvent[]): Promise<void> {
   // ✅ 批量保存，减少数据库交互
   await eventStore.saveEventsBatch(events);
 }
@@ -480,7 +474,7 @@ async function processWithLimit(items: unknown[]) {
       } finally {
         semaphore.release();
       }
-    })
+    }),
   );
 }
 
@@ -517,10 +511,13 @@ const saga = new OrderProcessingSaga(logger, {
 
 ```typescript
 // ✅ 1. 及时清理缓存
-const cache = new InMemoryCache({
-  maxSize: 10000, // ✅ 限制缓存大小
-  cleanupInterval: 60000, // ✅ 每分钟清理一次
-}, logger);
+const cache = new InMemoryCache(
+  {
+    maxSize: 10000, // ✅ 限制缓存大小
+    cleanupInterval: 60000, // ✅ 每分钟清理一次
+  },
+  logger,
+);
 
 // ✅ 2. 限制事件存储
 // 定期归档旧事件
@@ -558,9 +555,7 @@ async function* streamUsers(): AsyncGenerator<User> {
 describe("性能测试", () => {
   it("应该支持1000个并发用例", async () => {
     const startTime = Date.now();
-    const promises = Array.from({ length: 1000 }, (_, i) =>
-      useCase.execute(new Input({ id: i.toString() }))
-    );
+    const promises = Array.from({ length: 1000 }, (_, i) => useCase.execute(new Input({ id: i.toString() })));
 
     await Promise.all(promises);
     const duration = Date.now() - startTime;
@@ -576,9 +571,7 @@ describe("性能测试", () => {
 // ✅ 创建性能监控端点
 @Controller("/metrics")
 export class MetricsController {
-  constructor(
-    private readonly monitoring: MonitoringService,
-  ) {}
+  constructor(private readonly monitoring: MonitoringService) {}
 
   @Get()
   async getMetrics() {
@@ -608,7 +601,7 @@ const benchmarks = {
 // 定期检查性能是否达标
 async function checkPerformance() {
   const metrics = await monitoring.getMetrics();
-  
+
   metrics.forEach((metric) => {
     const benchmark = benchmarks[metric.name];
     if (benchmark && metric.value > benchmark) {

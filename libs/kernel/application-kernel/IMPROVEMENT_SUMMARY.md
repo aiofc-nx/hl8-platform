@@ -145,20 +145,20 @@
 
 ### 模块导出状态
 
-| 模块 | 导出状态 | 备注 |
-|------|---------|------|
-| Use Cases | ✅ 已导出 | - |
-| Commands | ✅ 已导出 | - |
-| Queries | ✅ 已导出 | - |
-| Events (Store) | ✅ 已导出 | - |
-| Events (Bus) | ✅ 已导出 | 使用类型别名 |
-| Projectors | ✅ 已导出 | - |
-| Sagas | ✅ 已导出 | @beta 状态 |
-| Bus | ✅ 已导出 | - |
-| Cache | ✅ 已导出 | 使用类型别名 |
-| Monitoring | ✅ 已导出 | 使用类型别名 |
-| Config | ✅ 已导出 | - |
-| Exceptions | ✅ 已导出 | - |
+| 模块           | 导出状态  | 备注         |
+| -------------- | --------- | ------------ |
+| Use Cases      | ✅ 已导出 | -            |
+| Commands       | ✅ 已导出 | -            |
+| Queries        | ✅ 已导出 | -            |
+| Events (Store) | ✅ 已导出 | -            |
+| Events (Bus)   | ✅ 已导出 | 使用类型别名 |
+| Projectors     | ✅ 已导出 | -            |
+| Sagas          | ✅ 已导出 | @beta 状态   |
+| Bus            | ✅ 已导出 | -            |
+| Cache          | ✅ 已导出 | 使用类型别名 |
+| Monitoring     | ✅ 已导出 | 使用类型别名 |
+| Config         | ✅ 已导出 | -            |
+| Exceptions     | ✅ 已导出 | -            |
 
 ---
 

@@ -101,7 +101,7 @@ abstract class UseCaseOutput
 用例装饰器。
 
 ```typescript
-function UseCase(options?: UseCaseConfig): ClassDecorator
+function UseCase(options?: UseCaseConfig): ClassDecorator;
 ```
 
 **接口**:
@@ -201,7 +201,7 @@ class CommandResult
 命令装饰器。
 
 ```typescript
-function Command(options?: CommandConfig): ClassDecorator
+function Command(options?: CommandConfig): ClassDecorator;
 ```
 
 **接口**:
@@ -286,7 +286,7 @@ class QueryResult
 查询装饰器。
 
 ```typescript
-function Query(options?: QueryConfig): ClassDecorator
+function Query(options?: QueryConfig): ClassDecorator;
 ```
 
 ---
@@ -999,45 +999,45 @@ import {
   UseCase,
   UseCaseInput,
   UseCaseOutput,
-  
+
   // 命令
   BaseCommand,
   BaseCommandHandler,
   CommandResult,
-  
+
   // 查询
   BaseQuery,
   BaseQueryHandler,
   QueryResult,
-  
+
   // 事件
   EventStore,
   EventBusImpl,
-  
+
   // Saga
   Saga,
   BaseSagaStep,
   SagaStateManager,
-  
+
   // 总线
   CommandQueryBusImpl,
-  
+
   // 缓存
   InMemoryCache,
   type CacheConfigType,
-  
+
   // 监控
   MonitoringService,
   type MonitoringConfigType,
-  
+
   // 配置
   ApplicationKernelConfigService,
-  
+
   // 异常
   ApplicationException,
   UseCaseException,
   ExceptionCodes,
-  
+
   // 模块
   ApplicationKernelModule,
 } from "@hl8/application-kernel";

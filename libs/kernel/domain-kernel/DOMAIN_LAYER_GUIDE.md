@@ -126,23 +126,16 @@ export class Email extends ValueObject<string> {
    */
   private validateEmail(value: string): void {
     const validator = new ValueObjectValidator();
-    
+
     validator
       .required(value, "邮箱不能为空")
-      .pattern(
-        value,
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        "邮箱格式无效，必须包含 @ 和域名"
-      )
+      .pattern(value, /^[^\s@]+@[^\s@]+\.[^\s@]+$/, "邮箱格式无效，必须包含 @ 和域名")
       .length(value, 5, 255, "邮箱长度必须在5-255个字符之间");
 
     if (!validator.isValid()) {
-      throw new ValueObjectValidationFailedException(
-        validator.getAllErrors().join(", "),
-        {
-          email: value,
-        },
-      );
+      throw new ValueObjectValidationFailedException(validator.getAllErrors().join(", "), {
+        email: value,
+      });
     }
   }
 
@@ -204,19 +197,12 @@ export class Password extends ValueObject<string> {
     validator
       .required(value, "密码不能为空")
       .length(value, 8, 128, "密码长度必须在8-128个字符之间")
-      .pattern(
-        value,
-        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "密码必须包含大小写字母和数字",
-      );
+      .pattern(value, /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "密码必须包含大小写字母和数字");
 
     if (!validator.isValid()) {
-      throw new ValueObjectValidationFailedException(
-        validator.getAllErrors().join(", "),
-        {
-          passwordLength: value.length,
-        },
-      );
+      throw new ValueObjectValidationFailedException(validator.getAllErrors().join(", "), {
+        passwordLength: value.length,
+      });
     }
   }
 
@@ -277,21 +263,8 @@ export class UserProfile extends InternalEntity {
    * @param id 实体标识符，可选
    * @param auditInfo 审计信息，可选
    */
-  constructor(
-    aggregateRootId: EntityId,
-    name: string,
-    phone: string,
-    address: string,
-    id?: EntityId,
-    auditInfo?: AuditInfo,
-  ) {
-    super(
-      aggregateRootId,
-      id,
-      auditInfo,
-      EntityLifecycle.CREATED,
-      1,
-    );
+  constructor(aggregateRootId: EntityId, name: string, phone: string, address: string, id?: EntityId, auditInfo?: AuditInfo) {
+    super(aggregateRootId, id, auditInfo, EntityLifecycle.CREATED, 1);
     this._name = name;
     this._phone = phone;
     this._address = address;
@@ -315,11 +288,7 @@ export class UserProfile extends InternalEntity {
    * @param phone 新电话
    * @param address 新地址
    */
-  public updateProfile(
-    name: string,
-    phone: string,
-    address: string,
-  ): void {
+  public updateProfile(name: string, phone: string, address: string): void {
     this._name = name;
     this._phone = phone;
     this._address = address;
@@ -330,14 +299,7 @@ export class UserProfile extends InternalEntity {
    * @returns 新的用户资料实体实例
    */
   public clone(): UserProfile {
-    return new UserProfile(
-      this.aggregateRootId,
-      this._name,
-      this._phone,
-      this._address,
-      this.id.clone(),
-      this.auditInfo.clone(),
-    );
+    return new UserProfile(this.aggregateRootId, this._name, this._phone, this._address, this.id.clone(), this.auditInfo.clone());
   }
 }
 ```
@@ -378,12 +340,7 @@ export class User extends AggregateRoot {
    * @param id 用户标识符，可选
    * @param auditInfo 审计信息，可选
    */
-  constructor(
-    email: Email,
-    password: Password,
-    id?: EntityId,
-    auditInfo?: AuditInfo,
-  ) {
+  constructor(email: Email, password: Password, id?: EntityId, auditInfo?: AuditInfo) {
     super(id, auditInfo, EntityLifecycle.CREATED, 1);
     this._email = email.clone();
     this._password = password.clone();
@@ -415,18 +372,11 @@ export class User extends AggregateRoot {
    * @param operationManager 操作管理器
    * @returns Promise<操作结果>
    */
-  public async activate(
-    operationManager: OperationManager,
-  ): Promise<{ success: boolean; error?: Error }> {
+  public async activate(operationManager: OperationManager): Promise<{ success: boolean; error?: Error }> {
     const context = operationManager.createContext("activate-user").build();
     const parameters = { userId: this.id.value };
 
-    const result = await operationManager.executeOperation(
-      "activateUser",
-      this,
-      parameters,
-      context,
-    );
+    const result = await operationManager.executeOperation("activateUser", this, parameters, context);
 
     if (result.success) {
       this._isActive = true;
@@ -455,12 +405,7 @@ export class User extends AggregateRoot {
    * @param address 地址
    * @returns Promise<操作结果>
    */
-  public async updateProfile(
-    operationManager: OperationManager,
-    name: string,
-    phone: string,
-    address: string,
-  ): Promise<{ success: boolean; error?: Error }> {
+  public async updateProfile(operationManager: OperationManager, name: string, phone: string, address: string): Promise<{ success: boolean; error?: Error }> {
     const context = operationManager.createContext("update-profile").build();
     const parameters = {
       userId: this.id.value,
@@ -469,12 +414,7 @@ export class User extends AggregateRoot {
       address,
     };
 
-    const result = await operationManager.executeOperation(
-      "updateUserProfile",
-      this,
-      parameters,
-      context,
-    );
+    const result = await operationManager.executeOperation("updateUserProfile", this, parameters, context);
 
     if (result.success && this._profile) {
       this._profile.updateProfile(name, phone, address);
@@ -503,15 +443,12 @@ export class User extends AggregateRoot {
    * @param params 操作参数
    * @returns 操作结果
    */
-  protected performCoordination(
-    operation: string,
-    params: unknown,
-  ): unknown {
+  protected performCoordination(operation: string, params: unknown): unknown {
     switch (operation) {
       case "activateUser":
         // 协调激活操作：验证业务规则、检查前置条件等
         return { success: true, canActivate: true };
-      
+
       case "updateUserProfile":
         // 协调更新资料操作
         const { name, phone, address } = params as {
@@ -521,7 +458,7 @@ export class User extends AggregateRoot {
         };
         // 可以在这里调用领域服务进行验证
         return { success: true, validated: true };
-      
+
       default:
         return { success: false, error: "未知操作" };
     }
@@ -535,10 +472,7 @@ export class User extends AggregateRoot {
     // 业务不变量：
     // 1. 用户必须有有效的邮箱
     // 2. 如果已激活，必须有用户资料
-    return (
-      this._email.value.length > 0 &&
-      (!this._isActive || this._profile !== null)
-    );
+    return this._email.value.length > 0 && (!this._isActive || this._profile !== null);
   }
 
   /**
@@ -546,12 +480,7 @@ export class User extends AggregateRoot {
    * @returns 新的用户聚合根实例
    */
   public clone(): User {
-    const cloned = new User(
-      this._email.clone(),
-      this._password.clone(),
-      this.id.clone(),
-      this.auditInfo.clone(),
-    );
+    const cloned = new User(this._email.clone(), this._password.clone(), this.id.clone(), this.auditInfo.clone());
     cloned._isActive = this._isActive;
     cloned._profile = this._profile?.clone() || null;
     return cloned;
@@ -582,11 +511,7 @@ export class UserCreatedEvent extends DomainEvent {
    * @param email 用户邮箱
    * @param createdAt 创建时间
    */
-  constructor(
-    aggregateRootId: EntityId,
-    email: string,
-    createdAt: Date = new Date(),
-  ) {
+  constructor(aggregateRootId: EntityId, email: string, createdAt: Date = new Date()) {
     super(
       aggregateRootId,
       "UserCreated",
@@ -648,27 +573,14 @@ export class EmailFormatRule implements BusinessRule<User> {
    */
   public validate(entity: User): BusinessRuleValidationResult {
     if (!this.enabled) {
-      return BusinessRuleValidationResult.success(
-        "User",
-        entity.id.value,
-      );
+      return BusinessRuleValidationResult.success("User", entity.id.value);
     }
 
     const email = entity.email.value;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email)) {
-      return BusinessRuleValidationResult.failure(
-        "User",
-        entity.id.value,
-        [
-          this.createViolation(
-            "邮箱格式无效",
-            "INVALID_EMAIL_FORMAT",
-            { email },
-          ),
-        ],
-      );
+      return BusinessRuleValidationResult.failure("User", entity.id.value, [this.createViolation("邮箱格式无效", "INVALID_EMAIL_FORMAT", { email })]);
     }
 
     return BusinessRuleValidationResult.success("User", entity.id.value);
@@ -698,11 +610,7 @@ export class EmailFormatRule implements BusinessRule<User> {
    * @param details 违反详情
    * @returns 规则违反对象
    */
-  public createViolation(
-    message: string,
-    code: string = "BUSINESS_RULE_VIOLATION",
-    details?: Record<string, unknown>,
-  ): BusinessRuleViolation {
+  public createViolation(message: string, code: string = "BUSINESS_RULE_VIOLATION", details?: Record<string, unknown>): BusinessRuleViolation {
     return BusinessRuleViolation.error(message, code, this.name);
   }
 
@@ -823,12 +731,7 @@ export class UserRepository implements IUserRepository {
       const user = this.users.get(id.value);
       return user ? user.clone() : null;
     } catch (error) {
-      throw new RepositoryOperationFailedException(
-        `查找用户失败: ${error instanceof Error ? error.message : String(error)}`,
-        "findById",
-        { userId: id.value },
-        error instanceof Error ? error : undefined,
-      );
+      throw new RepositoryOperationFailedException(`查找用户失败: ${error instanceof Error ? error.message : String(error)}`, "findById", { userId: id.value }, error instanceof Error ? error : undefined);
     }
   }
 
@@ -836,12 +739,7 @@ export class UserRepository implements IUserRepository {
     try {
       this.users.set(aggregate.id.value, aggregate.clone());
     } catch (error) {
-      throw new RepositoryOperationFailedException(
-        `保存用户失败: ${error instanceof Error ? error.message : String(error)}`,
-        "save",
-        { userId: aggregate.id.value },
-        error instanceof Error ? error : undefined,
-      );
+      throw new RepositoryOperationFailedException(`保存用户失败: ${error instanceof Error ? error.message : String(error)}`, "save", { userId: aggregate.id.value }, error instanceof Error ? error : undefined);
     }
   }
 
@@ -849,12 +747,7 @@ export class UserRepository implements IUserRepository {
     try {
       this.users.delete(id.value);
     } catch (error) {
-      throw new RepositoryOperationFailedException(
-        `删除用户失败: ${error instanceof Error ? error.message : String(error)}`,
-        "delete",
-        { userId: id.value },
-        error instanceof Error ? error : undefined,
-      );
+      throw new RepositoryOperationFailedException(`删除用户失败: ${error instanceof Error ? error.message : String(error)}`, "delete", { userId: id.value }, error instanceof Error ? error : undefined);
     }
   }
 
@@ -867,12 +760,7 @@ export class UserRepository implements IUserRepository {
       }
       return null;
     } catch (error) {
-      throw new RepositoryOperationFailedException(
-        `根据邮箱查找用户失败: ${error instanceof Error ? error.message : String(error)}`,
-        "findByEmail",
-        { email: email.value },
-        error instanceof Error ? error : undefined,
-      );
+      throw new RepositoryOperationFailedException(`根据邮箱查找用户失败: ${error instanceof Error ? error.message : String(error)}`, "findByEmail", { email: email.value }, error instanceof Error ? error : undefined);
     }
   }
 
@@ -891,12 +779,7 @@ export class UserRepository implements IUserRepository {
       }
       return users;
     } catch (error) {
-      throw new RepositoryOperationFailedException(
-        `根据激活状态查找用户失败: ${error instanceof Error ? error.message : String(error)}`,
-        "findByActiveStatus",
-        { isActive },
-        error instanceof Error ? error : undefined,
-      );
+      throw new RepositoryOperationFailedException(`根据激活状态查找用户失败: ${error instanceof Error ? error.message : String(error)}`, "findByActiveStatus", { isActive }, error instanceof Error ? error : undefined);
     }
   }
 }
@@ -946,12 +829,7 @@ export class UserFactory implements IFactory<User, UserFactoryConfig> {
       const password = new Password(config.password);
 
       // 创建用户聚合根
-      const user = new User(
-        email,
-        password,
-        config.id,
-        config.auditInfo,
-      );
+      const user = new User(email, password, config.id, config.auditInfo);
 
       // 添加创建事件
       user.addDomainEvent({
@@ -966,12 +844,7 @@ export class UserFactory implements IFactory<User, UserFactoryConfig> {
 
       return user;
     } catch (error) {
-      throw new FactoryCreationFailedException(
-        "User",
-        `创建用户失败: ${error instanceof Error ? error.message : String(error)}`,
-        config,
-        error instanceof Error ? error : undefined,
-      );
+      throw new FactoryCreationFailedException("User", `创建用户失败: ${error instanceof Error ? error.message : String(error)}`, config, error instanceof Error ? error : undefined);
     }
   }
 
@@ -981,12 +854,7 @@ export class UserFactory implements IFactory<User, UserFactoryConfig> {
    * @returns 是否有效
    */
   public validateConfig(config: UserFactoryConfig): boolean {
-    return (
-      typeof config.email === "string" &&
-      config.email.length > 0 &&
-      typeof config.password === "string" &&
-      config.password.length > 0
-    );
+    return typeof config.email === "string" && config.email.length > 0 && typeof config.password === "string" && config.password.length > 0;
   }
 }
 ```
@@ -1062,9 +930,7 @@ const verifiedEmailSpec = new VerifiedEmailSpecification();
 const activeAndVerifiedSpec = activeUserSpec.and(verifiedEmailSpec);
 
 // 查询满足规约的用户
-const activeUsers = allUsers.filter((user) =>
-  activeAndVerifiedSpec.isSatisfiedBy(user),
-);
+const activeUsers = allUsers.filter((user) => activeAndVerifiedSpec.isSatisfiedBy(user));
 ```
 
 ---
@@ -1151,12 +1017,10 @@ export class UserRegistrationCoordinationRule implements ICoordinationRule {
 
   async execute(context: ICoordinationContext): Promise<ICoordinationResult> {
     const startTime = new Date();
-    
+
     try {
       // 获取服务
-      const validationService = this.serviceRegistry.get<UserValidationService>(
-        "UserValidationService",
-      );
+      const validationService = this.serviceRegistry.get<UserValidationService>("UserValidationService");
 
       if (!validationService) {
         throw new Error("UserValidationService not found");
@@ -1164,9 +1028,7 @@ export class UserRegistrationCoordinationRule implements ICoordinationRule {
 
       // 执行协调逻辑
       const { email } = context.operationData as { email: string };
-      const emailAvailable = await validationService.isEmailAvailable(
-        new Email(email),
-      );
+      const emailAvailable = await validationService.isEmailAvailable(new Email(email));
 
       if (!emailAvailable) {
         return {
@@ -1249,10 +1111,18 @@ export class UserRegistrationCoordinationRule implements ICoordinationRule {
   }
 
   // ... 其他必需的方法实现
-  validate(): ValidationResult { /* ... */ }
-  isApplicable(context: ICoordinationContext): boolean { return true; }
-  getDependencies(): string[] { return []; }
-  getMetadata() { /* ... */ }
+  validate(): ValidationResult {
+    /* ... */
+  }
+  isApplicable(context: ICoordinationContext): boolean {
+    return true;
+  }
+  getDependencies(): string[] {
+    return [];
+  }
+  getMetadata() {
+    /* ... */
+  }
 }
 ```
 
@@ -1265,14 +1135,7 @@ export class UserRegistrationCoordinationRule implements ICoordinationRule {
 ### 示例：激活用户操作
 
 ```typescript
-import {
-  IBusinessOperation,
-  OperationParameters,
-  OperationResult,
-  OperationContext,
-  ValidationResult,
-  BusinessOperationType,
-} from "@hl8/domain-kernel";
+import { IBusinessOperation, OperationParameters, OperationResult, OperationContext, ValidationResult, BusinessOperationType } from "@hl8/domain-kernel";
 import { User } from "./aggregates/user.js";
 
 /**
@@ -1295,10 +1158,7 @@ export class ActivateUserOperation implements IBusinessOperation<User> {
    * @param aggregate 聚合根
    * @returns 验证结果
    */
-  public validateParameters(
-    parameters: OperationParameters,
-    aggregate: User | null,
-  ): ValidationResult {
+  public validateParameters(parameters: OperationParameters, aggregate: User | null): ValidationResult {
     // 实现验证逻辑
     if (!aggregate) {
       return {
@@ -1323,7 +1183,7 @@ export class ActivateUserOperation implements IBusinessOperation<User> {
       getMessagesByLevel: () => [],
       getErrorsForField: () => [],
       getErrorsForRule: () => [],
-      merge: () => ({} as ValidationResult),
+      merge: () => ({}) as ValidationResult,
       toJSON: () => ({}),
       toString: () => "",
     };
@@ -1335,10 +1195,7 @@ export class ActivateUserOperation implements IBusinessOperation<User> {
    * @param parameters 操作参数
    * @returns 验证结果
    */
-  public checkPreconditions(
-    aggregate: User,
-    parameters: OperationParameters,
-  ): ValidationResult {
+  public checkPreconditions(aggregate: User, parameters: OperationParameters): ValidationResult {
     // 实现前置条件检查
     if (aggregate.isActive) {
       return {
@@ -1348,7 +1205,9 @@ export class ActivateUserOperation implements IBusinessOperation<User> {
       };
     }
 
-    return { /* ... 成功验证结果 */ };
+    return {
+      /* ... 成功验证结果 */
+    };
   }
 
   /**
@@ -1358,11 +1217,7 @@ export class ActivateUserOperation implements IBusinessOperation<User> {
    * @param context 操作上下文
    * @returns 操作结果
    */
-  public async execute(
-    aggregate: User,
-    parameters: OperationParameters,
-    context: OperationContext,
-  ): Promise<OperationResult> {
+  public async execute(aggregate: User, parameters: OperationParameters, context: OperationContext): Promise<OperationResult> {
     // 执行激活逻辑
     return {
       id: `result_${context.id}`,
@@ -1383,12 +1238,11 @@ export class ActivateUserOperation implements IBusinessOperation<User> {
    * @param result 操作结果
    * @returns 验证结果
    */
-  public checkPostconditions(
-    aggregate: User,
-    result: OperationResult,
-  ): ValidationResult {
+  public checkPostconditions(aggregate: User, result: OperationResult): ValidationResult {
     // 实现后置条件检查
-    return { /* ... 成功验证结果 */ };
+    return {
+      /* ... 成功验证结果 */
+    };
   }
 
   /**
@@ -1410,12 +1264,7 @@ export class ActivateUserOperation implements IBusinessOperation<User> {
 ### 示例：用户创建事件处理器
 
 ```typescript
-import {
-  IDomainEventHandler,
-  EventHandlerMetadata,
-  EventHandlerResult,
-  EventHandlerContext,
-} from "@hl8/domain-kernel";
+import { IDomainEventHandler, EventHandlerMetadata, EventHandlerResult, EventHandlerContext } from "@hl8/domain-kernel";
 import { DomainEvent } from "@hl8/domain-kernel";
 import { UserCreatedEvent } from "./events/user-created-event.js";
 
@@ -1430,10 +1279,7 @@ export class UserCreatedEventHandler implements IDomainEventHandler {
    * @param context 处理器上下文
    * @returns 处理结果
    */
-  public async handle(
-    event: DomainEvent,
-    context: EventHandlerContext,
-  ): Promise<EventHandlerResult> {
+  public async handle(event: DomainEvent, context: EventHandlerContext): Promise<EventHandlerResult> {
     try {
       const userCreatedEvent = event as UserCreatedEvent;
       const email = (userCreatedEvent.data as { email: string }).email;
@@ -1542,13 +1388,9 @@ try {
 
 // 方式2：直接抛出业务异常
 if (!user.isActive) {
-  throw new BusinessException(
-    "用户未激活，无法执行此操作",
-    "USER_NOT_ACTIVE",
-    {
-      userId: user.id.value,
-    },
-  );
+  throw new BusinessException("用户未激活，无法执行此操作", "USER_NOT_ACTIVE", {
+    userId: user.id.value,
+  });
 }
 
 // 方式3：使用包装器
@@ -1587,14 +1429,7 @@ export class UserRegistrationService {
   private readonly coordinationManager: CoordinationManager;
   private readonly eventProcessor: EventProcessor;
 
-  constructor(
-    userFactory: UserFactory,
-    userRepository: IUserRepository,
-    ruleManager: BusinessRuleManager<User>,
-    operationManager: OperationManager,
-    coordinationManager: CoordinationManager,
-    eventProcessor: EventProcessor,
-  ) {
+  constructor(userFactory: UserFactory, userRepository: IUserRepository, ruleManager: BusinessRuleManager<User>, operationManager: OperationManager, coordinationManager: CoordinationManager, eventProcessor: EventProcessor) {
     this.userFactory = userFactory;
     this.userRepository = userRepository;
     this.ruleManager = ruleManager;
@@ -1609,10 +1444,7 @@ export class UserRegistrationService {
    * @param password 密码
    * @returns 注册结果
    */
-  public async registerUser(
-    email: string,
-    password: string,
-  ): Promise<{ success: boolean; userId?: string; error?: string }> {
+  public async registerUser(email: string, password: string): Promise<{ success: boolean; userId?: string; error?: string }> {
     try {
       // 1. 使用工厂创建用户
       const user = this.userFactory.create({
@@ -1627,19 +1459,14 @@ export class UserRegistrationService {
       });
 
       if (!validationResult.isValid) {
-        const errors = validationResult.violations
-          .map((v) => v.message)
-          .join(", ");
+        const errors = validationResult.violations.map((v) => v.message).join(", ");
         return { success: false, error: errors };
       }
 
       // 3. 服务协调（例如验证邮箱可用性）
-      const coordinationContext = this.coordinationManager
-        .createContext("registerUser", { email }, ["UserValidationService"])
-        .build();
+      const coordinationContext = this.coordinationManager.createContext("registerUser", { email }, ["UserValidationService"]).build();
 
-      const coordinationResults =
-        await this.coordinationManager.executeCoordination(coordinationContext);
+      const coordinationResults = await this.coordinationManager.executeCoordination(coordinationContext);
 
       if (!coordinationResults.every((r) => r.success)) {
         return {

@@ -55,7 +55,9 @@ import { ApplicationKernelModule } from "@hl8/application-kernel";
     // 平台基础设施
     TypedConfigModule.forRoot({
       schema: ApplicationKernelConfig,
-      load: [/* 配置加载器 */],
+      load: [
+        /* 配置加载器 */
+      ],
     }),
     LoggerModule.forRoot(),
 
@@ -113,11 +115,7 @@ export class AppModule {}
 ```typescript
 import { Injectable } from "@nestjs/common";
 import { Logger } from "@hl8/logger";
-import {
-  UseCase,
-  UseCaseInput,
-  UseCaseOutput,
-} from "@hl8/application-kernel";
+import { UseCase, UseCaseInput, UseCaseOutput } from "@hl8/application-kernel";
 
 // 1. 定义输入
 class CreateUserInput extends UseCaseInput {
@@ -144,10 +142,7 @@ class CreateUserOutput extends UseCaseOutput {
 
 // 3. 实现用例
 @Injectable()
-export class CreateUserUseCase extends UseCase<
-  CreateUserInput,
-  CreateUserOutput
-> {
+export class CreateUserUseCase extends UseCase<CreateUserInput, CreateUserOutput> {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly eventBus: EventBusImpl,
@@ -156,27 +151,15 @@ export class CreateUserUseCase extends UseCase<
     super(logger);
   }
 
-  protected async executeBusinessLogic(
-    input: CreateUserInput,
-  ): Promise<CreateUserOutput> {
+  protected async executeBusinessLogic(input: CreateUserInput): Promise<CreateUserOutput> {
     // 1. 检查用户是否已存在
     const existing = await this.userRepository.findByEmail(input.email);
     if (existing) {
-      throw new UseCaseValidationException(
-        "用户已存在",
-        "USER_ALREADY_EXISTS",
-        this.useCaseName,
-        input,
-      );
+      throw new UseCaseValidationException("用户已存在", "USER_ALREADY_EXISTS", this.useCaseName, input);
     }
 
     // 2. 创建用户聚合
-    const user = User.create(
-      EntityId.generate(),
-      Email.create(input.email),
-      Password.create(input.password),
-      input.name ? UserName.create(input.name) : undefined,
-    );
+    const user = User.create(EntityId.generate(), Email.create(input.email), Password.create(input.password), input.name ? UserName.create(input.name) : undefined);
 
     // 3. 保存到仓储
     await this.userRepository.save(user);
@@ -196,9 +179,7 @@ export class CreateUserUseCase extends UseCase<
 // 4. 使用用例
 @Injectable()
 export class UserController {
-  constructor(
-    private readonly createUserUseCase: CreateUserUseCase,
-  ) {}
+  constructor(private readonly createUserUseCase: CreateUserUseCase) {}
 
   @Post("/users")
   async createUser(@Body() body: CreateUserDto) {
@@ -226,11 +207,7 @@ export class UserController {
 ### 命令实现
 
 ```typescript
-import {
-  BaseCommand,
-  BaseCommandHandler,
-  CommandResult,
-} from "@hl8/application-kernel";
+import { BaseCommand, BaseCommandHandler, CommandResult } from "@hl8/application-kernel";
 import { EntityId } from "@hl8/domain-kernel";
 
 // 1. 定义命令
@@ -239,10 +216,7 @@ class CreateUserCommand extends BaseCommand {
   public readonly password!: string;
   public readonly name?: string;
 
-  constructor(
-    aggregateId: string,
-    data: { email: string; password: string; name?: string },
-  ) {
+  constructor(aggregateId: string, data: { email: string; password: string; name?: string }) {
     super(aggregateId, "CreateUser", {
       correlationId: EntityId.generate().toString(),
     });
@@ -268,12 +242,7 @@ export class CreateUserCommandHandler extends BaseCommandHandler<CreateUserComma
       await this.validateCommand(command);
 
       // 2. 执行业务逻辑
-      const user = User.create(
-        EntityId.fromString(command.aggregateId),
-        Email.create(command.email),
-        Password.create(command.password),
-        command.name ? UserName.create(command.name) : undefined,
-      );
+      const user = User.create(EntityId.fromString(command.aggregateId), Email.create(command.email), Password.create(command.password), command.name ? UserName.create(command.name) : undefined);
 
       // 3. 保存
       await this.userRepository.save(user);
@@ -286,10 +255,7 @@ export class CreateUserCommandHandler extends BaseCommandHandler<CreateUserComma
         userId: user.getId().toString(),
       });
     } catch (error) {
-      return CommandResult.failure(
-        error instanceof Error ? error.message : String(error),
-        "COMMAND_EXECUTION_FAILED",
-      );
+      return CommandResult.failure(error instanceof Error ? error.message : String(error), "COMMAND_EXECUTION_FAILED");
     }
   }
 }
@@ -303,22 +269,17 @@ export class UserModule {}
 // 4. 使用命令总线执行
 @Injectable()
 export class UserController {
-  constructor(
-    private readonly commandBus: CommandQueryBusImpl,
-  ) {}
+  constructor(private readonly commandBus: CommandQueryBusImpl) {}
 
   @Post("/users")
   async createUser(@Body() body: CreateUserDto) {
-    const command = new CreateUserCommand(
-      EntityId.generate().toString(),
-      body,
-    );
+    const command = new CreateUserCommand(EntityId.generate().toString(), body);
     const result = await this.commandBus.executeCommand(command);
-    
+
     if (!result.success) {
       throw new BadRequestException(result.error);
     }
-    
+
     return result.data;
   }
 }
@@ -333,11 +294,7 @@ export class UserController {
 ### 查询实现
 
 ```typescript
-import {
-  BaseQuery,
-  BaseQueryHandler,
-  QueryResult,
-} from "@hl8/application-kernel";
+import { BaseQuery, BaseQueryHandler, QueryResult } from "@hl8/application-kernel";
 
 // 1. 定义查询
 class GetUserQuery extends BaseQuery {
@@ -370,9 +327,7 @@ export class GetUserQueryHandler extends BaseQueryHandler<GetUserQuery> {
     }
 
     // 2. 从仓储查询
-    const user = await this.userRepository.findById(
-      EntityId.fromString(query.userId),
-    );
+    const user = await this.userRepository.findById(EntityId.fromString(query.userId));
 
     if (!user) {
       return QueryResult.failure("用户不存在", "USER_NOT_FOUND");
@@ -397,19 +352,17 @@ export class GetUserQueryHandler extends BaseQueryHandler<GetUserQuery> {
 // 3. 使用查询总线执行
 @Injectable()
 export class UserController {
-  constructor(
-    private readonly queryBus: CommandQueryBusImpl,
-  ) {}
+  constructor(private readonly queryBus: CommandQueryBusImpl) {}
 
   @Get("/users/:id")
   async getUser(@Param("id") id: string) {
     const query = new GetUserQuery(id);
     const result = await this.queryBus.executeQuery(query);
-    
+
     if (!result.success) {
       throw new NotFoundException(result.error);
     }
-    
+
     return result.data;
   }
 }
@@ -424,10 +377,7 @@ export class UserController {
 ### 事件存储
 
 ```typescript
-import {
-  EventStore,
-  DomainEvent,
-} from "@hl8/application-kernel";
+import { EventStore, DomainEvent } from "@hl8/application-kernel";
 import { EntityId } from "@hl8/domain-kernel";
 
 @Injectable()
@@ -439,22 +389,13 @@ export class UserService {
 
   async createUser(email: string, password: string): Promise<void> {
     // 1. 创建用户聚合
-    const user = User.create(
-      EntityId.generate(),
-      Email.create(email),
-      Password.create(password),
-    );
+    const user = User.create(EntityId.generate(), Email.create(email), Password.create(password));
 
     // 2. 获取未提交的事件
     const events = user.getUncommittedEvents();
 
     // 3. 保存事件到事件存储
-    await this.eventStore.appendEvents(
-      user.getId().toString(),
-      "User",
-      events,
-      user.getVersion(),
-    );
+    await this.eventStore.appendEvents(user.getId().toString(), "User", events, user.getVersion());
 
     // 4. 提交事件（标记为已提交）
     user.markEventsAsCommitted();
@@ -465,10 +406,7 @@ export class UserService {
 
   async getUserById(userId: string): Promise<User> {
     // 1. 从事件存储获取所有事件
-    const events = await this.eventStore.getEvents(
-      userId,
-      "User",
-    );
+    const events = await this.eventStore.getEvents(userId, "User");
 
     // 2. 重放事件重建聚合状态
     const user = new User(EntityId.fromString(userId));
@@ -501,10 +439,7 @@ export class UserCreatedEventHandler {
     });
 
     // 发送欢迎邮件
-    await this.emailService.sendWelcomeEmail(
-      event.email.getValue(),
-      event.name?.getValue(),
-    );
+    await this.emailService.sendWelcomeEmail(event.email.getValue(), event.name?.getValue());
   }
 }
 ```
@@ -518,10 +453,7 @@ export class UserCreatedEventHandler {
 ### 投影器实现
 
 ```typescript
-import {
-  Projector,
-  ProjectorHandler,
-} from "@hl8/application-kernel";
+import { Projector, ProjectorHandler } from "@hl8/application-kernel";
 
 // 1. 定义读模型
 interface UserReadModel {
@@ -557,10 +489,7 @@ export class UserProjectorHandler extends ProjectorHandler {
 
   @ProjectorHandler({ eventType: "UserUpdated" })
   async handleUserUpdated(event: UserUpdatedEvent): Promise<void> {
-    const existing = await this.readModelStore.findById<UserReadModel>(
-      "users",
-      event.aggregateId.toString(),
-    );
+    const existing = await this.readModelStore.findById<UserReadModel>("users", event.aggregateId.toString());
 
     if (!existing) {
       return;
@@ -592,11 +521,7 @@ Saga 用于协调跨聚合的长时间运行业务流程。
 ### Saga 实现
 
 ```typescript
-import {
-  Saga,
-  BaseSagaStep,
-  SagaStateManager,
-} from "@hl8/application-kernel";
+import { Saga, BaseSagaStep, SagaStateManager } from "@hl8/application-kernel";
 import { EntityId } from "@hl8/domain-kernel";
 
 // 1. 定义 Saga 数据
@@ -612,7 +537,7 @@ interface OrderProcessingSagaData {
 class CreatePaymentStep extends BaseSagaStep {
   async execute(context: SagaContext): Promise<void> {
     const data = context.data as OrderProcessingSagaData;
-    
+
     // 创建支付
     const payment = await this.paymentService.createPayment({
       orderId: data.orderId,
@@ -628,7 +553,7 @@ class CreatePaymentStep extends BaseSagaStep {
 
   async compensate(context: SagaContext): Promise<void> {
     const data = context.data as OrderProcessingSagaData;
-    
+
     // 取消支付
     if (data.paymentId) {
       await this.paymentService.cancelPayment(data.paymentId);
@@ -639,7 +564,7 @@ class CreatePaymentStep extends BaseSagaStep {
 class CreateShippingStep extends BaseSagaStep {
   async execute(context: SagaContext): Promise<void> {
     const data = context.data as OrderProcessingSagaData;
-    
+
     // 创建物流
     const shipping = await this.shippingService.createShipping({
       orderId: data.orderId,
@@ -654,7 +579,7 @@ class CreateShippingStep extends BaseSagaStep {
 
   async compensate(context: SagaContext): Promise<void> {
     const data = context.data as OrderProcessingSagaData;
-    
+
     // 取消物流
     if (data.shippingId) {
       await this.shippingService.cancelShipping(data.shippingId);
@@ -727,13 +652,7 @@ export class OrderService {
 @Module({
   imports: [ApplicationKernelModule],
   controllers: [UserController],
-  providers: [
-    CreateUserUseCase,
-    CreateUserCommandHandler,
-    GetUserQueryHandler,
-    UserProjectorHandler,
-    UserRepository,
-  ],
+  providers: [CreateUserUseCase, CreateUserCommandHandler, GetUserQueryHandler, UserProjectorHandler, UserRepository],
 })
 export class UserModule {}
 
@@ -818,12 +737,7 @@ async handle(event: UserCreatedEvent) { ... }
 
 ```typescript
 // ✅ 使用应用层异常
-throw new UseCaseValidationException(
-  "用户已存在",
-  "USER_ALREADY_EXISTS",
-  this.useCaseName,
-  input,
-);
+throw new UseCaseValidationException("用户已存在", "USER_ALREADY_EXISTS", this.useCaseName, input);
 ```
 
 ### 5. 日志记录

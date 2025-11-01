@@ -254,16 +254,16 @@ pnpm test --testPathPatterns="api.contract"
 
 完整的文档集合：
 
-| 文档 | 说明 |
-|------|------|
-| [快速入门指南](./QUICKSTART.md) | 快速上手使用应用内核 |
-| [API 参考](./API.md) | 完整的 API 文档 |
-| [故障排除指南](./TROUBLESHOOTING.md) | 常见问题解决方案 |
-| [性能调优指南](./PERFORMANCE.md) | 性能优化最佳实践 |
-| [迁移指南](./MIGRATION.md) | 从现有系统迁移 |
-| [安全考虑文档](./SECURITY.md) | 安全最佳实践 |
-| [部署和配置指南](./DEPLOYMENT.md) | 部署和配置详解 |
-| [项目评价报告](./EVALUATION.md) | 项目评价和改进建议 |
+| 文档                                 | 说明                 |
+| ------------------------------------ | -------------------- |
+| [快速入门指南](./QUICKSTART.md)      | 快速上手使用应用内核 |
+| [API 参考](./API.md)                 | 完整的 API 文档      |
+| [故障排除指南](./TROUBLESHOOTING.md) | 常见问题解决方案     |
+| [性能调优指南](./PERFORMANCE.md)     | 性能优化最佳实践     |
+| [迁移指南](./MIGRATION.md)           | 从现有系统迁移       |
+| [安全考虑文档](./SECURITY.md)        | 安全最佳实践         |
+| [部署和配置指南](./DEPLOYMENT.md)    | 部署和配置详解       |
+| [项目评价报告](./EVALUATION.md)      | 项目评价和改进建议   |
 
 ---
 

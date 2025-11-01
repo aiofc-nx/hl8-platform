@@ -55,17 +55,17 @@
 const assessment = {
   // 用例数量
   useCaseCount: countUseCases(),
-  
+
   // 命令和查询数量
   commandCount: countCommands(),
   queryCount: countQueries(),
-  
+
   // 事件处理数量
   eventHandlerCount: countEventHandlers(),
-  
+
   // 依赖关系
   dependencies: analyzeDependencies(),
-  
+
   // 测试覆盖率
   testCoverage: calculateCoverage(),
 };
@@ -151,10 +151,7 @@ class CreateUserOutput extends UseCaseOutput {
 
 // 3. 实现用例
 @Injectable()
-export class CreateUserUseCase extends UseCase<
-  CreateUserInput,
-  CreateUserOutput
-> {
+export class CreateUserUseCase extends UseCase<CreateUserInput, CreateUserOutput> {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly eventBus: EventBusImpl,
@@ -163,15 +160,9 @@ export class CreateUserUseCase extends UseCase<
     super(logger);
   }
 
-  protected async executeBusinessLogic(
-    input: CreateUserInput,
-  ): Promise<CreateUserOutput> {
+  protected async executeBusinessLogic(input: CreateUserInput): Promise<CreateUserOutput> {
     // 业务逻辑
-    const user = User.create(
-      EntityId.generate(),
-      Email.create(input.email),
-      Password.create(input.password),
-    );
+    const user = User.create(EntityId.generate(), Email.create(input.email), Password.create(input.password));
 
     await this.userRepository.save(user);
 
@@ -231,11 +222,7 @@ class CreateUserCommand extends BaseCommand {
 @Injectable()
 export class CreateUserCommandHandler extends BaseCommandHandler<CreateUserCommand> {
   async handle(command: CreateUserCommand): Promise<CommandResult> {
-    const user = User.create(
-      EntityId.fromString(command.aggregateId),
-      Email.create(command.email),
-      Password.create(command.password),
-    );
+    const user = User.create(EntityId.fromString(command.aggregateId), Email.create(command.email), Password.create(command.password));
 
     await this.userRepository.save(user);
     await this.eventBus.publish(...user.getUncommittedEvents());
@@ -249,16 +236,11 @@ export class CreateUserCommandHandler extends BaseCommandHandler<CreateUserComma
 // 3. 使用命令总线
 @Controller("/users")
 export class UserController {
-  constructor(
-    private readonly commandBus: CommandQueryBusImpl,
-  ) {}
+  constructor(private readonly commandBus: CommandQueryBusImpl) {}
 
   @Post()
   async createUser(@Body() data: CreateUserDto) {
-    const command = new CreateUserCommand(
-      EntityId.generate().toString(),
-      data,
-    );
+    const command = new CreateUserCommand(EntityId.generate().toString(), data);
     const result = await this.commandBus.executeCommand(command);
     return result.data;
   }
@@ -296,9 +278,7 @@ class GetUserQuery extends BaseQuery {
 @Injectable()
 export class GetUserQueryHandler extends BaseQueryHandler<GetUserQuery> {
   async handle(query: GetUserQuery): Promise<QueryResult> {
-    const user = await this.userRepository.findById(
-      EntityId.fromString(query.userId),
-    );
+    const user = await this.userRepository.findById(EntityId.fromString(query.userId));
 
     if (!user) {
       return QueryResult.failure("用户不存在", "USER_NOT_FOUND");
@@ -314,9 +294,7 @@ export class GetUserQueryHandler extends BaseQueryHandler<GetUserQuery> {
 // 3. 使用查询总线
 @Controller("/users")
 export class UserController {
-  constructor(
-    private readonly queryBus: CommandQueryBusImpl,
-  ) {}
+  constructor(private readonly queryBus: CommandQueryBusImpl) {}
 
   @Get(":id")
   async getUser(@Param("id") id: string) {
@@ -338,16 +316,14 @@ export class UserController {
 ```typescript
 @Injectable()
 export class UserService {
-  constructor(
-    private readonly eventEmitter: EventEmitter2,
-  ) {}
+  constructor(private readonly eventEmitter: EventEmitter2) {}
 
   async createUser(data: CreateUserDto) {
     const user = await this.repository.create(data);
-    
+
     // 发送事件
     this.eventEmitter.emit("user.created", user);
-    
+
     return user;
   }
 }
@@ -377,10 +353,10 @@ export class CreateUserUseCase extends UseCase<Input, Output> {
 
   protected async executeBusinessLogic(input: Input): Promise<Output> {
     const user = User.create(...);
-    
+
     // ✅ 发布领域事件
     await this.eventBus.publish(...user.getUncommittedEvents());
-    
+
     return output;
   }
 }
@@ -393,7 +369,7 @@ export class UserCreatedEventHandler {
     // ✅ 使用类型化事件
     const userId = event.aggregateId.toString();
     const email = event.email.getValue();
-    
+
     // 处理事件
     await this.sendWelcomeEmail(email);
   }
@@ -414,11 +390,7 @@ await this.repository.save(user);
 ```typescript
 // 1. 保存事件
 const events = user.getUncommittedEvents();
-await this.eventStore.saveEvents(
-  user.getId(),
-  events,
-  user.getVersion(),
-);
+await this.eventStore.saveEvents(user.getId(), events, user.getVersion());
 
 // 2. 标记事件为已提交
 user.markEventsAsCommitted();
@@ -497,11 +469,7 @@ try {
 **迁移后**:
 
 ```typescript
-import {
-  UseCaseException,
-  UseCaseValidationException,
-  ExceptionCodes,
-} from "@hl8/application-kernel";
+import { UseCaseException, UseCaseValidationException, ExceptionCodes } from "@hl8/application-kernel";
 
 try {
   await this.useCase.execute(input);
@@ -510,15 +478,8 @@ try {
   if (error instanceof UseCaseValidationException) {
     throw error; // 直接重新抛出
   }
-  
-  throw new UseCaseException(
-    "创建用户失败",
-    ExceptionCodes.USE_CASE_EXECUTION_FAILED,
-    "CreateUserUseCase",
-    input,
-    { originalError: error.message },
-    error,
-  );
+
+  throw new UseCaseException("创建用户失败", ExceptionCodes.USE_CASE_EXECUTION_FAILED, "CreateUserUseCase", input, { originalError: error.message }, error);
 }
 ```
 
@@ -566,19 +527,15 @@ describe("UserService", () => {
 ```typescript
 describe("CreateUserUseCase", () => {
   it("should create user", async () => {
-    const useCase = new CreateUserUseCase(
-      mockRepository,
-      mockEventBus,
-      logger,
-    );
-    
+    const useCase = new CreateUserUseCase(mockRepository, mockEventBus, logger);
+
     const input = new CreateUserInput({
       email: "test@example.com",
       password: "password123",
     });
-    
+
     const output = await useCase.execute(input);
-    
+
     expect(output.email).toBe("test@example.com");
   });
 });

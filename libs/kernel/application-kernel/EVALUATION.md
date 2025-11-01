@@ -180,12 +180,12 @@ export abstract class UseCase<TInput extends UseCaseInput, TOutput extends UseCa
 @Injectable()
 export abstract class UseCase<TInput extends UseCaseInput, TOutput extends UseCaseOutput> {
   protected readonly logger: Hl8Logger;
-  
+
   public async execute(input: TInput): Promise<TOutput> {
     await this.validateInput(input);
     return await this.executeBusinessLogic(input);
   }
-  
+
   protected abstract executeBusinessLogic(input: TInput): Promise<TOutput>;
 }
 ```
@@ -473,15 +473,15 @@ coverageThreshold: {
 
 ### 10.1 项目规范 ✅
 
-| 规范项 | 要求 | 实际 | 状态 |
-|--------|------|------|------|
-| TypeScript 配置 | NodeNext | NodeNext | ✅ |
-| 模块系统 | ESM | ESM | ✅ |
-| 严格模式 | strict: true | strict: true | ✅ |
-| ESLint | 统一配置 | 使用统一配置 | ✅ |
-| 测试位置 | 就近原则 | 符合 | ✅ |
-| 注释规范 | TSDoc | 符合 | ✅ |
-| Node 版本 | >=20 | >=20 | ✅ |
+| 规范项          | 要求         | 实际         | 状态 |
+| --------------- | ------------ | ------------ | ---- |
+| TypeScript 配置 | NodeNext     | NodeNext     | ✅   |
+| 模块系统        | ESM          | ESM          | ✅   |
+| 严格模式        | strict: true | strict: true | ✅   |
+| ESLint          | 统一配置     | 使用统一配置 | ✅   |
+| 测试位置        | 就近原则     | 符合         | ✅   |
+| 注释规范        | TSDoc        | 符合         | ✅   |
+| Node 版本       | >=20         | >=20         | ✅   |
 
 **评价**: ✅ 完全符合项目规范
 
@@ -638,15 +638,15 @@ coverageThreshold: {
 
 ## 17. 评分总结
 
-| 评价维度 | 评分 | 说明 |
-|---------|------|------|
-| 架构设计 | ⭐⭐⭐⭐⭐ | 完整实现多种架构模式 |
-| 代码质量 | ⭐⭐⭐⭐⭐ | 类型安全，注释完整 |
-| 测试覆盖 | ⭐⭐⭐⭐ | 测试充分，覆盖率命令需修复 |
-| 文档完整性 | ⭐⭐⭐ | 基础文档完整，需要开发指引 |
-| 规范遵循 | ⭐⭐⭐⭐⭐ | 完全符合项目规范 |
-| 功能完整性 | ⭐⭐⭐⭐ | 核心功能完整，部分高级功能待完善 |
-| **总体评分** | **⭐⭐⭐⭐** | **优秀，有改进空间** |
+| 评价维度     | 评分         | 说明                             |
+| ------------ | ------------ | -------------------------------- |
+| 架构设计     | ⭐⭐⭐⭐⭐   | 完整实现多种架构模式             |
+| 代码质量     | ⭐⭐⭐⭐⭐   | 类型安全，注释完整               |
+| 测试覆盖     | ⭐⭐⭐⭐     | 测试充分，覆盖率命令需修复       |
+| 文档完整性   | ⭐⭐⭐       | 基础文档完整，需要开发指引       |
+| 规范遵循     | ⭐⭐⭐⭐⭐   | 完全符合项目规范                 |
+| 功能完整性   | ⭐⭐⭐⭐     | 核心功能完整，部分高级功能待完善 |
+| **总体评分** | **⭐⭐⭐⭐** | **优秀，有改进空间**             |
 
 ---
 

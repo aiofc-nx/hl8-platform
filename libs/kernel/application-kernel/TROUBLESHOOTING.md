@@ -280,16 +280,11 @@ export class UserModule {}
 ```typescript
 @Injectable()
 export class UserService {
-  constructor(
-    private readonly commandBus: CommandQueryBusImpl,
-  ) {}
+  constructor(private readonly commandBus: CommandQueryBusImpl) {}
 
   async onModuleInit() {
     // 手动注册处理器
-    await this.commandBus.registerCommandHandler(
-      "CreateUser",
-      this.commandHandler,
-    );
+    await this.commandBus.registerCommandHandler("CreateUser", this.commandHandler);
   }
 }
 ```
@@ -318,11 +313,11 @@ class CreateUserCommand extends BaseCommand {
 async handle(query: GetUserQuery): Promise<QueryResult> {
   // ✅ 确保返回正确格式
   const user = await this.repository.findById(query.userId);
-  
+
   if (!user) {
     return QueryResult.failure("用户不存在", "USER_NOT_FOUND");
   }
-  
+
   return QueryResult.success(user); // ✅ 使用 success 方法
 }
 ```
@@ -393,7 +388,7 @@ ApplicationKernelModule.forRoot({
       backoffMs: 1000,
     },
   },
-})
+});
 ```
 
 ---
@@ -418,7 +413,7 @@ ApplicationKernelModule.forRoot({
     postgresql: process.env.POSTGRES_URL, // ✅ 检查环境变量
     mongodb: process.env.MONGODB_URL,
   },
-})
+});
 ```
 
 2. **检查版本冲突**:
@@ -460,15 +455,15 @@ try {
 ```typescript
 async getUserById(userId: string): Promise<User> {
   const events = await this.eventStore.getEvents(userId);
-  
+
   // ✅ 创建聚合实例
   const user = new User(EntityId.fromString(userId));
-  
+
   // ✅ 按顺序应用事件
   events.forEach((event) => {
     user.applyDomainEvent(event);
   });
-  
+
   return user;
 }
 ```
