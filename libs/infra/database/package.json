@@ -1,0 +1,78 @@
+{
+  "name": "@hl8/database",
+  "version": "1.0.0",
+  "description": "数据库连接管理模块 - 提供数据库连接、事务管理、多租户隔离等功能",
+  "keywords": [
+    "nestjs",
+    "database",
+    "mikroorm",
+    "postgresql",
+    "multi-tenancy",
+    "transaction",
+    "connection-pool"
+  ],
+  "license": "MIT",
+  "author": "HL8 Team",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./index.js": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "migration:create": "mikro-orm migration:create",
+    "migration:down": "mikro-orm migration:down",
+    "migration:pending": "mikro-orm migration:pending",
+    "migration:up": "mikro-orm migration:up",
+    "schema:drop": "mikro-orm schema:drop --run",
+    "schema:fresh": "mikro-orm schema:fresh --run",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:cov": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hl8/domain-kernel": "workspace:*",
+    "@hl8/logger": "workspace:*",
+    "@mikro-orm/core": "^6.4.2",
+    "@mikro-orm/mongodb": "^6.4.2",
+    "@mikro-orm/nestjs": "^6.0.2",
+    "@mikro-orm/postgresql": "^6.4.2",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "nestjs-cls": "^6.0.1",
+    "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.2.0",
+    "@nestjs/testing": "^11.1.6",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.16.0",
+    "@types/uuid": "^11.0.0",
+    "jest": "^30.2.0",
+    "reflect-metadata": "^0.2.2",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
