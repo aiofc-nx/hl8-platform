@@ -145,17 +145,17 @@
 
 ### Tests for User Story 5
 
-- [ ] T041 [P] [US5] Create unit test for SpecificationConverter in libs/kernel/infrastructure-kernel/src/queries/specification-converter.spec.ts
-- [ ] T042 [P] [US5] Create integration test for specification pattern queries in libs/kernel/infrastructure-kernel/test/integration/specification-query.integration.spec.ts
+- [x] T041 [P] [US5] Create unit test for SpecificationConverter in libs/kernel/infrastructure-kernel/src/queries/specification-converter.spec.ts
+- [x] T042 [P] [US5] Create integration test for specification pattern queries in libs/kernel/infrastructure-kernel/test/integration/specification-query.integration.spec.ts
 
 ### Implementation for User Story 5
 
-- [ ] T043 [P] [US5] Create ISpecificationConverter interface in libs/kernel/infrastructure-kernel/src/queries/specification-converter.interface.ts
-- [ ] T044 [P] [US5] Create QueryBuilder class in libs/kernel/infrastructure-kernel/src/queries/query-builder.ts
-- [ ] T045 [US5] Implement SpecificationConverter with convertToQuery method in libs/kernel/infrastructure-kernel/src/queries/specification-converter.ts
-- [ ] T046 [US5] Implement AND, OR, NOT combination support (nesting depth ≤ 5) in libs/kernel/infrastructure-kernel/src/queries/specification-converter.ts
-- [ ] T047 [US5] Implement automatic tenant filter injection for tenant-isolated queries in libs/kernel/infrastructure-kernel/src/queries/query-builder.ts
-- [ ] T048 [US5] Add TSDoc comments in Chinese for all public methods in libs/kernel/infrastructure-kernel/src/queries/specification-converter.ts
+- [x] T043 [P] [US5] Create ISpecificationConverter interface in libs/kernel/infrastructure-kernel/src/queries/specification-converter.interface.ts
+- [x] T044 [P] [US5] Create QueryBuilder class in libs/kernel/infrastructure-kernel/src/queries/query-builder.ts
+- [x] T045 [US5] Implement SpecificationConverter with convertToQuery method in libs/kernel/infrastructure-kernel/src/queries/specification-converter.ts
+- [x] T046 [US5] Implement AND, OR, NOT combination support (nesting depth ≤ 5) in libs/kernel/infrastructure-kernel/src/queries/specification-converter.ts
+- [x] T047 [US5] Implement automatic tenant filter injection for tenant-isolated queries in libs/kernel/infrastructure-kernel/src/queries/query-builder.ts
+- [x] T048 [US5] Add TSDoc comments in Chinese for all public methods in libs/kernel/infrastructure-kernel/src/queries/specification-converter.ts
 
 **Checkpoint**: At this point, User Story 5 should be fully functional. Specification Pattern queries should execute with 100% accuracy for specifications with nesting depth ≤ 5 levels.
 
