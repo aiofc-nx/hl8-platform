@@ -18,7 +18,6 @@ import {
   ISpecification,
   IQuerySpecification,
   QueryCriteria,
-  QueryCondition,
   QueryOperator,
   AndSpecification,
   OrSpecification,
@@ -77,19 +76,19 @@ class TestQuerySpecification<T> implements IQuerySpecification<T> {
     return undefined;
   }
 
-  withSorting(_sortingCriteria: any) {
+  withSorting(_sortingCriteria: any): IQuerySpecification<T> {
     return this;
   }
 
-  withPagination(_paginationCriteria: any) {
+  withPagination(_paginationCriteria: any): IQuerySpecification<T> {
     return this;
   }
 
-  andCriteria(_criteria: any) {
+  andCriteria(_criteria: any): IQuerySpecification<T> {
     return this;
   }
 
-  orCriteria(_criteria: any) {
+  orCriteria(_criteria: any): IQuerySpecification<T> {
     return this;
   }
 
@@ -97,7 +96,7 @@ class TestQuerySpecification<T> implements IQuerySpecification<T> {
     return undefined;
   }
 
-  withLimit(_limit: number) {
+  withLimit(_limit: number): IQuerySpecification<T> {
     return this;
   }
 
@@ -105,7 +104,7 @@ class TestQuerySpecification<T> implements IQuerySpecification<T> {
     return undefined;
   }
 
-  withOffset(_offset: number) {
+  withOffset(_offset: number): IQuerySpecification<T> {
     return this;
   }
 
@@ -117,12 +116,18 @@ class TestQuerySpecification<T> implements IQuerySpecification<T> {
     return 0;
   }
 
-  optimize() {
+  optimize(): IQuerySpecification<T> {
     return this;
   }
 
   validate() {
-    return { isValid: true, errors: [], complexityScore: 0 };
+    return {
+      isValid: true,
+      errors: [],
+      warnings: [],
+      complexityScore: 0,
+      performanceSuggestions: [],
+    };
   }
 }
 
@@ -465,4 +470,3 @@ describe("Specification Query Integration Tests", () => {
     });
   });
 });
-

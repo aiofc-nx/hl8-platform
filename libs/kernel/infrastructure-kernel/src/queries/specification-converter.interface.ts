@@ -3,7 +3,6 @@
  * @description 定义将 domain-kernel 规范转换为 MikroORM 查询的接口
  */
 
-import { EntityManager } from "@mikro-orm/core";
 import { ISpecification } from "@hl8/domain-kernel";
 import { QueryCriteria } from "@hl8/domain-kernel";
 
@@ -15,7 +14,9 @@ export interface MikroORMQueryOptions {
   /** 查询条件对象 */
   where?: Record<string, any>;
   /** 排序选项 */
-  orderBy?: Record<string, "asc" | "desc"> | Array<Record<string, "asc" | "desc">>;
+  orderBy?:
+    | Record<string, "asc" | "desc">
+    | Array<Record<string, "asc" | "desc">>;
   /** 限制数量 */
   limit?: number;
   /** 偏移量 */
@@ -24,6 +25,8 @@ export interface MikroORMQueryOptions {
   fields?: string[];
   /** 是否去重 */
   distinct?: boolean;
+  /** 过滤器选项（用于租户隔离等） */
+  filters?: Record<string, any>;
 }
 
 /**
@@ -60,4 +63,3 @@ export interface ISpecificationConverter {
    */
   getNestingDepth<T>(spec: ISpecification<T>): number;
 }
-

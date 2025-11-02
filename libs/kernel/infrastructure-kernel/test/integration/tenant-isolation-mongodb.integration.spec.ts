@@ -68,7 +68,6 @@ describe("MongoDB Tenant Isolation Integration Tests", () => {
     tenant2Id = TenantId.generate();
     org1Id = new OrganizationId(tenant1Id);
     org2Id = new OrganizationId(tenant1Id); // 同一个租户下的不同组织
-    org3Id = new OrganizationId(tenant2Id);
     dept1Id = new DepartmentId(org1Id);
     dept2Id = new DepartmentId(org1Id); // 同一个组织下的不同部门
   }, 60000); // 60秒超时

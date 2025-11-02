@@ -3,7 +3,11 @@
  * @description 用于构建 MikroORM 查询，自动注入租户过滤条件
  */
 
-import { ISpecification, TenantContext, QueryCriteria } from "@hl8/domain-kernel";
+import {
+  ISpecification,
+  TenantContext,
+  QueryCriteria,
+} from "@hl8/domain-kernel";
 import {
   ISpecificationConverter,
   MikroORMQueryOptions,
@@ -49,10 +53,7 @@ export class QueryBuilder {
       if (options.where) {
         // 合并现有条件和租户过滤条件（使用 AND 逻辑）
         options.where = {
-          $and: [
-            options.where,
-            tenantFilters.filters.tenant,
-          ],
+          $and: [options.where, tenantFilters.filters.tenant],
         };
       } else {
         // 如果现有条件为空，直接使用租户过滤条件
@@ -90,10 +91,7 @@ export class QueryBuilder {
       // 合并租户过滤条件到 where 条件中
       if (options.where) {
         options.where = {
-          $and: [
-            options.where,
-            tenantFilters.filters.tenant,
-          ],
+          $and: [options.where, tenantFilters.filters.tenant],
         };
       } else {
         options.where = tenantFilters.filters.tenant;
@@ -109,4 +107,3 @@ export class QueryBuilder {
     return options;
   }
 }
-

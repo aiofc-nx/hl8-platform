@@ -3,7 +3,13 @@
  * @description 将 domain-kernel 的规范转换为 MikroORM 查询条件
  */
 
-import { ISpecification, IQuerySpecification, QueryCriteria, QueryCondition, QueryOperator } from "@hl8/domain-kernel";
+import {
+  ISpecification,
+  IQuerySpecification,
+  QueryCriteria,
+  QueryCondition,
+  QueryOperator,
+} from "@hl8/domain-kernel";
 import {
   ISpecificationConverter,
   MikroORMQueryOptions,
@@ -26,13 +32,13 @@ export class SpecificationConverter implements ISpecificationConverter {
    * 将规范转换为查询条件
    * @description 将 ISpecification 转换为 MikroORM 查询选项
    * @param spec 规范实例
-   * @param entityName 实体名称
+   * @param _entityName 实体名称（保留用于未来扩展）
    * @returns MikroORM查询选项
    * @throws {Error} 当规范嵌套层级超过限制或转换失败时抛出
    */
   convertToQuery<T>(
     spec: ISpecification<T>,
-    entityName: string,
+    _entityName: string,
   ): MikroORMQueryOptions {
     // 检查嵌套深度
     const depth = this.getNestingDepth(spec);
@@ -139,9 +145,7 @@ export class SpecificationConverter implements ISpecificationConverter {
     depth: number,
   ): MikroORMQueryOptions {
     if (depth > MAX_NESTING_DEPTH) {
-      throw new Error(
-        `规范嵌套深度超过最大限制 ${MAX_NESTING_DEPTH}`,
-      );
+      throw new Error(`规范嵌套深度超过最大限制 ${MAX_NESTING_DEPTH}`);
     }
 
     // 处理 AndSpecification
@@ -158,7 +162,7 @@ export class SpecificationConverter implements ISpecificationConverter {
       // 合并 AND 条件
       const leftWhere = leftQuery.where || {};
       const rightWhere = rightQuery.where || {};
-      
+
       // 如果已经有 $and，合并；否则创建新的 $and
       let mergedWhere: any;
       if (leftWhere.$and || rightWhere.$and) {
@@ -203,7 +207,7 @@ export class SpecificationConverter implements ISpecificationConverter {
       // 合并 OR 条件
       const leftWhere = leftQuery.where || {};
       const rightWhere = rightQuery.where || {};
-      
+
       let mergedWhere: any;
       if (leftWhere.$or || rightWhere.$or) {
         const orConditions: any[] = [];
@@ -241,10 +245,13 @@ export class SpecificationConverter implements ISpecificationConverter {
 
       // NOT 条件 - MikroORM 使用 $not 包裹条件
       const innerWhere = innerQuery.where || {};
-      const notWhere = Object.keys(innerWhere).reduce((acc, key) => {
-        acc[key] = { $ne: innerWhere[key] };
-        return acc;
-      }, {} as Record<string, any>);
+      const notWhere = Object.keys(innerWhere).reduce(
+        (acc, key) => {
+          acc[key] = { $ne: innerWhere[key] };
+          return acc;
+        },
+        {} as Record<string, any>,
+      );
 
       return {
         ...innerQuery,
@@ -280,7 +287,11 @@ export class SpecificationConverter implements ISpecificationConverter {
         if (where[condition.field] !== undefined) {
           const existing = where[condition.field];
           // 如果现有条件已经是对象，合并
-          if (typeof existing === "object" && existing !== null && !Array.isArray(existing)) {
+          if (
+            typeof existing === "object" &&
+            existing !== null &&
+            !Array.isArray(existing)
+          ) {
             where[condition.field] = { ...existing, ...fieldCondition };
           } else {
             where[condition.field] = { $and: [existing, fieldCondition] };
@@ -300,9 +311,7 @@ export class SpecificationConverter implements ISpecificationConverter {
    * @param condition 查询条件
    * @returns MikroORM 字段条件
    */
-  private convertConditionToFieldCondition(
-    condition: QueryCondition,
-  ): any {
+  private convertConditionToFieldCondition(condition: QueryCondition): any {
     switch (condition.operator) {
       case QueryOperator.EQUALS:
         return condition.value;
@@ -348,10 +357,18 @@ export class SpecificationConverter implements ISpecificationConverter {
         return condition.value;
 
       case QueryOperator.IN:
-        return { $in: Array.isArray(condition.value) ? condition.value : [condition.value] };
+        return {
+          $in: Array.isArray(condition.value)
+            ? condition.value
+            : [condition.value],
+        };
 
       case QueryOperator.NOT_IN:
-        return { $nin: Array.isArray(condition.value) ? condition.value : [condition.value] };
+        return {
+          $nin: Array.isArray(condition.value)
+            ? condition.value
+            : [condition.value],
+        };
 
       case QueryOperator.IS_NULL:
         return null;
@@ -385,4 +402,3 @@ export class SpecificationConverter implements ISpecificationConverter {
     );
   }
 }
-

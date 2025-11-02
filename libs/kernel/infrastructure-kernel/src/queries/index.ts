@@ -6,4 +6,3 @@
 export * from "./specification-converter.interface.js";
 export * from "./specification-converter.js";
 export * from "./query-builder.js";
-
