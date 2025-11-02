@@ -123,6 +123,7 @@ describe("BaseQuery", () => {
         sorting: [{ field: "name", direction: "asc" }],
         hasFilters: true,
         hasMetadata: true,
+        hasTenantContext: false,
       });
     });
 

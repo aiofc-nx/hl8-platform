@@ -5,7 +5,7 @@
 
 // Types
 export * from "./types/domain-event.js";
-// export * from "./types/integration-event.js";
+export * from "./types/integration-event.js";
 
 // Store
 export * from "./store/event-store.interface.js";

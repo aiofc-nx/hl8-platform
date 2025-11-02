@@ -102,6 +102,7 @@ describe("BaseCommand", () => {
         timestamp: command.timestamp,
         version: "1.0.0",
         hasMetadata: true,
+        hasTenantContext: false,
       });
     });
 
@@ -119,6 +120,7 @@ describe("BaseCommand", () => {
         timestamp: command.timestamp,
         version: "1.0.0",
         hasMetadata: false,
+        hasTenantContext: false,
       });
     });
   });

@@ -172,7 +172,7 @@ export class CommandQueryBusImpl
         context,
       );
       if (!shouldContinue) {
-        return CommandResult.failure("命令被中间件阻止", "MIDDLEWARE_BLOCKED");
+        return CommandResult.failure("MIDDLEWARE_BLOCKED", "命令被中间件阻止");
       }
 
       // 执行命令
@@ -255,7 +255,7 @@ export class CommandQueryBusImpl
         context,
       );
       if (!shouldContinue) {
-        return QueryResult.failure("查询被中间件阻止", "MIDDLEWARE_BLOCKED");
+        return QueryResult.failure("MIDDLEWARE_BLOCKED", "查询被中间件阻止");
       }
 
       // 执行查询

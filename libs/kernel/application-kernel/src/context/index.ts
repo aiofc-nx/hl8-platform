@@ -4,7 +4,15 @@
  */
 
 export type { ITenantContextExtractor } from "./tenant-context-extractor.interface.js";
-export { TenantContextExtractorImpl } from "./tenant-context-extractor.impl.js";
+export {
+  TenantContextExtractorImpl,
+  type JwtConfig,
+} from "./tenant-context-extractor.impl.js";
 
 export type { ITenantPermissionValidator } from "./tenant-permission-validator.interface.js";
 export { TenantPermissionValidatorImpl } from "./tenant-permission-validator.impl.js";
+
+export type {
+  IUserContextQuery,
+  UserTenantContext,
+} from "./user-context-query.interface.js";

@@ -13,6 +13,16 @@
 - **领域事件 (DomainEvent)**: 领域事件基类，支持事件发布和订阅
 - **领域服务 (DomainService)**: 领域服务基类，封装跨实体的业务逻辑
 
+### 🏢 租户隔离支持
+
+- **租户隔离实体 (TenantIsolatedEntity)**: 支持租户、组织和部门三级数据隔离的实体基类
+- **租户隔离聚合根 (TenantIsolatedAggregateRoot)**: 支持租户隔离的聚合根基类，自动将租户信息添加到领域事件
+- **租户上下文 (TenantContext)**: 封装当前请求的租户和多层级隔离信息的值对象
+- **租户标识符 (TenantId)**: 租户的唯一标识符，支持 UUID v4 格式
+- **组织标识符 (OrganizationId)**: 组织的唯一标识符，包含租户关联信息
+- **部门标识符 (DepartmentId)**: 部门的唯一标识符，包含组织关联信息
+- **租户隔离仓储接口 (ITenantIsolatedRepository)**: 支持租户隔离的仓储接口，自动应用隔离过滤
+
 ### 🎨 DDD 模式支持
 
 - **Repository Pattern**: 仓储模式接口，提供聚合根的持久化抽象
@@ -26,10 +36,11 @@
 
 ### 🔧 基础设施
 
-- **标识符系统**: UUID v4 生成器和实体标识符
+- **标识符系统**: UUID v4 生成器和实体标识符（包括租户、组织、部门标识符）
 - **审计系统**: 完整的审计信息跟踪和变更记录
 - **增强异常处理**: 分层的异常体系，支持上下文信息和严重程度分类
 - **验证系统**: 实体-聚合分离原则验证器和值对象验证框架
+- **租户隔离验证**: 层级一致性验证（组织必须属于租户，部门必须属于组织）
 
 ### 📊 审计能力
 
@@ -175,6 +186,214 @@ aggregateRoot.addDomainEvent(event);
 const events = aggregateRoot.getDomainEvents();
 ```
 
+### 使用租户隔离实体
+
+```typescript
+import {
+  TenantIsolatedEntity,
+  TenantId,
+  OrganizationId,
+  DepartmentId,
+  EntityId,
+  AuditInfo,
+  EntityLifecycle,
+} from "@hl8/domain-kernel";
+
+// 创建租户隔离实体
+class Product extends TenantIsolatedEntity {
+  constructor(
+    tenantId: TenantId,
+    public readonly name: string,
+    public readonly price: number,
+    organizationId?: OrganizationId,
+    departmentId?: DepartmentId,
+    id?: EntityId,
+    auditInfo?: AuditInfo,
+    lifecycleState?: EntityLifecycle,
+    version?: number,
+  ) {
+    super(
+      tenantId,
+      organizationId,
+      departmentId,
+      id,
+      auditInfo,
+      lifecycleState,
+      version,
+    );
+  }
+
+  clone(): Product {
+    return new Product(
+      this.tenantId,
+      this.name,
+      this.price,
+      this.organizationId,
+      this.departmentId,
+      this.id,
+      this.auditInfo?.clone(),
+      this.lifecycleState,
+      this.version,
+    );
+  }
+}
+
+// 创建租户标识符
+const tenantId = TenantId.generate(); // 或 TenantId.fromString("existing-uuid")
+
+// 创建组织标识符（必须属于指定租户）
+const organizationId = new OrganizationId(tenantId);
+
+// 创建部门标识符（必须属于指定组织）
+const departmentId = new DepartmentId(organizationId);
+
+// 创建租户级产品（仅租户隔离）
+const tenantProduct = new Product(tenantId, "租户级产品", 100);
+
+// 创建组织级产品（租户+组织隔离）
+const orgProduct = new Product(tenantId, "组织级产品", 200, organizationId);
+
+// 创建部门级产品（租户+组织+部门隔离）
+const deptProduct = new Product(
+  tenantId,
+  "部门级产品",
+  300,
+  organizationId,
+  departmentId,
+);
+```
+
+### 使用租户隔离聚合根
+
+```typescript
+import {
+  TenantIsolatedAggregateRoot,
+  TenantId,
+  OrganizationId,
+  DepartmentId,
+  EntityId,
+  AuditInfo,
+  EntityLifecycle,
+} from "@hl8/domain-kernel";
+
+// 创建租户隔离聚合根
+class OrderAggregate extends TenantIsolatedAggregateRoot {
+  private orderItems: string[] = [];
+
+  constructor(
+    tenantId: TenantId,
+    public readonly orderNumber: string,
+    organizationId?: OrganizationId,
+    departmentId?: DepartmentId,
+    id?: EntityId,
+    auditInfo?: AuditInfo,
+    lifecycleState?: EntityLifecycle,
+    version?: number,
+  ) {
+    super(
+      tenantId,
+      organizationId,
+      departmentId,
+      id,
+      auditInfo,
+      lifecycleState,
+      version,
+    );
+  }
+
+  addItem(itemId: string): void {
+    this.orderItems.push(itemId);
+
+    // 添加领域事件（自动包含租户信息）
+    this.addDomainEvent({
+      type: "OrderItemAdded",
+      aggregateRootId: this.id,
+      timestamp: new Date(),
+      data: { orderNumber: this.orderNumber, itemId },
+    });
+  }
+
+  clone(): OrderAggregate {
+    return new OrderAggregate(
+      this.tenantId,
+      this.orderNumber,
+      this.organizationId,
+      this.departmentId,
+      this.id,
+      this.auditInfo?.clone(),
+      this.lifecycleState,
+      this.version,
+    );
+  }
+}
+
+// 创建聚合根实例
+const tenantId = TenantId.generate();
+const organizationId = new OrganizationId(tenantId);
+const order = new OrderAggregate(
+  tenantId,
+  "ORD-001",
+  organizationId,
+);
+
+// 添加订单项（会触发领域事件，事件数据自动包含租户信息）
+order.addItem("item-123");
+
+// 获取领域事件（事件数据中已自动包含 tenantId、organizationId、departmentId）
+const events = order.domainEvents;
+// events[0].data 包含: { orderNumber, itemId, tenantId, organizationId, departmentId }
+```
+
+### 使用租户上下文
+
+```typescript
+import {
+  TenantContext,
+  TenantId,
+  OrganizationId,
+  DepartmentId,
+  EntityId,
+} from "@hl8/domain-kernel";
+
+// 创建租户上下文（仅租户级别）
+const tenantContext = new TenantContext(TenantId.generate());
+
+// 创建租户上下文（租户+组织级别）
+const tenantId = TenantId.generate();
+const organizationId = new OrganizationId(tenantId);
+const orgContext = new TenantContext(tenantId, {
+  organizationId,
+  userId: EntityId.generate(),
+  permissions: ["read", "write"],
+});
+
+// 创建租户上下文（租户+组织+部门级别）
+const departmentId = new DepartmentId(organizationId);
+const deptContext = new TenantContext(tenantId, {
+  organizationId,
+  departmentId,
+  userId: EntityId.generate(),
+  permissions: ["read"],
+  isCrossTenant: false, // 是否允许跨租户访问
+});
+
+// 验证访问权限
+const otherTenantId = TenantId.generate();
+const canAccess = tenantContext.canAccessTenant(otherTenantId); // false（不允许跨租户）
+const canAccessOwn = tenantContext.canAccessTenant(tenantId); // true（自己的租户）
+
+// 验证权限
+const hasPermission = orgContext.hasPermission("read"); // true
+const hasAdminPermission = orgContext.hasPermission("admin"); // false
+
+// 跨租户管理员上下文
+const adminContext = new TenantContext(tenantId, {
+  isCrossTenant: true,
+  permissions: ["admin", "read", "write"],
+});
+const canCrossAccess = adminContext.canAccessTenant(otherTenantId); // true（管理员可以跨租户访问）
+```
+
 ### 异常处理
 
 ```typescript
@@ -224,6 +443,75 @@ class UserRepositoryFactory implements IRepositoryFactory<UserAggregate> {
 const repository = factory.create();
 const user = await repository.findById(userId);
 await repository.save(user);
+```
+
+### 使用租户隔离仓储
+
+```typescript
+import {
+  ITenantIsolatedRepository,
+  TenantIsolatedEntity,
+  TenantContext,
+  TenantId,
+  OrganizationId,
+  DepartmentId,
+  EntityId,
+} from "@hl8/domain-kernel";
+
+// 定义租户隔离仓储接口
+interface IProductRepository
+  extends ITenantIsolatedRepository<Product> {
+  findByName(name: string, context: TenantContext): Promise<Product | null>;
+}
+
+// 使用租户隔离仓储
+const productRepository: IProductRepository = /* ... */;
+
+// 创建租户上下文
+const tenantId = TenantId.generate();
+const organizationId = new OrganizationId(tenantId);
+const context = new TenantContext(tenantId, { organizationId });
+
+// 根据上下文查找实体（自动应用租户隔离过滤）
+const product = await productRepository.findByIdWithContext(
+  productId,
+  context,
+);
+
+// 根据上下文查找所有实体（自动应用多层级过滤）
+const products = await productRepository.findAllByContext(context);
+
+// 根据租户查找实体（需要验证跨租户访问权限）
+const tenantProducts = await productRepository.findByTenant(tenantId, context);
+
+// 根据组织查找实体
+const orgProducts = await productRepository.findByOrganization(
+  organizationId,
+  context,
+);
+
+// 根据部门查找实体
+const departmentId = new DepartmentId(organizationId);
+const deptProducts = await productRepository.findByDepartment(
+  departmentId,
+  context,
+);
+
+// 验证实体是否属于租户
+const belongsToTenant =
+  await productRepository.belongsToTenant(productId, tenantId);
+
+// 验证实体是否属于组织
+const belongsToOrg =
+  await productRepository.belongsToOrganization(productId, organizationId);
+
+// 验证实体是否属于部门
+const belongsToDept =
+  await productRepository.belongsToDepartment(productId, departmentId);
+
+// 验证实体与上下文的隔离一致性
+const productEntity = /* ... */;
+const isValid = productEntity.validateTenantIsolation(context);
 ```
 
 ### 使用业务规则验证
@@ -422,6 +710,78 @@ const validation = await serviceRegistry.validateDependencies("email-service");
 - `validateBusinessInvariants(): boolean`: 验证业务不变量
 - `clone(): AggregateRoot`: 克隆聚合根（子类实现）
 
+### 租户隔离实体 (TenantIsolatedEntity)
+
+- `constructor(tenantId: TenantId, organizationId?: OrganizationId, departmentId?: DepartmentId, id?: EntityId, auditInfo?: AuditInfo, lifecycleState?: EntityLifecycle, version?: number, deletedAt?: Date, deletedBy?: EntityId)`: 创建租户隔离实体
+- `get tenantId(): TenantId`: 获取租户ID
+- `get organizationId(): OrganizationId | undefined`: 获取组织ID
+- `get departmentId(): DepartmentId | undefined`: 获取部门ID
+- `validateTenantIsolation(context?: TenantContext): boolean`: 验证实体与上下文的隔离一致性
+- `clone(): TenantIsolatedEntity`: 克隆实体（子类实现）
+
+### 租户隔离聚合根 (TenantIsolatedAggregateRoot)
+
+- `constructor(tenantId: TenantId, organizationId?: OrganizationId, departmentId?: DepartmentId, id?: EntityId, auditInfo?: AuditInfo, lifecycleState?: EntityLifecycle, version?: number)`: 创建租户隔离聚合根
+- `get tenantId(): TenantId`: 获取租户ID
+- `get organizationId(): OrganizationId | undefined`: 获取组织ID
+- `get departmentId(): DepartmentId | undefined`: 获取部门ID
+- `addDomainEvent(event: DomainEvent): void`: 添加领域事件（自动包含租户信息）
+- `validateTenantIsolation(context?: TenantContext): boolean`: 验证聚合根与上下文的隔离一致性
+- `clone(): TenantIsolatedAggregateRoot`: 克隆聚合根（子类实现）
+
+### 租户上下文 (TenantContext)
+
+- `constructor(tenantId: TenantId, options?: TenantContextOptions)`: 创建租户上下文
+- `get tenantId(): TenantId`: 获取租户ID
+- `get organizationId(): OrganizationId | undefined`: 获取组织ID
+- `get departmentId(): DepartmentId | undefined`: 获取部门ID
+- `get isCrossTenant(): boolean`: 是否允许跨租户访问
+- `get permissions(): string[]`: 获取权限列表
+- `get userId(): EntityId | undefined`: 获取用户ID
+- `hasPermission(permission: string): boolean`: 检查是否拥有指定权限
+- `canAccessTenant(tenantId: TenantId): boolean`: 检查是否可以访问指定租户
+- `canAccessOrganization(orgId: OrganizationId): boolean`: 检查是否可以访问指定组织
+- `canAccessDepartment(deptId: DepartmentId): boolean`: 检查是否可以访问指定部门
+- `validate(): boolean`: 验证上下文有效性
+- `clone(): TenantContext`: 创建上下文副本
+- `toJSON(): object`: 序列化为JSON
+
+### 租户标识符 (TenantId)
+
+- `static generate(): TenantId`: 生成新的租户ID
+- `static fromString(value: string): TenantId`: 从字符串创建租户ID
+- `get value(): string`: 获取租户ID值（UUID v4）
+- `isValid(): boolean`: 验证租户ID格式
+- `equals(other: TenantId): boolean`: 比较两个租户ID是否相等
+- `toJSON(): string`: 序列化为JSON
+
+### 组织标识符 (OrganizationId)
+
+- `constructor(tenantId: TenantId, parentId?: OrganizationId)`: 创建组织ID（自动生成UUID）
+- `static fromString(value: string, tenantId: TenantId): OrganizationId`: 从字符串创建组织ID
+- `get value(): string`: 获取组织ID值
+- `get tenantId(): TenantId`: 获取所属租户ID
+- `get parentId(): OrganizationId | undefined`: 获取父组织ID
+- `belongsTo(tenantId: TenantId): boolean`: 检查组织是否属于指定租户
+- `isAncestorOf(other: OrganizationId): boolean`: 检查是否是另一个组织的祖先
+- `isDescendantOf(other: OrganizationId): boolean`: 检查是否是另一个组织的后代
+- `equals(other: OrganizationId): boolean`: 比较两个组织ID是否相等
+- `toJSON(): object`: 序列化为JSON
+
+### 部门标识符 (DepartmentId)
+
+- `constructor(organizationId: OrganizationId, parentId?: DepartmentId)`: 创建部门ID（自动生成UUID）
+- `static fromString(value: string, organizationId: OrganizationId): DepartmentId`: 从字符串创建部门ID
+- `get value(): string`: 获取部门ID值
+- `get organizationId(): OrganizationId`: 获取所属组织ID
+- `get parentId(): DepartmentId | undefined`: 获取父部门ID
+- `belongsTo(organizationId: OrganizationId): boolean`: 检查部门是否属于指定组织
+- `belongsToTenant(tenantId: TenantId): boolean`: 检查部门是否属于指定租户
+- `isAncestorOf(other: DepartmentId): boolean`: 检查是否是另一个部门的祖先
+- `isDescendantOf(other: DepartmentId): boolean`: 检查是否是另一个部门的后代
+- `equals(other: DepartmentId): boolean`: 比较两个部门ID是否相等
+- `toJSON(): object`: 序列化为JSON
+
 ### 领域事件 (DomainEvent)
 
 - `type: string`: 事件类型
@@ -475,6 +835,17 @@ const validation = await serviceRegistry.validateDependencies("email-service");
 - `unregisterHandler(handlerId: string): Promise<boolean>`: 注销事件处理器
 - `getHandlersForEvent(eventType: string): IDomainEventHandler[]`: 获取事件的所有处理器
 - `getAllHandlers(): IDomainEventHandler[]`: 获取所有处理器
+
+### 租户隔离仓储接口 (ITenantIsolatedRepository)
+
+- `findByIdWithContext(id: EntityId, context: TenantContext): Promise<T | null>`: 根据ID和租户上下文查找实体（自动应用隔离过滤）
+- `findAllByContext(context: TenantContext): Promise<T[]>`: 根据租户上下文查找所有实体（自动应用多层级过滤）
+- `findByTenant(tenantId: TenantId, context: TenantContext): Promise<T[]>`: 根据租户查找所有实体（需要权限验证）
+- `findByOrganization(orgId: OrganizationId, context: TenantContext): Promise<T[]>`: 根据组织查找所有实体
+- `findByDepartment(deptId: DepartmentId, context: TenantContext): Promise<T[]>`: 根据部门查找所有实体
+- `belongsToTenant(id: EntityId, tenantId: TenantId): Promise<boolean>`: 验证实体是否属于指定租户
+- `belongsToOrganization(id: EntityId, orgId: OrganizationId): Promise<boolean>`: 验证实体是否属于指定组织
+- `belongsToDepartment(id: EntityId, deptId: DepartmentId): Promise<boolean>`: 验证实体是否属于指定部门
 
 ## 测试
 
@@ -549,3 +920,11 @@ hl8-platform 团队
   - ✅ 增强的异常处理体系
   - ✅ 值对象验证框架
   - ✅ 完整的单元测试和集成测试
+  - ✅ **Multi-Tenant Isolation** - 多租户和多层级数据隔离支持（v1.1.0）
+    - ✅ 租户、组织、部门三级标识符系统
+    - ✅ 租户隔离实体和聚合根基类
+    - ✅ 租户上下文值对象
+    - ✅ 租户隔离仓储接口
+    - ✅ 层级一致性验证
+    - ✅ 跨租户访问权限控制
+    - ✅ 领域事件自动包含租户信息
