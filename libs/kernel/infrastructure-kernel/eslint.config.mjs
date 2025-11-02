@@ -5,6 +5,8 @@ export default [
   {
     ignores: [
       "jest.config.ts",
+      "migrations/**/*.js",
+      "migrations/**/*.ts",
     ],
   },
 ];

@@ -3,9 +3,6 @@
  * @description MikroORM过滤器，自动为租户隔离实体添加多层级过滤条件
  */
 
-import { Filter } from "@mikro-orm/core";
-import { TenantIsolatedPersistenceEntity } from "../../entities/base/tenant-isolated-persistence-entity.js";
-
 /**
  * 租户过滤器参数
  * @description 定义租户过滤器的输入参数
@@ -69,7 +66,7 @@ export const tenantFilter = {
  * });
  * ```
  */
-export function enableTenantFilter<T extends TenantIsolatedPersistenceEntity>(
+export function enableTenantFilter(
   tenantId: string,
   organizationId?: string,
   departmentId?: string,
@@ -91,7 +88,7 @@ export function enableTenantFilter<T extends TenantIsolatedPersistenceEntity>(
  * @param context 租户上下文
  * @returns MikroORM FindOptions配置对象
  */
-export function buildTenantFilterOptions<T extends TenantIsolatedPersistenceEntity>(
+export function buildTenantFilterOptions(
   context: any, // 使用any避免循环依赖
 ): { filters: { tenant: TenantFilterArgs } } {
   const filterArgs: TenantFilterArgs = {
@@ -112,4 +109,3 @@ export function buildTenantFilterOptions<T extends TenantIsolatedPersistenceEnti
     },
   };
 }
-

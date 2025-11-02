@@ -35,7 +35,6 @@ describe("MongoDB Tenant Isolation Integration Tests", () => {
   let tenant2Id: TenantId;
   let org1Id: OrganizationId;
   let org2Id: OrganizationId;
-  let org3Id: OrganizationId;
   let dept1Id: DepartmentId;
   let dept2Id: DepartmentId;
 
@@ -294,4 +293,3 @@ describe("MongoDB Tenant Isolation Integration Tests", () => {
     });
   });
 });
-
