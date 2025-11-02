@@ -4,3 +4,4 @@
  */
 
 export { AggregateRoot } from "./base/aggregate-root.base.js";
+export { TenantIsolatedAggregateRoot } from "./base/tenant-isolated-aggregate-root.base.js";

@@ -24,6 +24,12 @@ export * from "./sagas/index.js";
 // Bus
 export * from "./bus/index.js";
 
+// Context - 租户上下文相关
+export * from "./context/index.js";
+
+// Middleware - 中间件
+export * from "./middleware/index.js";
+
 // Cache - 避免 CacheConfig 冲突
 export type {
   ICache,

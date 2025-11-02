@@ -11,3 +11,4 @@ export {
 
 export { Entity } from "./base/entity.base.js";
 export { InternalEntity } from "./internal/internal-entity.base.js";
+export { TenantIsolatedEntity } from "./base/tenant-isolated-entity.base.js";

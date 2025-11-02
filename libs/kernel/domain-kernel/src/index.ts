@@ -26,6 +26,9 @@ export * from "./exceptions/index.js";
 // 审计
 export * from "./audit/index.js";
 
+// 上下文
+export * from "./context/index.js";
+
 // 标识符
 export * from "./identifiers/index.js";
 
@@ -40,6 +43,7 @@ export * from "./repositories/repository.interface.js";
 export * from "./repositories/query-repository.interface.js";
 export * from "./repositories/command-repository.interface.js";
 export * from "./repositories/paginated-repository.interface.js";
+export * from "./repositories/tenant-isolated-repository.interface.js";
 export type {
   PaginatedResult,
   PaginationMetadata as RepositoryPaginationMetadata,
