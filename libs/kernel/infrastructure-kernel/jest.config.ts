@@ -1,5 +1,5 @@
 export default {
-  displayName: "config",
+  displayName: "infrastructure-kernel",
   preset: "ts-jest/presets/default-esm",
   testEnvironment: "node",
   rootDir: ".",
@@ -22,7 +22,17 @@ export default {
     ],
   },
   moduleFileExtensions: ["ts", "js"],
-  coverageDirectory: "../../coverage/libs/config",
-  testMatch: ["**/*.spec.ts"],
+  coverageDirectory: "../../coverage/libs/infrastructure-kernel",
+  testMatch: [
+    "**/*.spec.ts",
+    "test/**/*.spec.ts",
+    "test/**/*.integration.spec.ts",
+  ],
   setupFilesAfterEnv: ["<rootDir>/../../../jest.setup.js"],
+  collectCoverageFrom: [
+    "src/**/*.ts",
+    "!src/**/*.spec.ts",
+    "!src/**/*.test.ts",
+    "!src/**/index.ts",
+  ],
 };

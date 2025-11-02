@@ -24,8 +24,10 @@
 2. **US2**: MongoDB 仓储实现 (P1) - 与US1并行
 3. **US3**: PostgreSQL 租户隔离仓储 (P1) - 依赖US1
 4. **US4**: MongoDB 租户隔离仓储 (P1) - 依赖US2
-5. **US5**: 数据库连接管理 (P1) - 依赖US1, US2
+5. ~~**US5**: 数据库连接管理~~ - **已由 @hl8/database 提供**
 6. **US6**: 查询性能优化和索引管理 (P2) - 依赖US3, US4
+
+**Note**: 连接管理和健康检查功能已由 `@hl8/database` 模块提供，infrastructure-kernel 将直接使用这些能力。
 
 ### Parallel Execution Opportunities
 
@@ -39,25 +41,25 @@
 
 ### T001-T020: Project Structure Setup
 
-- [ ] T001 Create project directory structure in libs/kernel/infrastructure-kernel/
-- [ ] T002 [P] Initialize package.json with dependencies in libs/kernel/infrastructure-kernel/package.json
-- [ ] T003 [P] Configure TypeScript with NodeNext module system in libs/kernel/infrastructure-kernel/tsconfig.json
-- [ ] T004 [P] Setup Jest configuration for testing in libs/kernel/infrastructure-kernel/jest.config.js
-- [ ] T005 [P] Create source directory structure in libs/kernel/infrastructure-kernel/src/
-- [ ] T006 [P] Create test directory structure in libs/kernel/infrastructure-kernel/test/
-- [ ] T007 [P] Setup ESLint configuration extending root config
-- [ ] T008 [P] Create main index.ts export file in libs/kernel/infrastructure-kernel/src/index.ts
-- [ ] T009 [P] Setup build scripts in package.json
-- [ ] T010 [P] Create README.md with basic documentation
-- [ ] T011 [P] Configure MikroORM dependencies (@mikro-orm/core, @mikro-orm/postgresql, @mikro-orm/mongodb)
-- [ ] T012 [P] Setup testcontainers for integration tests
-- [ ] T013 [P] Create mikro-orm.config.ts skeleton in libs/kernel/infrastructure-kernel/src/config/
-- [ ] T014 [P] Setup migration scripts in package.json
-- [ ] T015 [P] Create migrations directory in libs/kernel/infrastructure-kernel/migrations/
-- [ ] T016 [P] Configure tsconfig.build.json for production builds
-- [ ] T017 [P] Setup Prettier configuration
-- [ ] T018 [P] Create .gitignore for infrastructure-kernel
-- [ ] T019 [P] Setup module exports in libs/kernel/infrastructure-kernel/src/index.ts
+- [X] T001 Create project directory structure in libs/kernel/infrastructure-kernel/
+- [X] T002 [P] Initialize package.json with dependencies in libs/kernel/infrastructure-kernel/package.json
+- [X] T003 [P] Configure TypeScript with NodeNext module system in libs/kernel/infrastructure-kernel/tsconfig.json
+- [X] T004 [P] Setup Jest configuration for testing in libs/kernel/infrastructure-kernel/jest.config.js
+- [X] T005 [P] Create source directory structure in libs/kernel/infrastructure-kernel/src/
+- [X] T006 [P] Create test directory structure in libs/kernel/infrastructure-kernel/test/
+- [X] T007 [P] Setup ESLint configuration extending root config
+- [X] T008 [P] Create main index.ts export file in libs/kernel/infrastructure-kernel/src/index.ts
+- [X] T009 [P] Setup build scripts in package.json
+- [X] T010 [P] Create README.md with basic documentation
+- [X] T011 [P] Configure MikroORM dependencies (@mikro-orm/core, @mikro-orm/postgresql, @mikro-orm/mongodb)
+- [X] T012 [P] Setup testcontainers for integration tests
+- [X] T013 [P] Create mikro-orm.config.ts skeleton in libs/kernel/infrastructure-kernel/src/config/
+- [X] T014 [P] Setup migration scripts in package.json
+- [X] T015 [P] Create migrations directory in libs/kernel/infrastructure-kernel/migrations/
+- [X] T016 [P] Configure tsconfig.build.json for production builds
+- [X] T017 [P] Setup Prettier configuration
+- [X] T018 [P] Create .gitignore for infrastructure-kernel
+- [X] T019 [P] Setup module exports in libs/kernel/infrastructure-kernel/src/index.ts
 - [ ] T020 [P] Create infrastructure-kernel.module.ts NestJS module wrapper
 
 ---
@@ -68,21 +70,17 @@
 
 ### T021-T035: Core Components
 
-- [ ] T021 [P] Create BaseEntity MikroORM base class in libs/kernel/infrastructure-kernel/src/entities/base/base-entity.ts
-- [ ] T022 [P] Create BaseEntity unit tests in libs/kernel/infrastructure-kernel/src/entities/base/base-entity.spec.ts
-- [ ] T023 [P] Create TenantIsolatedPersistenceEntity base class in libs/kernel/infrastructure-kernel/src/entities/base/tenant-isolated-persistence-entity.ts
-- [ ] T024 [P] Create TenantIsolatedPersistenceEntity unit tests in libs/kernel/infrastructure-kernel/src/entities/base/tenant-isolated-persistence-entity.spec.ts
-- [ ] T025 [P] Create entities index exports in libs/kernel/infrastructure-kernel/src/entities/index.ts
-- [ ] T026 [P] Create database configuration in libs/kernel/infrastructure-kernel/src/config/database.config.ts
-- [ ] T027 [P] Create database configuration tests in libs/kernel/infrastructure-kernel/src/config/database.config.spec.ts
-- [ ] T028 [P] Create MikroORM configuration in libs/kernel/infrastructure-kernel/src/config/mikro-orm.config.ts
-- [ ] T029 [P] Create MikroORM configuration tests in libs/kernel/infrastructure-kernel/src/config/mikro-orm.config.spec.ts
-- [ ] T030 [P] Create DatabaseHealthChecker in libs/kernel/infrastructure-kernel/src/health/database-health-checker.ts
-- [ ] T031 [P] Create DatabaseHealthChecker tests in libs/kernel/infrastructure-kernel/src/health/database-health-checker.spec.ts
-- [ ] T032 [P] Create health index exports in libs/kernel/infrastructure-kernel/src/health/index.ts
-- [ ] T033 [P] Create RepositoryException in libs/kernel/infrastructure-kernel/src/errors/repository.exception.ts
-- [ ] T034 [P] Create RepositoryException tests in libs/kernel/infrastructure-kernel/src/errors/repository.exception.spec.ts
-- [ ] T035 [P] Create errors index exports in libs/kernel/infrastructure-kernel/src/errors/index.ts
+- [X] T021 [P] Create BaseEntity MikroORM base class in libs/kernel/infrastructure-kernel/src/entities/base/base-entity.ts
+- [X] T022 [P] Create BaseEntity unit tests in libs/kernel/infrastructure-kernel/src/entities/base/base-entity.spec.ts
+- [X] T023 [P] Create TenantIsolatedPersistenceEntity base class in libs/kernel/infrastructure-kernel/src/entities/base/tenant-isolated-persistence-entity.ts
+- [X] T024 [P] Create TenantIsolatedPersistenceEntity unit tests in libs/kernel/infrastructure-kernel/src/entities/base/tenant-isolated-persistence-entity.spec.ts
+- [X] T025 [P] Create entities index exports in libs/kernel/infrastructure-kernel/src/entities/index.ts
+- [ ] T026 [P] Create MikroORM configuration in libs/kernel/infrastructure-kernel/src/config/mikro-orm.config.ts
+- [ ] T027 [P] Create MikroORM configuration tests in libs/kernel/infrastructure-kernel/src/config/mikro-orm.config.spec.ts
+- [X] T028 [P] Create RepositoryException in libs/kernel/infrastructure-kernel/src/errors/repository.exception.ts
+- [ ] T029 [P] Create RepositoryException tests in libs/kernel/infrastructure-kernel/src/errors/repository.exception.spec.ts
+- [X] T030 [P] Create errors index exports in libs/kernel/infrastructure-kernel/src/errors/index.ts
+- ~~T031-T033: 已由 @hl8/database 提供健康检查功能~~
 
 **Checkpoint**: 基础组件完成，可以开始仓储实现
 
@@ -98,21 +96,21 @@
 
 > **NOTE: 遵循TDD原则，先写测试，确保失败后再实现**
 
-- [ ] T036 [US1] Create integration test for PostgreSQL repository in libs/kernel/infrastructure-kernel/test/integration/postgresql-repository.integration.spec.ts
-- [ ] T037 [US1] Create test fixtures in libs/kernel/infrastructure-kernel/test/fixtures/test-entities.ts
+- [X] T036 [US1] Create integration test for PostgreSQL repository in libs/kernel/infrastructure-kernel/test/integration/postgresql-repository.integration.spec.ts
+- [X] T037 [US1] Create test fixtures in libs/kernel/infrastructure-kernel/test/fixtures/test-entities.ts
 
 ### Implementation for User Story 1
 
-- [ ] T038 [US1] Create MikroORMRepository base class in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
+- [X] T038 [US1] Create MikroORMRepository base class in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
 - [ ] T039 [US1] Create MikroORMRepository unit tests in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.spec.ts
-- [ ] T040 [US1] Implement save method in MikroORMRepository
-- [ ] T041 [US1] Implement findById method in MikroORMRepository
-- [ ] T042 [US1] Implement findAll method in MikroORMRepository
-- [ ] T043 [US1] Implement delete method in MikroORMRepository
-- [ ] T044 [US1] Implement exists method in MikroORMRepository
+- [X] T040 [US1] Implement save method in MikroORMRepository
+- [X] T041 [US1] Implement findById method in MikroORMRepository
+- [X] T042 [US1] Implement findAll method in MikroORMRepository
+- [X] T043 [US1] Implement delete method in MikroORMRepository
+- [X] T044 [US1] Implement exists method in MikroORMRepository
 - [ ] T045 [US1] Implement count method in MikroORMRepository
-- [ ] T046 [US1] Add error handling and logging to repository methods
-- [ ] T047 [US1] Create repositories index exports in libs/kernel/infrastructure-kernel/src/repositories/index.ts
+- [X] T046 [US1] Add error handling and logging to repository methods
+- [X] T047 [US1] Create repositories index exports in libs/kernel/infrastructure-kernel/src/repositories/index.ts
 
 **Checkpoint**: PostgreSQL仓储可以独立使用，支持基本CRUD操作
 
@@ -126,16 +124,16 @@
 
 ### Tests for User Story 2
 
-- [ ] T048 [US2] Create integration test for MongoDB repository in libs/kernel/infrastructure-kernel/test/integration/mongodb-repository.integration.spec.ts
+- [X] T048 [US2] Create integration test for MongoDB repository in libs/kernel/infrastructure-kernel/test/integration/mongodb-repository.integration.spec.ts
 
 ### Implementation for User Story 2
 
-- [ ] T049 [US2] Verify MikroORMRepository works with MongoDB in libs/kernel/infrastructure-kernel/test/integration/mongodb-repository.integration.spec.ts
+- [X] T049 [US2] Verify MikroORMRepository works with MongoDB in libs/kernel/infrastructure-kernel/test/integration/mongodb-repository.integration.spec.ts
 - [ ] T050 [US2] Add MongoDB-specific configuration in libs/kernel/infrastructure-kernel/src/config/mikro-orm.config.ts
-- [ ] T051 [US2] Test document operations with MikroORM MongoDB driver
-- [ ] T052 [US2] Verify transaction support for MongoDB
-- [ ] T053 [US2] Add MongoDB collection creation handling
-- [ ] T054 [US2] Test optimistic locking with MongoDB
+- [X] T051 [US2] Test document operations with MikroORM MongoDB driver
+- [X] T052 [US2] Verify transaction support for MongoDB
+- [X] T053 [US2] Add MongoDB collection creation handling
+- [X] T054 [US2] Test optimistic locking with MongoDB
 
 **Checkpoint**: MongoDB仓储与PostgreSQL仓储使用相同接口，行为一致
 
@@ -149,25 +147,25 @@
 
 ### Tests for User Story 3
 
-- [ ] T055 [US3] Create integration test for tenant isolation in libs/kernel/infrastructure-kernel/test/integration/tenant-isolation.integration.spec.ts
+- [X] T055 [US3] Create integration test for tenant isolation in libs/kernel/infrastructure-kernel/test/integration/tenant-isolation.integration.spec.ts
 
 ### Implementation for User Story 3
 
-- [ ] T056 [US3] Create TenantFilter MikroORM filter in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-filter.ts
-- [ ] T057 [US3] Create TenantFilter unit tests in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-filter.spec.ts
-- [ ] T058 [US3] Create MikroORMTenantIsolatedRepository class in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-isolated-repository.ts
+- [X] T056 [US3] Create TenantFilter MikroORM filter in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-filter.ts
+- [X] T057 [US3] Create TenantFilter unit tests in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-filter.spec.ts
+- [X] T058 [US3] Create MikroORMTenantIsolatedRepository class in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-isolated-repository.ts
 - [ ] T059 [US3] Create MikroORMTenantIsolatedRepository unit tests in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-isolated-repository.spec.ts
-- [ ] T060 [US3] Implement findByIdWithContext method
-- [ ] T061 [US3] Implement findAllByContext method
-- [ ] T062 [US3] Implement findByTenant method
-- [ ] T063 [US3] Implement findByOrganization method
-- [ ] T064 [US3] Implement findByDepartment method
-- [ ] T065 [US3] Implement belongsToTenant method
-- [ ] T066 [US3] Implement belongsToOrganization method
-- [ ] T067 [US3] Implement belongsToDepartment method
-- [ ] T068 [US3] Implement cross-tenant access blocking
-- [ ] T069 [US3] Add permission validation logic
-- [ ] T070 [US3] Create tenant-isolated repositories index exports
+- [X] T060 [US3] Implement findByIdWithContext method
+- [X] T061 [US3] Implement findAllByContext method
+- [X] T062 [US3] Implement findByTenant method
+- [X] T063 [US3] Implement findByOrganization method
+- [X] T064 [US3] Implement findByDepartment method
+- [X] T065 [US3] Implement belongsToTenant method
+- [X] T066 [US3] Implement belongsToOrganization method
+- [X] T067 [US3] Implement belongsToDepartment method
+- [X] T068 [US3] Implement cross-tenant access blocking
+- [X] T069 [US3] Add permission validation logic
+- [X] T070 [US3] Create tenant-isolated repositories index exports
 
 **Checkpoint**: 租户隔离仓储确保100%的数据隔离，跨租户访问被阻止
 
@@ -181,43 +179,20 @@
 
 ### Tests for User Story 4
 
-- [ ] T071 [US4] Create integration test for MongoDB tenant isolation
+- [X] T071 [US4] Create integration test for MongoDB tenant isolation
 
 ### Implementation for User Story 4
 
-- [ ] T072 [US4] Verify TenantFilter works with MongoDB
-- [ ] T073 [US4] Test tenant-isolated queries in MongoDB
-- [ ] T074 [US4] Verify cross-tenant access blocking in MongoDB
-- [ ] T075 [US4] Test multi-level isolation in MongoDB
+- [X] T072 [US4] Verify TenantFilter works with MongoDB
+- [X] T073 [US4] Test tenant-isolated queries in MongoDB
+- [X] T074 [US4] Verify cross-tenant access blocking in MongoDB
+- [X] T075 [US4] Test multi-level isolation in MongoDB
 
 **Checkpoint**: MongoDB和PostgreSQL租户隔离机制行为一致
 
 ---
 
-## Phase 7: User Story 5 - 数据库连接管理 (Priority: P1)
-
-**Goal**: 实现数据库连接池管理、健康检查和自动重连机制
-
-**Independent Test**: 可以独立测试连接池初始化、连接获取与释放、健康检查
-
-### Tests for User Story 5
-
-- [ ] T076 [US5] Create integration test for connection pool in libs/kernel/infrastructure-kernel/test/integration/connection-pool.integration.spec.ts
-
-### Implementation for User Story 5
-
-- [ ] T077 [US5] Configure MikroORM connection pool in libs/kernel/infrastructure-kernel/src/config/mikro-orm.config.ts
-- [ ] T078 [US5] Implement connection pool health checks in libs/kernel/infrastructure-kernel/src/health/database-health-checker.ts
-- [ ] T079 [US5] Add connection pool metrics and monitoring
-- [ ] T080 [US5] Implement automatic reconnection logic
-- [ ] T081 [US5] Test connection pool under high load
-- [ ] T082 [US5] Configure connection pool for production
-
-**Checkpoint**: 连接池可用性>99.9%，支持自动重连
-
----
-
-## Phase 8: User Story 6 - 查询性能优化和索引管理 (Priority: P2)
+## Phase 7: User Story 6 - 查询性能优化和索引管理 (Priority: P2)
 
 **Goal**: 为租户隔离查询创建数据库索引，确保查询性能符合SLA要求
 
@@ -245,15 +220,15 @@
 **Purpose**: 完善和优化，影响多个用户故事的改进
 
 - [ ] T090 Create entity mappers in libs/kernel/infrastructure-kernel/src/mappers/
-- [ ] T091 Add comprehensive documentation in README.md
+- [X] T091 Add comprehensive documentation in README.md
 - [ ] T092 Add migration guide for using infrastructure-kernel
 - [ ] T093 Create quickstart guide examples
 - [ ] T094 Add performance tuning documentation
-- [ ] T095 Run full test suite and verify all tests pass
+- [X] T095 Run full test suite and verify all tests pass
 - [ ] T096 Code cleanup and refactoring
 - [ ] T097 Security review and hardening
-- [ ] T098 Update infrastructure-kernel exports in src/index.ts
-- [ ] T099 Add JSDoc comments to all public APIs
+- [X] T098 Update infrastructure-kernel exports in src/index.ts
+- [X] T099 Add JSDoc comments to all public APIs
 - [ ] T100 Run quickstart.md validation
 - [ ] T101 Create change log
 
@@ -269,7 +244,7 @@
   - US1和US2可并行
   - US3依赖US1
   - US4依赖US2
-  - US5依赖US1和US2
+  - ~~US5 (连接管理)~~: 已由 @hl8/database 提供
   - US6依赖US3和US4
 - **Polish (Phase 9)**: 依赖所有用户故事完成
 
@@ -279,7 +254,7 @@
 - **US2 (MongoDB仓储)**: Foundational后可开始，与US1并行
 - **US3 (PostgreSQL租户隔离)**: 依赖US1
 - **US4 (MongoDB租户隔离)**: 依赖US2
-- **US5 (连接管理)**: 依赖US1和US2
+- ~~**US5 (连接管理)**: 依赖US1和US2~~ - **已由 @hl8/database 提供**
 - **US6 (性能优化)**: 依赖US3和US4
 
 ### Within Each User Story
@@ -419,4 +394,3 @@ Task: "Create integration test for MongoDB repository" (US2)
 - US4: 独立测试MongoDB租户隔离查询过滤
 - US5: 独立测试连接池和健康检查
 - US6: 独立测试索引创建和查询性能
-

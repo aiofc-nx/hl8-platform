@@ -12,7 +12,7 @@
 ## Technical Context
 
 **Language/Version**: TypeScript 5.9.3, Node.js >=20  
-**Primary Dependencies**: @nestjs/core, @nestjs/common, mikro-orm, @mikro-orm/postgresql, @mikro-orm/mongodb, @hl8/domain-kernel, @hl8/application-kernel, @hl8/config, @hl8/logger  
+**Primary Dependencies**: @nestjs/core, @nestjs/common, mikro-orm, @mikro-orm/postgresql, @mikro-orm/mongodb, @hl8/domain-kernel, @hl8/application-kernel, @hl8/config, @hl8/logger, @hl8/database  
 **Storage**: PostgreSQL (关系数据库), MongoDB (文档数据库) via MikroORM  
 **Testing**: Jest, @nestjs/testing, testcontainers for integration tests - 遵循分层测试架构约定  
 **Target Platform**: Node.js服务器环境，支持分布式部署  

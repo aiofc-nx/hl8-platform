@@ -3,7 +3,11 @@
  * @description Infrastructure layer kernel for HL8 platform
  */
 
-// Placeholder for future infrastructure kernel exports
+// 实体
+export * from "./entities/index.js";
 
-export {};
+// 仓储
+export * from "./repositories/index.js";
 
+// 异常
+export * from "./errors/index.js";

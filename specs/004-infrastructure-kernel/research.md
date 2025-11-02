@@ -38,35 +38,42 @@
 
 ### 2. 连接池管理策略
 
-**Decision**: 使用 MikroORM 内置连接池 + 自定义健康检查
+**Decision**: 使用 @hl8/database 模块提供的连接管理能力
 
 **Rationale**:
 
-- MikroORM 使用 `pg-pool` 和 MongoDB 原生连接池，成熟稳定
-- 自定义健康检查包装器提供监控和日志
-- 避免引入额外的连接池抽象层
-- 配置简单，易于维护
+- @hl8/database 已实现完整的连接管理、连接池、健康检查功能
+- 避免重复开发，遵循 DRY 原则
+- 基础架构模块分工清晰：database管理连接，kernel管理仓储
+- 符合 Clean Architecture 依赖分层原则
+- 基础设施层可以依赖已有的基础设施组件
 
 **Implementation**:
 
 ```typescript
-// 连接池配置通过 MikroORM config
-{
-  pool: {
-    min: 2,
-    max: 10,
-    acquireTimeoutMillis: 30000,
-    createTimeoutMillis: 30000,
+// 使用 @hl8/database 的连接管理
+import { ConnectionManager, EntityManager } from '@hl8/database';
+
+// 连接池配置由 @hl8/database 管理
+// kernel 只负责仓储实现
+class MikroORMRepository<T> {
+  constructor(
+    private readonly em: EntityManager // 从 @hl8/database 注入
+  ) {}
+  
+  async save(entity: T): Promise<T> {
+    this.em.persist(entity);
+    await this.em.flush();
+    return entity;
   }
 }
-
-// 健康检查作为封装层
-class DatabaseHealthChecker {
-  async checkConnection(em: EntityManager): Promise<boolean>
-  async checkPostgreSQL(em: EntityManager): Promise<boolean>
-  async checkMongoDB(em: EntityManager): Promise<boolean>
-}
 ```
+
+**Alternatives Considered**:
+
+- **MikroORM 内置连接池**: 拒绝原因：已有 @hl8/database 完善实现
+- **重新实现连接管理**: 拒绝原因：重复造轮子，增加维护成本
+- **使用 @hl8/database**: **选择**：已有实现，职责清晰
 
 ### 3. 多租户数据隔离实现
 
