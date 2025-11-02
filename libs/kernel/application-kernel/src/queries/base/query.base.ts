@@ -14,6 +14,12 @@ import {
 } from "class-validator";
 import { Transform } from "class-transformer";
 import { EntityId } from "@hl8/domain-kernel";
+import type {
+  TenantContext,
+  TenantId,
+  OrganizationId,
+  DepartmentId,
+} from "@hl8/domain-kernel";
 
 /**
  * 查询基类
@@ -79,6 +85,10 @@ export abstract class BaseQuery<TResult = unknown> extends Query<TResult> {
   @IsObject()
   public readonly metadata?: Record<string, unknown>;
 
+  /** 租户上下文（自动注入） */
+  @IsOptional()
+  public readonly tenantContext?: TenantContext;
+
   /**
    * 创建查询
    * @param queryType 查询类型
@@ -103,6 +113,7 @@ export abstract class BaseQuery<TResult = unknown> extends Query<TResult> {
       }>;
       filters?: Record<string, unknown>;
       metadata?: Record<string, unknown>;
+      tenantContext?: TenantContext;
     } = {},
   ) {
     super();
@@ -117,6 +128,61 @@ export abstract class BaseQuery<TResult = unknown> extends Query<TResult> {
     this.sorting = options.sorting;
     this.filters = options.filters;
     this.metadata = options.metadata;
+    this.tenantContext = options.tenantContext;
+  }
+
+  /**
+   * 获取租户ID
+   * @returns 租户ID或undefined
+   */
+  public getTenantId(): TenantId | undefined {
+    return this.tenantContext?.tenantId;
+  }
+
+  /**
+   * 获取组织ID
+   * @returns 组织ID或undefined
+   */
+  public getOrganizationId(): OrganizationId | undefined {
+    return this.tenantContext?.organizationId;
+  }
+
+  /**
+   * 获取部门ID
+   * @returns 部门ID或undefined
+   */
+  public getDepartmentId(): DepartmentId | undefined {
+    return this.tenantContext?.departmentId;
+  }
+
+  /**
+   * 验证租户上下文（可重写）
+   * @returns 是否有效
+   */
+  public validateTenantContext(): boolean {
+    return this.tenantContext?.validate() ?? false;
+  }
+
+  /**
+   * 构建租户过滤条件
+   * @returns 过滤条件对象
+   */
+  public buildTenantFilter(): Record<string, unknown> {
+    const filter: Record<string, unknown> = {};
+
+    if (this.tenantContext) {
+      filter.tenantId = this.tenantContext.tenantId.value;
+
+      if (this.tenantContext.organizationId) {
+        filter.organizationId = this.tenantContext.organizationId.value;
+      }
+
+      if (this.tenantContext.departmentId) {
+        filter.departmentId = this.tenantContext.departmentId.value;
+      }
+    }
+
+    return filter;
   }
 
   /**
@@ -135,6 +201,7 @@ export abstract class BaseQuery<TResult = unknown> extends Query<TResult> {
       sorting: this.sorting,
       hasFilters: !!this.filters,
       hasMetadata: !!this.metadata,
+      hasTenantContext: !!this.tenantContext,
     };
   }
 
@@ -154,6 +221,7 @@ export abstract class BaseQuery<TResult = unknown> extends Query<TResult> {
       sorting: this.sorting,
       filters: this.filters,
       metadata: this.metadata,
+      tenantContext: this.tenantContext?.toJSON(),
     };
   }
 

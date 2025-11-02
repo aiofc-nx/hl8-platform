@@ -5,3 +5,6 @@
 
 export { EntityId } from "./entity-id.js";
 export { UuidGenerator } from "./uuid-generator.js";
+export { TenantId } from "./tenant-id.js";
+export { OrganizationId } from "./organization-id.js";
+export { DepartmentId } from "./department-id.js";
