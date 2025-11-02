@@ -121,17 +121,17 @@
 
 ### Tests for User Story 4
 
-- [ ] T033 [P] [US4] Create unit test for TransactionManager in libs/kernel/infrastructure-kernel/src/transactions/transaction-manager.spec.ts
-- [ ] T034 [P] [US4] Create integration test for nested transactions in libs/kernel/infrastructure-kernel/test/integration/transaction.integration.spec.ts
+- [x] T033 [P] [US4] Create unit test for TransactionManager in libs/kernel/infrastructure-kernel/src/transactions/transaction-manager.spec.ts
+- [x] T034 [P] [US4] Create integration test for nested transactions in libs/kernel/infrastructure-kernel/test/integration/transaction.integration.spec.ts
 
 ### Implementation for User Story 4
 
-- [ ] T035 [P] [US4] Create ITransactionManager interface in libs/kernel/infrastructure-kernel/src/transactions/transaction-manager.interface.ts
-- [ ] T036 [P] [US4] Create TransactionContext class in libs/kernel/infrastructure-kernel/src/transactions/transaction-context.ts
-- [ ] T037 [US4] Implement MikroORMTransactionManager class with begin, commit, rollback methods in libs/kernel/infrastructure-kernel/src/transactions/transaction-manager.ts
-- [ ] T038 [US4] Implement runInTransaction method in libs/kernel/infrastructure-kernel/src/transactions/transaction-manager.ts
-- [ ] T039 [US4] Implement nested transaction support (up to 5 levels) in libs/kernel/infrastructure-kernel/src/transactions/transaction-manager.ts
-- [ ] T040 [US4] Add TSDoc comments in Chinese for all public methods in libs/kernel/infrastructure-kernel/src/transactions/transaction-manager.ts
+- [x] T035 [P] [US4] Create ITransactionManager interface in libs/kernel/infrastructure-kernel/src/transactions/transaction-manager.interface.ts
+- [x] T036 [P] [US4] Create TransactionContext class in libs/kernel/infrastructure-kernel/src/transactions/transaction-context.ts
+- [x] T037 [US4] Implement MikroORMTransactionManager class with begin, commit, rollback methods in libs/kernel/infrastructure-kernel/src/transactions/transaction-manager.ts
+- [x] T038 [US4] Implement runInTransaction method in libs/kernel/infrastructure-kernel/src/transactions/transaction-manager.ts
+- [x] T039 [US4] Implement nested transaction support (up to 5 levels) in libs/kernel/infrastructure-kernel/src/transactions/transaction-manager.ts
+- [x] T040 [US4] Add TSDoc comments in Chinese for all public methods in libs/kernel/infrastructure-kernel/src/transactions/transaction-manager.ts
 
 **Checkpoint**: At this point, User Story 4 should be fully functional. Transaction management should support nested transactions up to 5 levels deep with correct rollback behavior.
 
