@@ -10,7 +10,6 @@ import {
   OrganizationId,
   DepartmentId,
   EntityId,
-  RepositoryOperationFailedException,
   BusinessException,
   ITenantIsolatedRepository,
   TenantIsolatedEntity,
@@ -55,7 +54,7 @@ export class MikroORMTenantIsolatedRepository<
    * @description 删除实体，继承自父类实现
    * @param id - 实体标识符
    * @returns Promise<void>
-   * @throws {RepositoryOperationFailedException} 当删除失败时抛出
+   * @throws {DomainException} 当删除失败时抛出
    */
   // 继承父类的 delete 方法，类型兼容
 
@@ -64,7 +63,7 @@ export class MikroORMTenantIsolatedRepository<
    * @description 检查实体是否存在，继承自父类实现
    * @param id - 实体标识符
    * @returns 是否存在
-   * @throws {RepositoryOperationFailedException} 当检查失败时抛出
+   * @throws {DomainException} 当检查失败时抛出
    */
   // 继承父类的 exists 方法，类型兼容
 
@@ -74,7 +73,7 @@ export class MikroORMTenantIsolatedRepository<
    * @param id - 实体标识符
    * @param context - 租户上下文
    * @returns 实体实例或null
-   * @throws {RepositoryOperationFailedException} 当查找失败时抛出
+   * @throws {DomainException} 当查找失败时抛出
    * @throws {UnauthorizedAccessException} 当跨租户访问时抛出
    */
   async findByIdWithContext(
@@ -97,11 +96,11 @@ export class MikroORMTenantIsolatedRepository<
       if (error instanceof BusinessException) {
         throw error;
       }
-      throw new RepositoryOperationFailedException(
+      throw this.exceptionConverter.convertToDomainException(
+        error,
         "findByIdWithContext",
         this.entityName,
         id.value,
-        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -111,7 +110,7 @@ export class MikroORMTenantIsolatedRepository<
    * @description 根据上下文中的租户、组织、部门信息查找所有符合条件的实体
    * @param context - 租户上下文
    * @returns 实体数组
-   * @throws {RepositoryOperationFailedException} 当查询失败时抛出
+   * @throws {DomainException} 当查询失败时抛出
    */
   async findAllByContext(context: TenantContext): Promise<TDomain[]> {
     try {
@@ -121,11 +120,10 @@ export class MikroORMTenantIsolatedRepository<
       // TODO: User Story 2 中将通过实体映射器进行实际转换
       return entities as unknown as TDomain[];
     } catch (error) {
-      throw new RepositoryOperationFailedException(
+      throw this.exceptionConverter.convertToDomainException(
+        error,
         "findAllByContext",
         this.entityName,
-        undefined,
-        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -136,7 +134,7 @@ export class MikroORMTenantIsolatedRepository<
    * @param tenantId - 租户标识符
    * @param context - 租户上下文（用于权限验证）
    * @returns 实体数组
-   * @throws {RepositoryOperationFailedException} 当查询失败时抛出
+   * @throws {DomainException} 当查询失败时抛出
    * @throws {UnauthorizedAccessException} 当权限不足时抛出
    */
   async findByTenant(
@@ -158,11 +156,10 @@ export class MikroORMTenantIsolatedRepository<
       // TODO: User Story 2 中将通过实体映射器进行实际转换
       return entities as unknown as TDomain[];
     } catch (error) {
-      throw new RepositoryOperationFailedException(
+      throw this.exceptionConverter.convertToDomainException(
+        error,
         "findByTenant",
         this.entityName,
-        undefined,
-        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -173,7 +170,7 @@ export class MikroORMTenantIsolatedRepository<
    * @param orgId - 组织标识符
    * @param context - 租户上下文（用于权限验证）
    * @returns 实体数组
-   * @throws {RepositoryOperationFailedException} 当查询失败时抛出
+   * @throws {DomainException} 当查询失败时抛出
    * @throws {UnauthorizedAccessException} 当权限不足时抛出
    */
   async findByOrganization(
@@ -198,11 +195,10 @@ export class MikroORMTenantIsolatedRepository<
       // TODO: User Story 2 中将通过实体映射器进行实际转换
       return entities as unknown as TDomain[];
     } catch (error) {
-      throw new RepositoryOperationFailedException(
+      throw this.exceptionConverter.convertToDomainException(
+        error,
         "findByOrganization",
         this.entityName,
-        undefined,
-        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -213,7 +209,7 @@ export class MikroORMTenantIsolatedRepository<
    * @param deptId - 部门标识符
    * @param context - 租户上下文（用于权限验证）
    * @returns 实体数组
-   * @throws {RepositoryOperationFailedException} 当查询失败时抛出
+   * @throws {DomainException} 当查询失败时抛出
    * @throws {UnauthorizedAccessException} 当权限不足时抛出
    */
   async findByDepartment(
@@ -239,11 +235,10 @@ export class MikroORMTenantIsolatedRepository<
       // TODO: User Story 2 中将通过实体映射器进行实际转换
       return entities as unknown as TDomain[];
     } catch (error) {
-      throw new RepositoryOperationFailedException(
+      throw this.exceptionConverter.convertToDomainException(
+        error,
         "findByDepartment",
         this.entityName,
-        undefined,
-        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -254,7 +249,7 @@ export class MikroORMTenantIsolatedRepository<
    * @param id - 实体标识符
    * @param tenantId - 租户标识符
    * @returns 是否属于该租户
-   * @throws {RepositoryOperationFailedException} 当检查失败时抛出
+   * @throws {DomainException} 当检查失败时抛出
    */
   async belongsToTenant(id: EntityId, tenantId: TenantId): Promise<boolean> {
     try {
@@ -265,11 +260,11 @@ export class MikroORMTenantIsolatedRepository<
       }
       return entity.tenantId === tenantId.value;
     } catch (error) {
-      throw new RepositoryOperationFailedException(
+      throw this.exceptionConverter.convertToDomainException(
+        error,
         "belongsToTenant",
         this.entityName,
         id.value,
-        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -280,7 +275,7 @@ export class MikroORMTenantIsolatedRepository<
    * @param id - 实体标识符
    * @param orgId - 组织标识符
    * @returns 是否属于该组织
-   * @throws {RepositoryOperationFailedException} 当检查失败时抛出
+   * @throws {DomainException} 当检查失败时抛出
    */
   async belongsToOrganization(
     id: EntityId,
@@ -297,11 +292,11 @@ export class MikroORMTenantIsolatedRepository<
         entity.organizationId === orgId.value
       );
     } catch (error) {
-      throw new RepositoryOperationFailedException(
+      throw this.exceptionConverter.convertToDomainException(
+        error,
         "belongsToOrganization",
         this.entityName,
         id.value,
-        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -312,7 +307,7 @@ export class MikroORMTenantIsolatedRepository<
    * @param id - 实体标识符
    * @param deptId - 部门标识符
    * @returns 是否属于该部门
-   * @throws {RepositoryOperationFailedException} 当检查失败时抛出
+   * @throws {DomainException} 当检查失败时抛出
    */
   async belongsToDepartment(
     id: EntityId,
@@ -330,11 +325,11 @@ export class MikroORMTenantIsolatedRepository<
         entity.departmentId === deptId.value
       );
     } catch (error) {
-      throw new RepositoryOperationFailedException(
+      throw this.exceptionConverter.convertToDomainException(
+        error,
         "belongsToDepartment",
         this.entityName,
         id.value,
-        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -345,7 +340,7 @@ export class MikroORMTenantIsolatedRepository<
    * @param id - 实体标识符
    * @param context - 租户上下文（必须包含跨租户权限）
    * @returns 实体实例或null
-   * @throws {RepositoryOperationFailedException} 当查询失败或权限不足时抛出
+   * @throws {DomainException} 当查询失败或权限不足时抛出
    * @throws {UnauthorizedAccessException} 当权限不足时抛出
    */
   async findByIdCrossTenant(
@@ -370,11 +365,11 @@ export class MikroORMTenantIsolatedRepository<
       if (error instanceof BusinessException) {
         throw error;
       }
-      throw new RepositoryOperationFailedException(
+      throw this.exceptionConverter.convertToDomainException(
+        error,
         "findByIdCrossTenant",
         this.entityName,
         id.value,
-        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -385,7 +380,7 @@ export class MikroORMTenantIsolatedRepository<
    * @param tenantId - 租户标识符
    * @param context - 租户上下文
    * @returns 实体数量
-   * @throws {RepositoryOperationFailedException} 当统计失败时抛出
+   * @throws {DomainException} 当统计失败时抛出
    * @throws {UnauthorizedAccessException} 当权限不足时抛出
    */
   async countByTenant(
@@ -405,11 +400,10 @@ export class MikroORMTenantIsolatedRepository<
       const count = await this.em.count(this.entityName, filters);
       return count;
     } catch (error) {
-      throw new RepositoryOperationFailedException(
+      throw this.exceptionConverter.convertToDomainException(
+        error,
         "countByTenant",
         this.entityName,
-        undefined,
-        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -420,7 +414,7 @@ export class MikroORMTenantIsolatedRepository<
    * @param orgId - 组织标识符
    * @param context - 租户上下文
    * @returns 实体数量
-   * @throws {RepositoryOperationFailedException} 当统计失败时抛出
+   * @throws {DomainException} 当统计失败时抛出
    * @throws {UnauthorizedAccessException} 当权限不足时抛出
    */
   async countByOrganization(
@@ -443,11 +437,10 @@ export class MikroORMTenantIsolatedRepository<
       const count = await this.em.count(this.entityName, filters);
       return count;
     } catch (error) {
-      throw new RepositoryOperationFailedException(
+      throw this.exceptionConverter.convertToDomainException(
+        error,
         "countByOrganization",
         this.entityName,
-        undefined,
-        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -458,7 +451,7 @@ export class MikroORMTenantIsolatedRepository<
    * @param deptId - 部门标识符
    * @param context - 租户上下文
    * @returns 实体数量
-   * @throws {RepositoryOperationFailedException} 当统计失败时抛出
+   * @throws {DomainException} 当统计失败时抛出
    * @throws {UnauthorizedAccessException} 当权限不足时抛出
    */
   async countByDepartment(
@@ -482,11 +475,10 @@ export class MikroORMTenantIsolatedRepository<
       const count = await this.em.count(this.entityName, filters);
       return count;
     } catch (error) {
-      throw new RepositoryOperationFailedException(
+      throw this.exceptionConverter.convertToDomainException(
+        error,
         "countByDepartment",
         this.entityName,
-        undefined,
-        error instanceof Error ? error : undefined,
       );
     }
   }

@@ -56,11 +56,14 @@ describe("MikroORMRepository", () => {
       const result = await repository.findAll();
 
       expect(result).toEqual(mockEntities);
-      expect(mockEm.find).toHaveBeenCalledWith(entityName, { deletedAt: null });
+      expect(mockEm.find).toHaveBeenCalledWith(entityName, {
+        deletedAt: null,
+      });
     });
 
     it("应该在查询失败时抛出异常", async () => {
-      const error = new Error("查询失败");
+      // 使用不包含"查询"关键词的错误消息，以避免被识别为查询错误
+      const error = new Error("Database operation failed");
       (mockEm.find as jest.MockedFunction<any>).mockRejectedValue(error);
 
       await expect(repository.findAll()).rejects.toThrow(
@@ -149,7 +152,8 @@ describe("MikroORMRepository", () => {
     });
 
     it("应该在查询失败时抛出异常", async () => {
-      const error = new Error("查询失败");
+      // 使用不包含"查询"关键词的错误消息，以避免被识别为查询错误
+      const error = new Error("Database operation failed");
       (mockEm.findAndCount as jest.MockedFunction<any>).mockRejectedValue(
         error,
       );

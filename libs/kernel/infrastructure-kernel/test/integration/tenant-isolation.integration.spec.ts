@@ -128,7 +128,7 @@ describe("PostgreSQL Tenant Isolation Integration Tests", () => {
       );
 
       expect(found).toBeTruthy();
-      expect(found!.name).toBe("Tenant 1 Entity");
+      expect((found as any).name).toBe("Tenant 1 Entity");
     });
 
     it("应该阻止跨租户访问", async () => {
@@ -181,7 +181,7 @@ describe("PostgreSQL Tenant Isolation Integration Tests", () => {
       const entities = await repository.findByTenant(tenant1Id, context);
 
       expect(entities).toHaveLength(2);
-      expect(entities.map((e) => e.name)).toEqual(
+      expect(entities.map((e) => (e as any).name)).toEqual(
         expect.arrayContaining(["Entity 1", "Entity 2"]),
       );
     });
@@ -212,7 +212,7 @@ describe("PostgreSQL Tenant Isolation Integration Tests", () => {
       const entities = await repository.findByOrganization(org1Id, context);
 
       expect(entities).toHaveLength(1);
-      expect(entities[0].name).toBe("Org 1 Entity");
+      expect((entities[0] as any).name).toBe("Org 1 Entity");
     });
 
     it("应该阻止跨组织访问", async () => {
@@ -267,7 +267,7 @@ describe("PostgreSQL Tenant Isolation Integration Tests", () => {
       const entities = await repository.findByDepartment(dept1Id, context);
 
       expect(entities).toHaveLength(1);
-      expect(entities[0].name).toBe("Dept 1 Entity");
+      expect((entities[0] as any).name).toBe("Dept 1 Entity");
     });
 
     it("应该阻止跨部门访问", async () => {
@@ -386,7 +386,7 @@ describe("PostgreSQL Tenant Isolation Integration Tests", () => {
       );
 
       expect(found).toBeTruthy();
-      expect(found!.name).toBe("Tenant 1 Entity");
+      expect((found as any).name).toBe("Tenant 1 Entity");
     });
 
     it("应该拒绝跨租户访问（如果上下文不允许）", async () => {
@@ -547,7 +547,7 @@ describe("PostgreSQL Tenant Isolation Integration Tests", () => {
       const entities = await repository.findAllByContext(context);
 
       expect(entities).toHaveLength(2);
-      expect(entities.map((e) => e.name)).toEqual(
+      expect(entities.map((e) => (e as any).name)).toEqual(
         expect.arrayContaining(["Entity 1", "Entity 2"]),
       );
     });
@@ -581,7 +581,7 @@ describe("PostgreSQL Tenant Isolation Integration Tests", () => {
       const entities = await repository.findAllByContext(context);
 
       expect(entities).toHaveLength(1);
-      expect(entities[0].name).toBe("Org1-Dept1 Entity");
+      expect((entities[0] as any).name).toBe("Org1-Dept1 Entity");
     });
   });
 });
