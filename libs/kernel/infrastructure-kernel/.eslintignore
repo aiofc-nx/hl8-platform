@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Coverage
+coverage/
+*.lcov
+
+# Generated files
+*.tsbuildinfo
+
+# Minified files
+*.min.js
+
+# ESLint cache
+.eslintcache
+
