@@ -50,15 +50,15 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T010 [P] [US1] Create unit test for ITenantIsolatedRepository interface implementation in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-isolated-repository.spec.ts
-- [ ] T011 [P] [US1] Create integration test for tenant isolation in libs/kernel/infrastructure-kernel/test/integration/tenant-isolation.integration.spec.ts
+- [x] T010 [P] [US1] Create unit test for ITenantIsolatedRepository interface implementation in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-isolated-repository.spec.ts
+- [x] T011 [P] [US1] Create integration test for tenant isolation in libs/kernel/infrastructure-kernel/test/integration/tenant-isolation.integration.spec.ts
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] Modify MikroORMTenantIsolatedRepository to formally implement ITenantIsolatedRepository interface in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-isolated-repository.ts (resolve type constraint conflicts using entity mapper)
-- [ ] T013 [US1] Ensure all ITenantIsolatedRepository methods are implemented: findByIdWithContext, findAllByContext, findByTenant, findByOrganization, findByDepartment, belongsToTenant, belongsToOrganization, belongsToDepartment, findByIdCrossTenant, countByTenant, countByOrganization, countByDepartment
-- [ ] T014 [US1] Update exports to include ITenantIsolatedRepository interface in libs/kernel/infrastructure-kernel/src/repositories/index.ts
-- [ ] T015 [US1] Add TSDoc comments in Chinese for all public methods in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-isolated-repository.ts
+- [x] T012 [US1] Modify MikroORMTenantIsolatedRepository to formally implement ITenantIsolatedRepository interface in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-isolated-repository.ts (resolve type constraint conflicts using entity mapper)
+- [x] T013 [US1] Ensure all ITenantIsolatedRepository methods are implemented: findByIdWithContext, findAllByContext, findByTenant, findByOrganization, findByDepartment, belongsToTenant, belongsToOrganization, belongsToDepartment, findByIdCrossTenant, countByTenant, countByOrganization, countByDepartment
+- [x] T014 [US1] Update exports to include ITenantIsolatedRepository interface in libs/kernel/infrastructure-kernel/src/repositories/index.ts
+- [x] T015 [US1] Add TSDoc comments in Chinese for all public methods in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-isolated-repository.ts
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently. TypeScript compiler should validate interface compliance with zero errors.
 
@@ -72,18 +72,18 @@
 
 ### Tests for User Story 2
 
-- [ ] T016 [P] [US2] Create unit test for EntityMapper in libs/kernel/infrastructure-kernel/src/mappers/entity-mapper.spec.ts
-- [ ] T017 [P] [US2] Create integration test for entity mapping in libs/kernel/infrastructure-kernel/test/integration/entity-mapper.integration.spec.ts
+- [x] T016 [P] [US2] Create unit test for EntityMapper in libs/kernel/infrastructure-kernel/src/mappers/entity-mapper.spec.ts
+- [x] T017 [P] [US2] Create integration test for entity mapping in libs/kernel/infrastructure-kernel/test/integration/entity-mapper.integration.spec.ts
 
 ### Implementation for User Story 2
 
-- [ ] T018 [P] [US2] Create EntityMapper class with automatic mapping in libs/kernel/infrastructure-kernel/src/mappers/entity-mapper.ts
-- [ ] T019 [P] [US2] Create MappingConfig interface for manual mapping configuration in libs/kernel/infrastructure-kernel/src/mappers/mapping-config.ts
-- [ ] T020 [US2] Implement toDomain method with automatic + manual mapping in libs/kernel/infrastructure-kernel/src/mappers/entity-mapper.ts
-- [ ] T021 [US2] Implement toPersistence method with automatic + manual mapping in libs/kernel/infrastructure-kernel/src/mappers/entity-mapper.ts
-- [ ] T022 [US2] Implement toDomainList and toPersistenceList batch methods in libs/kernel/infrastructure-kernel/src/mappers/entity-mapper.ts
-- [ ] T023 [US2] Implement nested aggregate mapping support in libs/kernel/infrastructure-kernel/src/mappers/entity-mapper.ts
-- [ ] T024 [US2] Add TSDoc comments in Chinese for all public methods in libs/kernel/infrastructure-kernel/src/mappers/entity-mapper.ts
+- [x] T018 [P] [US2] Create EntityMapper class with automatic mapping in libs/kernel/infrastructure-kernel/src/mappers/entity-mapper.ts
+- [x] T019 [P] [US2] Create MappingConfig interface for manual mapping configuration in libs/kernel/infrastructure-kernel/src/mappers/mapping-config.ts
+- [x] T020 [US2] Implement toDomain method with automatic + manual mapping in libs/kernel/infrastructure-kernel/src/mappers/entity-mapper.ts
+- [x] T021 [US2] Implement toPersistence method with automatic + manual mapping in libs/kernel/infrastructure-kernel/src/mappers/entity-mapper.ts
+- [x] T022 [US2] Implement toDomainList and toPersistenceList batch methods in libs/kernel/infrastructure-kernel/src/mappers/entity-mapper.ts
+- [x] T023 [US2] Implement nested aggregate mapping support in libs/kernel/infrastructure-kernel/src/mappers/entity-mapper.ts
+- [x] T024 [US2] Add TSDoc comments in Chinese for all public methods in libs/kernel/infrastructure-kernel/src/mappers/entity-mapper.ts
 
 **Checkpoint**: At this point, User Story 2 should be fully functional. Entity mappers should successfully convert 100% of domain entity properties without data loss.
 
@@ -97,17 +97,17 @@
 
 ### Tests for User Story 3
 
-- [ ] T025 [P] [US3] Create unit test for findAll and count methods in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.spec.ts
-- [ ] T026 [P] [US3] Create integration test for IRepository interface completeness in libs/kernel/infrastructure-kernel/test/integration/repository.integration.spec.ts
+- [x] T025 [P] [US3] Create unit test for findAll and count methods in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.spec.ts
+- [x] T026 [P] [US3] Create integration test for IRepository interface completeness in libs/kernel/infrastructure-kernel/test/integration/repository.integration.spec.ts
 
 ### Implementation for User Story 3
 
-- [ ] T027 [US3] Implement findAll method in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
-- [ ] T028 [US3] Implement count method in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
-- [ ] T029 [US3] Implement saveMany batch operation in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
-- [ ] T030 [US3] Implement deleteMany batch operation in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
-- [ ] T031 [US3] Add pagination support for findAll in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
-- [ ] T032 [US3] Add TSDoc comments in Chinese for all new methods in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
+- [x] T027 [US3] Implement findAll method in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
+- [x] T028 [US3] Implement count method in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
+- [x] T029 [US3] Implement saveMany batch operation in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
+- [x] T030 [US3] Implement deleteMany batch operation in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
+- [x] T031 [US3] Add pagination support for findAll in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
+- [x] T032 [US3] Add TSDoc comments in Chinese for all new methods in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
 
 **Checkpoint**: At this point, User Story 3 should be fully functional. All IRepository interface methods should be implemented with 90%+ test coverage.
 
