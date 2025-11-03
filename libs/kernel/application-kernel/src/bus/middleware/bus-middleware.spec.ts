@@ -520,7 +520,30 @@ describe("CacheMiddleware", () => {
   });
 
   describe("缓存功能", () => {
-    it("应该缓存查询结果", async () => {
+    it("应该保留基本的中间件接口", () => {
+      // 注意：缓存逻辑已迁移到 @hl8/cache，此处只测试接口兼容性
+      expect(middleware.getName()).toBe("CacheMiddleware");
+      expect(middleware.getDescription()).toBe("为查询结果提供缓存功能");
+      expect(middleware.getVersion()).toBe("1.0.0");
+      expect(middleware.getPriority()).toBe(150);
+    });
+
+    it("应该支持标准的查询前处理（空实现）", async () => {
+      const query = new TestQuery({ name: "Test" });
+      const context: ExecutionContext = {
+        executionId: "test-id",
+        startTime: new Date(),
+        executionType: "query",
+        objectType: "TestQuery",
+        metadata: {},
+        middlewareHistory: [],
+      };
+
+      const result = await middleware.beforeQuery!(query, context);
+      expect(result).toBe(true); // 空实现返回 true，继续执行
+    });
+
+    it("应该支持标准的查询后处理（空实现）", async () => {
       const query = new TestQuery({ name: "Test" });
       const result = QueryResult.success([{ id: 1, name: "Test Item" }]);
       const context: ExecutionContext = {
@@ -532,57 +555,12 @@ describe("CacheMiddleware", () => {
         middlewareHistory: [],
       };
 
-      await middleware.afterQuery!(query, result, context);
-
-      expect(mockLogger.debug).toHaveBeenCalledWith("查询结果已缓存", {
-        executionId: "test-id",
-        queryType: "TestQuery",
-        cacheKey: expect.any(String),
-      });
-    });
-
-    it("应该返回缓存的结果", async () => {
-      const query = new TestQuery({ name: "Test" });
-      const cachedResult = QueryResult.success([
-        { id: 1, name: "Cached Item" },
-      ]);
-
-      // 先缓存结果
-      const cacheKey = middleware.generateCacheKey(query);
-      (middleware as any).cache.set(cacheKey, {
-        data: cachedResult,
-        timestamp: Date.now(),
-      });
-
-      const context: ExecutionContext = {
-        executionId: "test-id",
-        startTime: new Date(),
-        executionType: "query",
-        objectType: "TestQuery",
-        metadata: {},
-        middlewareHistory: [],
-      };
-
-      const result = await middleware.beforeQuery!(query, context);
-
-      expect(result).toBe(false); // 不继续执行查询，使用缓存
-      expect(mockLogger.debug).toHaveBeenCalledWith("查询缓存命中", {
-        executionId: "test-id",
-        queryType: "TestQuery",
-        cacheKey: expect.any(String),
-      });
-    });
-
-    it("应该清理过期缓存", () => {
-      middleware.clearExpiredCache();
-      // 这里主要测试方法不抛出异常
-      expect(true).toBe(true);
-    });
-
-    it("应该清空所有缓存", () => {
-      middleware.clearAllCache();
-      // 这里主要测试方法不抛出异常
-      expect(true).toBe(true);
+      const returnedResult = await middleware.afterQuery!(
+        query,
+        result,
+        context,
+      );
+      expect(returnedResult).toBe(result); // 空实现直接返回原结果
     });
   });
 });

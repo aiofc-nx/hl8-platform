@@ -456,15 +456,10 @@ export class RetryMiddleware extends BaseBusMiddleware {
 
 /**
  * 缓存中间件
- * @description 为查询结果提供缓存功能
+ * @description 为查询结果提供缓存功能，使用 @hl8/cache 统一缓存库
  */
 @Injectable()
 export class CacheMiddleware extends BaseBusMiddleware {
-  private readonly cache = new Map<
-    string,
-    { data: QueryResult; timestamp: number }
-  >();
-
   constructor(
     logger: Logger,
     private readonly config: BusConfig,
@@ -489,61 +484,27 @@ export class CacheMiddleware extends BaseBusMiddleware {
   }
 
   async beforeQuery(
-    query: BaseQuery,
-    context: ExecutionContext,
+    _query: BaseQuery,
+    _context: ExecutionContext,
   ): Promise<boolean> {
-    if (!this.config.enableCaching) {
-      return true;
-    }
-
-    const cacheKey = this.generateCacheKey(query);
-    const cached = this.cache.get(cacheKey);
-
-    if (cached) {
-      const now = Date.now();
-      if (now - cached.timestamp < this.config.cacheExpirationTime) {
-        this.logger.debug("查询缓存命中", {
-          executionId: context.executionId,
-          queryType: query.queryType,
-          cacheKey,
-        });
-
-        // 将缓存结果设置到上下文中
-        context.metadata.cachedResult = cached.data;
-        return false; // 不继续执行查询
-      } else {
-        // 缓存过期，删除
-        this.cache.delete(cacheKey);
-      }
-    }
-
+    // 注意：缓存逻辑已迁移到 Application Kernel 的主缓存服务
+    // 此中间件保留接口但不执行缓存逻辑，避免重复缓存
+    // 缓存由共享的 ICache 实例统一管理
     return true;
   }
 
   async afterQuery(
     query: BaseQuery,
     result: QueryResult,
-    context: ExecutionContext,
+    _context: ExecutionContext,
   ): Promise<QueryResult> {
-    if (!this.config.enableCaching || !result.success) {
-      return result;
-    }
-
-    const cacheKey = this.generateCacheKey(query);
-    this.cache.set(cacheKey, {
-      data: result,
-      timestamp: Date.now(),
-    });
-
-    this.logger.debug("查询结果已缓存", {
-      executionId: context.executionId,
-      queryType: query.queryType,
-      cacheKey,
-    });
-
+    // 缓存逻辑已在 CacheService 中统一处理
     return result;
   }
 
+  /**
+   * @deprecated 使用 @hl8/cache 的 CacheKeyBuilder 替代
+   */
   public generateCacheKey(query: BaseQuery): string {
     // 基于查询类型和参数生成缓存键
     const params = JSON.stringify(query);
@@ -551,21 +512,16 @@ export class CacheMiddleware extends BaseBusMiddleware {
   }
 
   /**
-   * 清理过期缓存
+   * @deprecated 缓存已迁移到 ICache 服务
    */
   clearExpiredCache(): void {
-    const now = Date.now();
-    for (const [key, value] of this.cache.entries()) {
-      if (now - value.timestamp >= this.config.cacheExpirationTime) {
-        this.cache.delete(key);
-      }
-    }
+    // 空实现：缓存清理由 ICache 服务自动处理
   }
 
   /**
-   * 清空所有缓存
+   * @deprecated 缓存已迁移到 ICache 服务
    */
   clearAllCache(): void {
-    this.cache.clear();
+    // 空实现：使用 ICache.clear() 替代
   }
 }
