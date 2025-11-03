@@ -131,7 +131,22 @@ export class InMemoryCache implements ICache {
       }
 
       const now = Date.now();
-      const effectiveTtl = ttl ?? this.config.defaultTtl;
+      let effectiveTtl = ttl ?? this.config.defaultTtl;
+
+      // null 值缓存处理：防止缓存穿透
+      if (
+        this.config.enableNullValueCache &&
+        (value === null || value === undefined)
+      ) {
+        // 如果启用了 null 值缓存，使用指定的 TTL 或默认值
+        effectiveTtl = ttl ?? this.config.nullValueCacheTtl ?? 30000; // 默认 30 秒
+
+        this.logger.debug("设置 null 值缓存（防穿透）", {
+          key,
+          ttl: effectiveTtl,
+        });
+      }
+
       const expiresAt = effectiveTtl > 0 ? now + effectiveTtl : 0;
 
       // 如果键已存在，先清理旧标签索引
@@ -157,6 +172,7 @@ export class InMemoryCache implements ICache {
         ttl: effectiveTtl,
         tags: item.tags,
         expiresAt: expiresAt > 0 ? new Date(expiresAt) : "never",
+        isNullValue: value === null || value === undefined,
       });
     } catch (error) {
       this.logger.error("设置缓存失败", {

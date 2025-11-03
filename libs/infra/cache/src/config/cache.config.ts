@@ -73,6 +73,24 @@ export class CacheConfig {
   enableCompression?: boolean;
 
   /**
+   * 是否启用 null 值缓存
+   * @description 启用后缓存 null/undefined 值以防止缓存穿透
+   * 当查询不存在的数据时，缓存 null 值避免重复查询数据库
+   */
+  @IsBoolean()
+  enableNullValueCache?: boolean;
+
+  /**
+   * null 值缓存 TTL（毫秒）
+   * @description null 值缓存的有效期，通常设置为较短的时长（如 5-60 秒）
+   * 防止长期缓存不存在的数据，允许数据在短期内被重新创建
+   */
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  nullValueCacheTtl?: number;
+
+  /**
    * 淘汰策略
    * @description 达到最大缓存大小时使用的淘汰策略
    * - LRU: 最近最少使用（Least Recently Used）

@@ -171,7 +171,7 @@
 - [X] T073 [P] Add comprehensive TSDoc comments to all public APIs in libs/infra/cache/src/
 - [X] T074 [P] Update README.md with usage examples in libs/infra/cache/
 - [X] T075 [P] Add error handling for edge cases (cache invalidation failure, etc.) in libs/infra/cache/src/
-- [ ] T076 [P] Implement null value caching to prevent cache penetration in libs/infra/cache/src/implementations/in-memory-cache.ts
+- [X] T076 [P] Implement null value caching to prevent cache penetration in libs/infra/cache/src/implementations/in-memory-cache.ts
 - [ ] T077 [P] Add cache warming support (preload common entities) in libs/infra/cache/src/services/cache-warming.service.ts
 - [ ] T078 [P] Add distributed cache invalidation support (for future Redis integration) in libs/infra/cache/src/invalidation/distributed-invalidation.ts
 - [ ] T079 [P] Add cache monitoring and alerting hooks in libs/infra/cache/src/monitoring/cache-monitor.ts

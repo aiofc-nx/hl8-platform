@@ -175,6 +175,114 @@ describe("InMemoryCache", () => {
       const stats = await cache.getStats();
       expect(stats.sets).toBe(1);
     });
+
+    describe("null 值缓存防穿透", () => {
+      it("应该缓存 null 值当启用 null 值缓存时", async () => {
+        const nullCacheConfig: CacheConfig = {
+          ...config,
+          enableNullValueCache: true,
+          nullValueCacheTtl: 1000,
+        };
+        const nullCache = new InMemoryCache(nullCacheConfig, mockLogger);
+
+        await nullCache.set("key-null", null);
+        const result = await nullCache.get("key-null");
+
+        expect(result).toBeNull();
+
+        nullCache.destroy();
+      });
+
+      it("应该缓存 undefined 值当启用 null 值缓存时", async () => {
+        const nullCacheConfig: CacheConfig = {
+          ...config,
+          enableNullValueCache: true,
+          nullValueCacheTtl: 1000,
+        };
+        const nullCache = new InMemoryCache(nullCacheConfig, mockLogger);
+
+        await nullCache.set("key-undefined", undefined);
+        const result = await nullCache.get("key-undefined");
+
+        expect(result).toBeUndefined();
+
+        nullCache.destroy();
+      });
+
+      it("应该使用 null 值缓存 TTL 当启用时", async () => {
+        const nullCacheConfig: CacheConfig = {
+          ...config,
+          enableNullValueCache: true,
+          nullValueCacheTtl: 100,
+        };
+        const nullCache = new InMemoryCache(nullCacheConfig, mockLogger);
+
+        await nullCache.set("key-null", null);
+
+        // null 值缓存应该在 100ms 后过期
+        await new Promise((resolve) => setTimeout(resolve, 150));
+
+        const result = await nullCache.get("key-null");
+        expect(result).toBeUndefined();
+
+        nullCache.destroy();
+      });
+
+      it("应该使用默认 30 秒 TTL 当未指定 nullValueCacheTtl 时", async () => {
+        const nullCacheConfig: CacheConfig = {
+          ...config,
+          enableNullValueCache: true,
+          // 未指定 nullValueCacheTtl
+        };
+        const nullCache = new InMemoryCache(nullCacheConfig, mockLogger);
+
+        await nullCache.set("key-null", null);
+        const metadata = await nullCache.getMetadata("key-null");
+
+        // 验证过期时间接近 30 秒
+        const ttl = metadata!.expiresAt - metadata!.createdAt;
+        expect(ttl).toBeGreaterThan(25000);
+        expect(ttl).toBeLessThan(35000);
+
+        nullCache.destroy();
+      });
+
+      it("应该不使用 null 值缓存当禁用时", async () => {
+        const nullCacheConfig: CacheConfig = {
+          ...config,
+          enableNullValueCache: false,
+        };
+        const nullCache = new InMemoryCache(nullCacheConfig, mockLogger);
+
+        await nullCache.set("key-null", null);
+        const metadata = await nullCache.getMetadata("key-null");
+
+        // 应该使用默认 TTL
+        const ttl = metadata!.expiresAt - metadata!.createdAt;
+        expect(ttl).toBe(config.defaultTtl);
+
+        nullCache.destroy();
+      });
+
+      it("应该支持自定义 TTL 覆盖 null 值缓存 TTL", async () => {
+        const nullCacheConfig: CacheConfig = {
+          ...config,
+          enableNullValueCache: true,
+          nullValueCacheTtl: 1000,
+        };
+        const nullCache = new InMemoryCache(nullCacheConfig, mockLogger);
+
+        await nullCache.set("key-null", null, 2000);
+
+        const metadata = await nullCache.getMetadata("key-null");
+        const ttl = metadata!.expiresAt - metadata!.createdAt;
+
+        // 应该使用自定义的 2000ms TTL
+        expect(ttl).toBe(2000);
+
+        nullCache.destroy();
+      });
+    });
   });
 
   describe("delete", () => {
