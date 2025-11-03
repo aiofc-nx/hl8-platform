@@ -1,0 +1,26 @@
+{
+  "extends": "@repo/typescript-config/nestjs.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "strict": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "incremental": false,
+    "baseUrl": ".",
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  },
+  "include": [
+    "src",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "test",
+    "jest.config.ts",
+    "scripts/**/*.mjs"
+  ],
+  "exclude": ["node_modules", "dist"]
+}

@@ -1,73 +1,285 @@
-# [PROJECT_NAME] Constitution
+<!--
+  Sync Impact Report:
+  Version: 1.0.0 → 1.1.0
+  Status: Minor Update - Added Module Usage Guidelines
+  
+  Principles Added:
+  - I. 中文优先原则 (NON-NEGOTIABLE)
+  - II. 代码即文档原则
+  - III. 架构原则（Clean Architecture + DDD + CQRS + ES + EDA）
+  
+  Sections Added:
+  - Core Principles (3 main principles with detailed sub-sections)
+  - 模块使用规范（新增）
+  - Governance
+  
+  Changes:
+  - v1.1.0: 新增模块使用规范章节，规定基础设施模块和kernel模块的使用要求
+  
+  Templates Status:
+  ✅ plan-template.md - Constitution Check section ready
+  ✅ spec-template.md - Ready for use
+  ✅ tasks-template.md - Ready for use
+  ⚠️ Need to verify alignment with DDD/ES patterns in future updates
+  
+  Follow-up TODOs: None
+-->
 
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# hl8-platform Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
+### I. 中文优先原则 (NON-NEGOTIABLE)
 
-<!-- Example: I. Library-First -->
+**所有代码注释、文档、错误消息和用户界面必须使用中文**
 
-[PRINCIPLE_1_DESCRIPTION]
+- **代码注释必须使用中文**，遵循 TSDoc 规范
 
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+- **技术文档必须使用中文编写**
 
-### [PRINCIPLE_2_NAME]
+- **用户界面文本必须使用中文**
 
-<!-- Example: II. CLI Interface -->
+- **错误消息和日志必须使用中文**
 
-[PRINCIPLE_2_DESCRIPTION]
+- **API 文档和接口说明必须使用中文**
 
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+- **Git 提交消息推荐使用中文**
 
-### [PRINCIPLE_3_NAME]
+- **代码变量命名使用英文，但必须有中文注释说明**
 
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
+**理由**：本项目面向中国大陆地区的企业级SAAS平台，中文优先确保团队沟通效率、代码可维护性和业务理解的一致性。
 
-[PRINCIPLE_3_DESCRIPTION]
+### II. 代码即文档原则
 
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**代码注释必须清晰、准确、完整地描述业务规则与逻辑**
 
-### [PRINCIPLE_4_NAME]
+- **遵循 TSDoc 注释规范**
 
-<!-- Example: IV. Integration Testing -->
+- **所有公共 API、类、方法、接口、枚举都必须添加完整的 TSDoc 注释**
 
-[PRINCIPLE_4_DESCRIPTION]
+- **注释必须包含**：
+  - @description: 功能描述和业务逻辑
+  - @param: 参数说明（含业务含义）
+  - @returns: 返回值说明
+  - @throws: 异常情况说明
+  - @example: 使用示例
 
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+- **业务规则详细描述**
 
-### [PRINCIPLE_5_NAME]
+- **前置条件和后置条件**
 
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
+- **使用场景和注意事项**
 
-[PRINCIPLE_5_DESCRIPTION]
+- **代码变更时必须同步更新注释**
 
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+**理由**：通过详细的注释让代码本身成为最好的业务文档，减少文档维护成本，提高团队协作效率，确保业务逻辑的准确传承。
 
-## [SECTION_2_NAME]
+### III. 架构原则
 
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+**项目采用混合架构模式：Clean Architecture + DDD + CQRS + 事件溯源 (ES) + 事件驱动架构 (EDA)**
 
-[SECTION_2_CONTENT]
+#### Clean Architecture
 
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+**四层架构设计，确保核心业务逻辑独立于框架和基础设施**
 
-## [SECTION_3_NAME]
+- **四层架构**：领域层、应用层、基础设施层、接口层
 
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+- **依赖关系**：从外向内，内层不依赖外层
 
-[SECTION_3_CONTENT]
+- **核心业务逻辑**：独立于框架和基础设施
 
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- **用例要求**：用例（Use Cases）必须在文档和设计中明确提及
+
+**领域层纯净性要求**：
+
+- **领域层必须保持纯净性**，不能与任何数据库和ORM框架关联
+
+#### 领域驱动设计 (DDD)
+
+**充血模型设计，确保领域对象包含完整的业务逻辑和行为**
+
+**充血模型（Rich Domain Model）要求**：
+
+- **领域对象必须包含业务逻辑和数据**，禁止使用贫血模型
+
+- **实体和聚合根必须封装业务行为**，而非仅作为数据容器
+
+- **业务规则必须在领域对象内部实现**，而非在服务层
+
+- **领域对象通过方法暴露行为**，而非直接暴露属性
+
+- **对象状态变更必须通过业务方法**，确保业务规则的执行
+
+- **禁止贫血模型（Anemic Domain Model）**：领域对象只有 getter/setter 没有业务逻辑
+
+**战术设计模式**：
+
+- **领域实体和聚合根必须分离**（entities/ 和 aggregates/）
+
+- **无论聚合简单或复杂，都必须实现实体与聚合根分离**
+
+- **聚合根职责**：管理聚合边界，协调内部实体，发布领域事件，验证业务规则
+
+- **内部实体职责**：执行具体业务操作，维护自身状态，遵循聚合根指令
+
+- **禁止直接执行业务逻辑**：聚合根不能直接执行业务逻辑，必须委托给内部实体
+
+- **聚合根管理聚合边界和一致性规则**
+
+- **值对象（Value Objects）**表示无标识的不可变概念
+
+- **领域服务（Domain Services）**处理跨实体的领域逻辑
+
+- **仓储（Repositories）**负责聚合的持久化
+
+- **规格模式（Specifications）**封装复杂的业务规则
+
+- **领域事件（Domain Events）**记录领域内发生的重要事实
+
+#### CQRS 模式
+
+**命令查询职责分离，支持读写模型的独立优化和扩展**
+
+- **命令（Command）和查询（Query）必须分离**
+
+- **写操作使用命令模型**，改变系统状态
+
+- **读操作使用查询模型**，不改变状态
+
+- **支持读写模型的独立优化和扩展**
+
+- **命令和查询通过总线（Bus）分发**
+
+- **事件投影器（Projectors）**构建读模型
+
+#### 事件溯源 (ES)
+
+**所有状态变更通过事件记录，事件是事实来源**
+
+- **所有状态变更通过事件记录**，事件是事实来源
+
+- **事件是不可变的事实记录**，只能追加不能修改
+
+- **支持通过重放事件重建聚合状态**
+
+- **支持完整的审计追踪和时间旅行**
+
+- **事件存储（Event Store）**是核心基础设施
+
+- **快照（Snapshots）**优化事件重放性能
+
+#### 事件驱动架构 (EDA)
+
+**系统组件通过事件通信，实现松耦合和最终一致性**
+
+- **系统组件通过事件通信**，实现松耦合
+
+- **领域事件在聚合内部传播**
+
+- **集成事件在服务间传播**
+
+- **支持异步处理和最终一致性**
+
+- **事件总线（Event Bus）**负责事件的发布和订阅
+
+- **Saga 模式**协调跨聚合的长事务
+
+**架构模式理由**：混合架构模式为企业级SAAS平台提供高可扩展性、高性能、高可靠性和高可维护性。DDD 确保技术实现与业务需求一致；Clean Architecture 确保核心逻辑独立于技术；CQRS 支持读写分离和独立优化；事件溯源提供完整的审计追踪；事件驱动实现系统解耦。这些模式的有机结合，适应复杂的业务场景和未来微服务部署需求。
+
+## 技术栈约束
+
+**服务端项目必须使用 NodeNext 模块系统**
+
+- **核心配置**：module: "NodeNext", moduleResolution: "NodeNext", target: "ES2022", strict: true
+
+- **package.json 配置**：type: "module", engines: { "node": ">=20" }
+
+- **禁止使用 CommonJS**：不允许在新项目中使用 CommonJS 模块系统
+
+## 模块使用规范
+
+**优先使用项目内统一的基础设施模块和kernel模块，确保架构一致性和代码复用**
+
+### 基础设施模块
+
+**优先使用自定义的基础设施模块，包括**：
+
+1. **@hl8/config 配置模块**：`libs/infra/config`
+   - 统一配置管理，支持环境变量、配置文件等多源配置
+   - 提供类型安全的配置访问接口
+
+2. **@hl8/logger 日志模块**：`libs/infra/logger`
+   - 统一日志格式和输出
+   - 支持结构化日志和日志级别控制
+   - 遵循中文优先原则，日志消息使用中文
+
+3. **@hl8/cache 缓存模块**：`libs/infra/cache`
+   - 统一的缓存抽象接口
+   - 支持多种缓存后端（内存、Redis等）
+
+**理由**：使用统一的基础设施模块确保配置管理、日志记录和缓存策略的一致性，减少重复代码，提高可维护性。
+
+### Kernel 核心模块
+
+**`libs/kernel` 是业务模块开发的基础，提供架构各层的核心组件**：
+
+1. **领域层核心**：`libs/kernel/domain-kernel`
+   - 提供领域实体、聚合根、值对象等基础抽象
+   - 支持领域事件和领域服务
+   - 实现充血模型和实体与聚合根分离模式
+
+2. **应用层核心**：`libs/kernel/application-kernel`
+   - 提供用例（Use Cases）基础结构
+   - 支持 CQRS 模式的命令和查询处理
+   - 提供应用服务的基础框架
+
+3. **基础设施层核心**：`libs/kernel/infrastructure-kernel`
+   - 提供仓储（Repository）的基础实现
+   - 支持事件存储（Event Store）和快照机制
+   - 实现事件溯源和投影器（Projectors）
+
+4. **接口层核心**：`libs/kernel/interface-kernel`
+   - 提供统一的 API 接口基础（REST、GraphQL等）
+   - 支持命令和查询的总线（Bus）分发
+   - 提供错误处理和响应格式化
+
+**Kernel 模块职责**：这些 kernel 模块为业务模块开发提供了通用的基础组件，确保业务模块遵循统一的混合架构模式（Clean Architecture + DDD + CQRS + ES + EDA）。所有业务模块应该基于这些 kernel 模块进行开发，而不是从零开始实现架构层的基础功能。
+
+**理由**：通过统一的 kernel 模块，确保所有业务模块遵循相同的架构模式和实践，提高代码复用率，降低开发成本，便于未来微服务化部署。
+
+## 测试要求
+
+**分层测试架构，确保代码质量和快速反馈**
+
+- **就近原则**：单元测试文件与被测试文件在同一目录，命名格式：`{被测试文件名}.spec.ts`
+
+- **集中管理**：集成测试、端到端测试统一放置在项目根目录下的 **test** 目录（src目录外）
+  - 集成测试：`test/integration/`
+  - 端到端测试：`test/e2e/`
+
+- **类型分离**：单元测试与源代码同目录，集成测试按模块组织，端到端测试按功能组织
+
+- **测试覆盖率要求**：核心业务逻辑 ≥ 80%，关键路径 ≥ 90%，所有公共 API 必须有测试用例
 
 ## Governance
 
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+**宪章约束与修正流程**
 
-[GOVERNANCE_RULES]
+- **宪章优先原则**：本宪章优先于所有其他实践和规范。所有代码审查、架构决策和设计文档必须符合本宪章的原则。
 
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- **原则验证**：所有 PR 和代码审查必须验证是否符合宪章原则，特别是：
+  - 中文优先原则（注释、文档、错误消息）
+  - 代码即文档原则（TSDoc 注释完整性）
+  - 架构原则（Clean Architecture、DDD、CQRS、ES、EDA）
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
+- **修正流程**：
+  - 修正提议必须说明原因和影响范围
+  - 需要更新相关模板和文档以保持一致性
+  - 版本号按照语义化版本规则递增：
+    - MAJOR：向后不兼容的原则移除或重新定义
+    - MINOR：新增原则或重大扩展
+    - PATCH：澄清、措辞修正、拼写错误修复
 
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+- **复杂度控制**：任何违反宪章原则的设计决策必须明确说明理由，并提供被拒绝的简单替代方案的说明。
+
+**Version**: 1.1.0 | **Ratified**: 2025-01-27 | **Last Amended**: 2025-01-27

@@ -1,0 +1,80 @@
+# GraphQL Schema 示例
+# schema: v1 (与 @hl8/interface-kernel@1.x 对齐)
+
+"""
+租户上下文类型
+"""
+type TenantContext {
+  tenantId: ID!
+  organizationId: ID
+  departmentId: ID
+}
+
+"""
+实体类型（示例）
+"""
+type Entity {
+  id: ID!
+  tenantId: ID!
+  name: String!
+  createdAt: String!
+}
+
+"""
+分页输入
+"""
+input PaginationInput {
+  page: Int!
+  limit: Int!
+}
+
+"""
+排序输入
+"""
+input SortingInput {
+  field: String!
+  direction: SortDirection!
+}
+
+enum SortDirection {
+  ASC
+  DESC
+}
+
+"""
+分页结果
+"""
+type PageResult {
+  items: [Entity!]!
+  total: Int!
+  page: Int!
+  limit: Int!
+}
+
+type Query {
+  """
+  获取单个实体
+  """
+  entity(tenantId: ID!, entityId: ID!): Entity
+
+  """
+  分页查询实体列表
+  """
+  entities(
+    tenantId: ID!
+    pagination: PaginationInput
+    sorting: SortingInput
+  ): PageResult!
+}
+
+type Mutation {
+  """
+  创建实体
+  """
+  createEntity(tenantId: ID!, input: CreateEntityInput!): Entity!
+}
+
+input CreateEntityInput {
+  name: String!
+}
+
