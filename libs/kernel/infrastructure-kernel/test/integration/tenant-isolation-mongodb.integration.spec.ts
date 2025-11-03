@@ -35,7 +35,6 @@ describe("MongoDB Tenant Isolation Integration Tests", () => {
   let tenant2Id: TenantId;
   let org1Id: OrganizationId;
   let org2Id: OrganizationId;
-  let org3Id: OrganizationId;
   let dept1Id: DepartmentId;
   let dept2Id: DepartmentId;
 
@@ -69,7 +68,6 @@ describe("MongoDB Tenant Isolation Integration Tests", () => {
     tenant2Id = TenantId.generate();
     org1Id = new OrganizationId(tenant1Id);
     org2Id = new OrganizationId(tenant1Id); // 同一个租户下的不同组织
-    org3Id = new OrganizationId(tenant2Id);
     dept1Id = new DepartmentId(org1Id);
     dept2Id = new DepartmentId(org1Id); // 同一个组织下的不同部门
   }, 60000); // 60秒超时
@@ -106,7 +104,7 @@ describe("MongoDB Tenant Isolation Integration Tests", () => {
       );
 
       expect(found).toBeTruthy();
-      expect(found!.name).toBe("Tenant 1 Entity");
+      expect((found as any).name).toBe("Tenant 1 Entity");
     });
 
     it("应该阻止跨租户访问", async () => {
@@ -149,7 +147,7 @@ describe("MongoDB Tenant Isolation Integration Tests", () => {
       const entities = await repository.findByTenant(tenant1Id, context);
 
       expect(entities).toHaveLength(2);
-      expect(entities.map((e) => e.name)).toEqual(
+      expect(entities.map((e) => (e as any).name)).toEqual(
         expect.arrayContaining(["Entity 1", "Entity 2"]),
       );
     });
@@ -175,7 +173,7 @@ describe("MongoDB Tenant Isolation Integration Tests", () => {
       const entities = await repository.findByOrganization(org1Id, context);
 
       expect(entities).toHaveLength(1);
-      expect(entities[0].name).toBe("Org 1 Entity");
+      expect((entities[0] as any).name).toBe("Org 1 Entity");
     });
 
     it("应该阻止跨组织访问", async () => {
@@ -220,7 +218,7 @@ describe("MongoDB Tenant Isolation Integration Tests", () => {
       const entities = await repository.findByDepartment(dept1Id, context);
 
       expect(entities).toHaveLength(1);
-      expect(entities[0].name).toBe("Dept 1 Entity");
+      expect((entities[0] as any).name).toBe("Dept 1 Entity");
     });
 
     it("应该阻止跨部门访问", async () => {
@@ -261,7 +259,7 @@ describe("MongoDB Tenant Isolation Integration Tests", () => {
       );
 
       expect(found).toBeTruthy();
-      expect(found!.name).toBe("Tenant 1 Entity");
+      expect((found as any).name).toBe("Tenant 1 Entity");
     });
   });
 
@@ -294,4 +292,3 @@ describe("MongoDB Tenant Isolation Integration Tests", () => {
     });
   });
 });
-

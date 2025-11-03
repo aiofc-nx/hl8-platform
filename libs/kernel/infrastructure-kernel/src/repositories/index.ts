@@ -6,3 +6,6 @@
 export * from "./base/repository.base.js";
 export * from "./tenant-isolated/tenant-isolated-repository.js";
 export * from "./tenant-isolated/tenant-filter.js";
+
+// 导出 domain-kernel 的接口类型，方便使用
+export type { ITenantIsolatedRepository } from "@hl8/domain-kernel";

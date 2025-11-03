@@ -146,18 +146,12 @@ class MikroORMRepository<T extends BaseEntity> implements IRepository<T> {
 **Implementation**:
 
 ```typescript
-class MikroORMTenantIsolatedRepository<T extends TenantIsolatedEntity>
-  extends MikroORMRepository<T>
-  implements ITenantIsolatedRepository<T>
-{
-  async findByIdWithContext(
-    id: EntityId,
-    context: TenantContext,
-  ): Promise<T | null> {
+class MikroORMTenantIsolatedRepository<T extends TenantIsolatedEntity> extends MikroORMRepository<T> implements ITenantIsolatedRepository<T> {
+  async findByIdWithContext(id: EntityId, context: TenantContext): Promise<T | null> {
     const filters = this.buildTenantFilters(context);
-    return this.em.findOne(this.entityName, { 
+    return this.em.findOne(this.entityName, {
       id: id.value,
-      ...filters 
+      ...filters,
     });
   }
 
@@ -168,15 +162,15 @@ class MikroORMTenantIsolatedRepository<T extends TenantIsolatedEntity>
 
   private buildTenantFilters(context: TenantContext): object {
     const filters: any = { tenantId: context.tenantId.value };
-    
+
     if (context.organizationId) {
       filters.organizationId = context.organizationId.value;
     }
-    
+
     if (context.departmentId) {
       filters.departmentId = context.departmentId.value;
     }
-    
+
     return filters;
   }
 }
@@ -217,14 +211,18 @@ export interface TenantFilterArgs {
 
 ```typescript
 // 启用租户过滤器
-const entities = await em.find(Entity, {}, {
-  filters: { 
-    tenant: { 
-      tenantId: context.tenantId.value,
-      organizationId: context.organizationId?.value 
-    }
-  }
-});
+const entities = await em.find(
+  Entity,
+  {},
+  {
+    filters: {
+      tenant: {
+        tenantId: context.tenantId.value,
+        organizationId: context.organizationId?.value,
+      },
+    },
+  },
+);
 ```
 
 ---
@@ -247,15 +245,15 @@ const entities = await em.find(Entity, {}, {
 ```typescript
 abstract class GenericMapper<TDomain, TPersistence> {
   abstract toDomain(persistence: TPersistence): TDomain;
-  
+
   abstract toPersistence(domain: TDomain): TPersistence;
-  
+
   toDomainList(persistenceList: TPersistence[]): TDomain[] {
-    return persistenceList.map(p => this.toDomain(p));
+    return persistenceList.map((p) => this.toDomain(p));
   }
-  
+
   toPersistenceList(domainList: TDomain[]): TPersistence[] {
-    return domainList.map(d => this.toPersistence(d));
+    return domainList.map((d) => this.toPersistence(d));
   }
 }
 ```
@@ -265,14 +263,9 @@ abstract class GenericMapper<TDomain, TPersistence> {
 ```typescript
 class UserMapper extends GenericMapper<User, UserEntity> {
   toDomain(persistence: UserEntity): User {
-    return new User(
-      TenantId.fromString(persistence.tenantId),
-      persistence.id,
-      persistence.email,
-      persistence.name,
-    );
+    return new User(TenantId.fromString(persistence.tenantId), persistence.id, persistence.email, persistence.name);
   }
-  
+
   toPersistence(domain: User): UserEntity {
     const entity = new UserEntity();
     entity.id = domain.id.value;
@@ -305,18 +298,18 @@ class UserMapper extends GenericMapper<User, UserEntity> {
 **Implementation**:
 
 ```typescript
-import { Options } from '@mikro-orm/core';
-import { Config } from '@hl8/config';
+import { Options } from "@mikro-orm/core";
+import { Config } from "@hl8/config";
 
-const databaseConfig = Config.get('database');
+const databaseConfig = Config.get("database");
 
 export const mikroOrmConfig: Options = {
-  entities: ['./dist/src/entities/**/*.js'],
-  entitiesTs: ['./src/entities/**/*.ts'],
+  entities: ["./dist/src/entities/**/*.js"],
+  entitiesTs: ["./src/entities/**/*.ts"],
   migrations: {
-    path: './dist/migrations',
-    pathTs: './migrations',
-    glob: '*.{js,ts}',
+    path: "./dist/migrations",
+    pathTs: "./migrations",
+    glob: "*.{js,ts}",
   },
   dbName: databaseConfig.name,
   type: databaseConfig.type,
@@ -359,7 +352,7 @@ CREATE TABLE users (
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
   version INTEGER NOT NULL DEFAULT 1,
   deleted_at TIMESTAMP,
-  
+
   CONSTRAINT fk_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id),
   CONSTRAINT fk_organization FOREIGN KEY (organization_id) REFERENCES organizations(id),
   CONSTRAINT fk_department FOREIGN KEY (department_id) REFERENCES departments(id)
@@ -375,7 +368,7 @@ CREATE INDEX idx_users_email ON users(email);
 **MongoDB Collections**:
 
 - `users` - 用户集合
-- `organizations` - 组织集合  
+- `organizations` - 组织集合
 - `departments` - 部门集合
 
 **Example: Users Collection Index**:
@@ -396,20 +389,20 @@ db.users.createIndex({ email: 1 });
 **Structure**:
 
 ```typescript
-import { Migration } from '@mikro-orm/migrations';
+import { Migration } from "@mikro-orm/migrations";
 
 export class Migration20250102000000 extends Migration {
   async up(): Promise<void> {
     // PostgreSQL
-    this.addSql('CREATE TABLE users (...)');
-    this.addSql('CREATE INDEX idx_users_tenant ON users(tenant_id)');
-    
+    this.addSql("CREATE TABLE users (...)");
+    this.addSql("CREATE INDEX idx_users_tenant ON users(tenant_id)");
+
     // MongoDB (通过 raw queries)
     // MongoDB migrations handled via collection operations
   }
 
   async down(): Promise<void> {
-    this.addSql('DROP TABLE users');
+    this.addSql("DROP TABLE users");
   }
 }
 ```
@@ -495,4 +488,3 @@ Infrastructure Kernel 数据模型通过 MikroORM 统一访问 PostgreSQL 和 Mo
 4. **映射隔离**: 领域层和持久化层分离
 5. **性能优化**: 索引和查询缓存
 6. **事务管理**: Unit of Work 自动管理
-

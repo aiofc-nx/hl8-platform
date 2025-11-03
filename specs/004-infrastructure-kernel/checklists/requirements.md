@@ -35,4 +35,3 @@
 - All requirements are testable and measurable
 - Success criteria focus on business outcomes, not implementation details
 - Clear dependencies on domain-kernel and application-kernel are documented
-

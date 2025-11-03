@@ -52,15 +52,15 @@
 
 ```typescript
 // 使用 @hl8/database 的连接管理
-import { ConnectionManager, EntityManager } from '@hl8/database';
+import { ConnectionManager, EntityManager } from "@hl8/database";
 
 // 连接池配置由 @hl8/database 管理
 // kernel 只负责仓储实现
 class MikroORMRepository<T> {
   constructor(
-    private readonly em: EntityManager // 从 @hl8/database 注入
+    private readonly em: EntityManager, // 从 @hl8/database 注入
   ) {}
-  
+
   async save(entity: T): Promise<T> {
     this.em.persist(entity);
     await this.em.flush();
@@ -152,8 +152,7 @@ const qb = em.createQueryBuilder(Entity);
 // 租户隔离查询构建
 class TenantIsolatedQueryBuilder {
   static build(em: EntityManager, context: TenantContext) {
-    return em.createQueryBuilder(Entity)
-      .where({ tenantId: context.tenantId.value });
+    return em.createQueryBuilder(Entity).where({ tenantId: context.tenantId.value });
   }
 }
 ```
@@ -180,10 +179,10 @@ export class User extends TenantIsolatedEntity { ... }
 export class UserModel implements TenantIsolatedEntity {
   @PrimaryKey()
   id!: string;
-  
+
   @Property()
   tenantId!: string;
-  
+
   // ...
 }
 
@@ -290,7 +289,7 @@ const trx = await em.transaction(async (trx) => {
 
 ```sql
 -- PostgreSQL 复合索引
-CREATE INDEX idx_users_tenant_org_dept 
+CREATE INDEX idx_users_tenant_org_dept
 ON users(tenant_id, organization_id, department_id);
 
 -- MongoDB 复合索引
@@ -340,4 +339,3 @@ beforeAll(async () => {
 7. **平台集成**: 与 @hl8/logger、@hl8/config 无缝集成
 
 所有技术决策都经过评估，选择了最适合 Clean Architecture + 多租户场景的方案。
-

@@ -189,15 +189,7 @@ const events = aggregateRoot.getDomainEvents();
 ### 使用租户隔离实体
 
 ```typescript
-import {
-  TenantIsolatedEntity,
-  TenantId,
-  OrganizationId,
-  DepartmentId,
-  EntityId,
-  AuditInfo,
-  EntityLifecycle,
-} from "@hl8/domain-kernel";
+import { TenantIsolatedEntity, TenantId, OrganizationId, DepartmentId, EntityId, AuditInfo, EntityLifecycle } from "@hl8/domain-kernel";
 
 // 创建租户隔离实体
 class Product extends TenantIsolatedEntity {
@@ -212,29 +204,11 @@ class Product extends TenantIsolatedEntity {
     lifecycleState?: EntityLifecycle,
     version?: number,
   ) {
-    super(
-      tenantId,
-      organizationId,
-      departmentId,
-      id,
-      auditInfo,
-      lifecycleState,
-      version,
-    );
+    super(tenantId, organizationId, departmentId, id, auditInfo, lifecycleState, version);
   }
 
   clone(): Product {
-    return new Product(
-      this.tenantId,
-      this.name,
-      this.price,
-      this.organizationId,
-      this.departmentId,
-      this.id,
-      this.auditInfo?.clone(),
-      this.lifecycleState,
-      this.version,
-    );
+    return new Product(this.tenantId, this.name, this.price, this.organizationId, this.departmentId, this.id, this.auditInfo?.clone(), this.lifecycleState, this.version);
   }
 }
 
@@ -254,27 +228,13 @@ const tenantProduct = new Product(tenantId, "租户级产品", 100);
 const orgProduct = new Product(tenantId, "组织级产品", 200, organizationId);
 
 // 创建部门级产品（租户+组织+部门隔离）
-const deptProduct = new Product(
-  tenantId,
-  "部门级产品",
-  300,
-  organizationId,
-  departmentId,
-);
+const deptProduct = new Product(tenantId, "部门级产品", 300, organizationId, departmentId);
 ```
 
 ### 使用租户隔离聚合根
 
 ```typescript
-import {
-  TenantIsolatedAggregateRoot,
-  TenantId,
-  OrganizationId,
-  DepartmentId,
-  EntityId,
-  AuditInfo,
-  EntityLifecycle,
-} from "@hl8/domain-kernel";
+import { TenantIsolatedAggregateRoot, TenantId, OrganizationId, DepartmentId, EntityId, AuditInfo, EntityLifecycle } from "@hl8/domain-kernel";
 
 // 创建租户隔离聚合根
 class OrderAggregate extends TenantIsolatedAggregateRoot {
@@ -290,15 +250,7 @@ class OrderAggregate extends TenantIsolatedAggregateRoot {
     lifecycleState?: EntityLifecycle,
     version?: number,
   ) {
-    super(
-      tenantId,
-      organizationId,
-      departmentId,
-      id,
-      auditInfo,
-      lifecycleState,
-      version,
-    );
+    super(tenantId, organizationId, departmentId, id, auditInfo, lifecycleState, version);
   }
 
   addItem(itemId: string): void {
@@ -314,27 +266,14 @@ class OrderAggregate extends TenantIsolatedAggregateRoot {
   }
 
   clone(): OrderAggregate {
-    return new OrderAggregate(
-      this.tenantId,
-      this.orderNumber,
-      this.organizationId,
-      this.departmentId,
-      this.id,
-      this.auditInfo?.clone(),
-      this.lifecycleState,
-      this.version,
-    );
+    return new OrderAggregate(this.tenantId, this.orderNumber, this.organizationId, this.departmentId, this.id, this.auditInfo?.clone(), this.lifecycleState, this.version);
   }
 }
 
 // 创建聚合根实例
 const tenantId = TenantId.generate();
 const organizationId = new OrganizationId(tenantId);
-const order = new OrderAggregate(
-  tenantId,
-  "ORD-001",
-  organizationId,
-);
+const order = new OrderAggregate(tenantId, "ORD-001", organizationId);
 
 // 添加订单项（会触发领域事件，事件数据自动包含租户信息）
 order.addItem("item-123");
@@ -347,13 +286,7 @@ const events = order.domainEvents;
 ### 使用租户上下文
 
 ```typescript
-import {
-  TenantContext,
-  TenantId,
-  OrganizationId,
-  DepartmentId,
-  EntityId,
-} from "@hl8/domain-kernel";
+import { TenantContext, TenantId, OrganizationId, DepartmentId, EntityId } from "@hl8/domain-kernel";
 
 // 创建租户上下文（仅租户级别）
 const tenantContext = new TenantContext(TenantId.generate());
