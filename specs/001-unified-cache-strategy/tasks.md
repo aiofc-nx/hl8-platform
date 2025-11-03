@@ -126,10 +126,10 @@
 - [X] T050 [US3] Write unit tests for tag-based invalidation in libs/infra/cache/src/invalidation/tag-based-invalidation.spec.ts
 - [X] T051 [US3] Write unit tests for pattern-based invalidation in libs/infra/cache/src/invalidation/pattern-based-invalidation.spec.ts
 - [X] T052 [US3] Write unit tests for event-driven invalidation in libs/infra/cache/src/invalidation/event-driven-invalidation.spec.ts
-- [ ] T053 [US3] Write integration test for TTL expiration in test/integration/ttl-expiration.integration.spec.ts
-- [ ] T054 [US3] Write integration test for tag-based invalidation in test/integration/tag-invalidation.integration.spec.ts
-- [ ] T055 [US3] Write integration test for pattern-based invalidation in test/integration/pattern-invalidation.integration.spec.ts
-- [ ] T056 [US3] Write integration test for event-driven invalidation in test/integration/event-invalidation.integration.spec.ts
+- [X] T053 [US3] Write integration test for TTL expiration in test/integration/ttl-expiration.integration.spec.ts
+- [X] T054 [US3] Write integration test for tag-based invalidation in test/integration/tag-invalidation.integration.spec.ts
+- [X] T055 [US3] Write integration test for pattern-based invalidation in test/integration/pattern-invalidation.integration.spec.ts
+- [X] T056 [US3] Write integration test for event-driven invalidation in test/integration/event-invalidation.integration.spec.ts
 
 **Checkpoint**: 所有缓存失效策略已实现并测试通过，缓存数据可以智能失效。
 
