@@ -440,6 +440,9 @@ importers:
 
   libs/kernel/application-kernel:
     dependencies:
+      '@hl8/cache':
+        specifier: workspace:*
+        version: link:../../infra/cache
       '@hl8/config':
         specifier: workspace:*
         version: link:../../infra/config

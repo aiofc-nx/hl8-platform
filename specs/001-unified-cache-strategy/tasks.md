@@ -42,26 +42,19 @@
 ### Implementation for User Story 4
 
 - [X] T007 [US4] Create ICache interface definition in libs/infra/cache/src/cache.interface.ts
-- [ ] T008 [US4] Create CacheConfig class using @hl8/config decorators in libs/infra/cache/src/config/cache.config.ts
 - [X] T008 [US4] Create CacheConfig class using @hl8/config decorators in libs/infra/cache/src/config/cache.config.ts
-- [ ] T009 [US4] Create CacheStats interface in libs/infra/cache/src/cache.interface.ts
-- [ ] T010 [US4] Create CacheItemMetadata interface in libs/infra/cache/src/cache.interface.ts
+- [X] T009 [US4] Create CacheStats interface in libs/infra/cache/src/cache.interface.ts
+- [X] T010 [US4] Create CacheItemMetadata interface in libs/infra/cache/src/cache.interface.ts
 - [X] T011 [P] [US4] Create CacheKeyBuilder utility in libs/infra/cache/src/utils/cache-key-builder.ts
 - [X] T012 [P] [US4] Create CacheStatsCollector utility in libs/infra/cache/src/utils/cache-stats-collector.ts
-
-* [Note] Utilities created; tests pending
-
 - [X] T013 [US4] Implement InMemoryCache class implementing ICache in libs/infra/cache/src/implementations/in-memory-cache.ts
 - [X] T014 [US4] Integrate @hl8/logger for logging in libs/infra/cache/src/implementations/in-memory-cache.ts
 - [X] T015 [US4] Create CacheModule using TypedConfigModule from @hl8/config in libs/infra/cache/src/module/cache.module.ts
 - [X] T016 [US4] Export all public APIs in libs/infra/cache/src/index.ts
-
-* [Note] InMemoryCache/CacheModule/index created; tests next
-
-- [ ] T017 [US4] Write unit tests for InMemoryCache in libs/infra/cache/src/implementations/in-memory-cache.spec.ts
-- [ ] T018 [US4] Write unit tests for CacheKeyBuilder in libs/infra/cache/src/utils/cache-key-builder.spec.ts
-- [ ] T019 [US4] Write unit tests for CacheStatsCollector in libs/infra/cache/src/utils/cache-stats-collector.spec.ts
-- [ ] T020 [US4] Create integration test verifying CacheModule DI setup in test/integration/cache-module.integration.spec.ts
+- [X] T017 [US4] Write unit tests for InMemoryCache in libs/infra/cache/src/implementations/in-memory-cache.spec.ts
+- [X] T018 [US4] Write unit tests for CacheKeyBuilder in libs/infra/cache/src/utils/cache-key-builder.spec.ts
+- [X] T019 [US4] Write unit tests for CacheStatsCollector in libs/infra/cache/src/utils/cache-stats-collector.spec.ts
+- [X] T020 [US4] Create integration test verifying CacheModule DI setup in test/integration/cache-module.integration.spec.ts
 
 **Checkpoint**: 缓存库基础功能完成，可以被其他模块依赖和导入使用。
 
@@ -75,17 +68,17 @@
 
 ### Implementation for User Story 1
 
-- [ ] T021 [US1] Create CacheableRepository decorator in libs/infra/cache/src/decorators/cacheable.decorator.ts
-- [ ] T022 [US1] Create repository cache interceptor in libs/infra/cache/src/interceptors/repository-cache.interceptor.ts
-- [ ] T023 [US1] Implement entity cache key generation logic in libs/infra/cache/src/utils/cache-key-builder.ts (repo:{entityName}:{entityId} format)
-- [ ] T024 [US1] Add support for findById method caching in libs/infra/cache/src/interceptors/repository-cache.interceptor.ts
-- [ ] T025 [US1] Implement cache miss handler (query database, then cache result) in libs/infra/cache/src/interceptors/repository-cache.interceptor.ts
-- [ ] T026 [US1] Implement automatic cache invalidation on Repository.save() in libs/infra/cache/src/interceptors/repository-cache.interceptor.ts
-- [ ] T027 [US1] Implement automatic cache invalidation on Repository.delete() in libs/infra/cache/src/interceptors/repository-cache.interceptor.ts
-- [ ] T028 [US1] Add tenant isolation support (tenantId in cache key) in libs/infra/cache/src/utils/cache-key-builder.ts
-- [ ] T029 [US1] Write unit tests for repository cache interceptor in libs/infra/cache/src/interceptors/repository-cache.interceptor.spec.ts
-- [ ] T030 [US1] Write integration test for findById caching in test/integration/repository-cache.integration.spec.ts
-- [ ] T031 [US1] Write integration test for cache invalidation on save in test/integration/repository-cache.integration.spec.ts
+- [X] T021 [US1] Create CacheableRepository decorator in libs/infra/cache/src/decorators/cacheable.decorator.ts
+- [X] T022 [US1] Create repository cache interceptor in libs/infra/cache/src/interceptors/repository-cache.interceptor.ts
+- [X] T023 [US1] Implement entity cache key generation logic in libs/infra/cache/src/utils/cache-key-builder.ts (repo:{entityName}:{entityId} format)
+- [X] T024 [US1] Add support for findById method caching in libs/infra/cache/src/interceptors/repository-cache.interceptor.ts
+- [X] T025 [US1] Implement cache miss handler (query database, then cache result) in libs/infra/cache/src/interceptors/repository-cache.interceptor.ts
+- [X] T026 [US1] Implement automatic cache invalidation on Repository.save() in libs/infra/cache/src/interceptors/repository-cache.interceptor.ts
+- [X] T027 [US1] Implement automatic cache invalidation on Repository.delete() in libs/infra/cache/src/interceptors/repository-cache.interceptor.ts
+- [X] T028 [US1] Add tenant isolation support (tenantId in cache key) in libs/infra/cache/src/utils/cache-key-builder.ts
+- [X] T029 [US1] Write unit tests for repository cache interceptor in libs/infra/cache/src/interceptors/repository-cache.interceptor.spec.ts
+- [X] T030 [US1] Write integration test for findById caching in test/integration/repository-cache.integration.spec.ts
+- [X] T031 [US1] Write integration test for cache invalidation on save in test/integration/repository-cache.integration.spec.ts
 
 **Checkpoint**: Infrastructure Kernel 的 Repository 现在支持自动缓存，查询结果可以被缓存和共享。
 
@@ -102,11 +95,11 @@
 - [ ] T032 [US2] Integrate @hl8/cache into Application Kernel CacheMiddleware in libs/kernel/application-kernel/src/bus/middleware/bus-middleware.ts
 - [ ] T033 [US2] Update Application Kernel to use @hl8/cache ICache instead of internal implementation in libs/kernel/application-kernel/src/cache/
 - [ ] T034 [US2] Migrate Application Kernel cache implementation to @hl8/cache in libs/kernel/application-kernel/src/cache/
-- [ ] T035 [US2] Implement query cache key generation (query:{queryType}:{paramsHash}) in libs/infra/cache/src/utils/cache-key-builder.ts
-- [ ] T036 [US2] Create cache coordination service for cross-layer cache invalidation in libs/infra/cache/src/services/cache-coordination.service.ts
-- [ ] T037 [US2] Implement coordinated cache invalidation (infrastructure + application layers) in libs/infra/cache/src/services/cache-coordination.service.ts
-- [ ] T038 [US2] Write integration test for cross-layer cache sharing in test/integration/cross-layer-cache.integration.spec.ts
-- [ ] T039 [US2] Write integration test for coordinated cache invalidation in test/integration/cache-coordination.integration.spec.ts
+- [X] T035 [US2] Implement query cache key generation (query:{queryType}:{paramsHash}) in libs/infra/cache/src/utils/cache-key-builder.ts
+- [X] T036 [US2] Create cache coordination service for cross-layer cache invalidation in libs/infra/cache/src/services/cache-coordination.service.ts
+- [X] T037 [US2] Implement coordinated cache invalidation (infrastructure + application layers) in libs/infra/cache/src/services/cache-coordination.service.ts
+- [X] T038 [US2] Write integration test for cross-layer cache sharing in test/integration/cross-layer-cache.integration.spec.ts
+- [X] T039 [US2] Write integration test for coordinated cache invalidation in test/integration/cache-coordination.integration.spec.ts
 
 **Checkpoint**: 应用层和基础设施层缓存现在可以协同工作，实体更新时两层缓存同时失效。
 
@@ -120,18 +113,18 @@
 
 ### Implementation for User Story 3
 
-- [ ] T040 [US3] Implement TTL-based expiration in libs/infra/cache/src/implementations/in-memory-cache.ts
-- [ ] T041 [US3] Implement automatic cleanup timer for expired items in libs/infra/cache/src/implementations/in-memory-cache.ts
-- [ ] T042 [US3] Create tag-based invalidation implementation in libs/infra/cache/src/invalidation/tag-based-invalidation.ts
-- [ ] T043 [US3] Implement tag index (Map<string, Set<string>>) in libs/infra/cache/src/invalidation/tag-based-invalidation.ts
-- [ ] T044 [US3] Create pattern-based invalidation implementation in libs/infra/cache/src/invalidation/pattern-based-invalidation.ts
-- [ ] T045 [US3] Implement glob pattern matching for cache keys in libs/infra/cache/src/invalidation/pattern-based-invalidation.ts
+- [X] T040 [US3] Implement TTL-based expiration in libs/infra/cache/src/implementations/in-memory-cache.ts
+- [X] T041 [US3] Implement automatic cleanup timer for expired items in libs/infra/cache/src/implementations/in-memory-cache.ts
+- [X] T042 [US3] Create tag-based invalidation implementation in libs/infra/cache/src/invalidation/tag-based-invalidation.ts
+- [X] T043 [US3] Implement tag index (Map<string, Set<string>>) in libs/infra/cache/src/invalidation/tag-based-invalidation.ts
+- [X] T044 [US3] Create pattern-based invalidation implementation in libs/infra/cache/src/invalidation/pattern-based-invalidation.ts
+- [X] T045 [US3] Implement glob pattern matching for cache keys in libs/infra/cache/src/invalidation/pattern-based-invalidation.ts
 - [ ] T046 [US3] Create event-driven invalidation handler in libs/infra/cache/src/invalidation/event-driven-invalidation.ts
 - [ ] T047 [US3] Create CacheInvalidationRule interface in libs/infra/cache/src/invalidation/cache-invalidation-rule.interface.ts
 - [ ] T048 [US3] Implement invalidation rule registry in libs/infra/cache/src/invalidation/invalidation-rule-registry.ts
-- [ ] T049 [US3] Register entity tags automatically (entity:{entityName}) in libs/infra/cache/src/interceptors/repository-cache.interceptor.ts
-- [ ] T050 [US3] Write unit tests for tag-based invalidation in libs/infra/cache/src/invalidation/tag-based-invalidation.spec.ts
-- [ ] T051 [US3] Write unit tests for pattern-based invalidation in libs/infra/cache/src/invalidation/pattern-based-invalidation.spec.ts
+- [X] T049 [US3] Register entity tags automatically (entity:{entityName}) in libs/infra/cache/src/interceptors/repository-cache.interceptor.ts
+- [X] T050 [US3] Write unit tests for tag-based invalidation in libs/infra/cache/src/invalidation/tag-based-invalidation.spec.ts
+- [X] T051 [US3] Write unit tests for pattern-based invalidation in libs/infra/cache/src/invalidation/pattern-based-invalidation.spec.ts
 - [ ] T052 [US3] Write unit tests for event-driven invalidation in libs/infra/cache/src/invalidation/event-driven-invalidation.spec.ts
 - [ ] T053 [US3] Write integration test for TTL expiration in test/integration/ttl-expiration.integration.spec.ts
 - [ ] T054 [US3] Write integration test for tag-based invalidation in test/integration/tag-invalidation.integration.spec.ts
@@ -150,20 +143,20 @@
 
 ### Implementation for User Story 5
 
-- [ ] T057 [US5] Enhance CacheConfig class with evictionStrategy field in libs/infra/cache/src/config/cache.config.ts
-- [ ] T058 [US5] Implement LRU eviction strategy in libs/infra/cache/src/implementations/in-memory-cache.ts
-- [ ] T059 [US5] Implement FIFO eviction strategy in libs/infra/cache/src/implementations/in-memory-cache.ts
-- [ ] T060 [US5] Implement LFU eviction strategy in libs/infra/cache/src/implementations/in-memory-cache.ts
-- [ ] T061 [US5] Implement eviction when maxSize is reached in libs/infra/cache/src/implementations/in-memory-cache.ts
-- [ ] T062 [US5] Enhance CacheStatsCollector to track all required metrics in libs/infra/cache/src/utils/cache-stats-collector.ts
-- [ ] T063 [US5] Implement getStats() method returning CacheStats in libs/infra/cache/src/implementations/in-memory-cache.ts
-- [ ] T064 [US5] Implement getMetadata() method returning CacheItemMetadata in libs/infra/cache/src/implementations/in-memory-cache.ts
-- [ ] T065 [US5] Implement resetStats() method in libs/infra/cache/src/implementations/in-memory-cache.ts
+- [X] T057 [US5] Enhance CacheConfig class with evictionStrategy field in libs/infra/cache/src/config/cache.config.ts
+- [X] T058 [US5] Implement LRU eviction strategy in libs/infra/cache/src/implementations/in-memory-cache.ts
+- [X] T059 [US5] Implement FIFO eviction strategy in libs/infra/cache/src/implementations/in-memory-cache.ts
+- [X] T060 [US5] Implement LFU eviction strategy in libs/infra/cache/src/implementations/in-memory-cache.ts
+- [X] T061 [US5] Implement eviction when maxSize is reached in libs/infra/cache/src/implementations/in-memory-cache.ts
+- [X] T062 [US5] Enhance CacheStatsCollector to track all required metrics in libs/infra/cache/src/utils/cache-stats-collector.ts
+- [X] T063 [US5] Implement getStats() method returning CacheStats in libs/infra/cache/src/implementations/in-memory-cache.ts
+- [X] T064 [US5] Implement getMetadata() method returning CacheItemMetadata in libs/infra/cache/src/implementations/in-memory-cache.ts
+- [X] T065 [US5] Implement resetStats() method in libs/infra/cache/src/implementations/in-memory-cache.ts
 - [ ] T066 [US5] Add configuration hot-reload support (if @hl8/config supports it) in libs/infra/cache/src/module/cache.module.ts
-- [ ] T067 [US5] Write unit tests for LRU eviction in libs/infra/cache/src/implementations/in-memory-cache.spec.ts
-- [ ] T068 [US5] Write unit tests for FIFO eviction in libs/infra/cache/src/implementations/in-memory-cache.spec.ts
-- [ ] T069 [US5] Write unit tests for LFU eviction in libs/infra/cache/src/implementations/in-memory-cache.spec.ts
-- [ ] T070 [US5] Write unit tests for cache statistics in libs/infra/cache/src/utils/cache-stats-collector.spec.ts
+- [X] T067 [US5] Write unit tests for LRU eviction in libs/infra/cache/src/implementations/in-memory-cache.spec.ts
+- [X] T068 [US5] Write unit tests for FIFO eviction in libs/infra/cache/src/implementations/in-memory-cache.spec.ts
+- [X] T069 [US5] Write unit tests for LFU eviction in libs/infra/cache/src/implementations/in-memory-cache.spec.ts
+- [X] T070 [US5] Write unit tests for cache statistics in libs/infra/cache/src/utils/cache-stats-collector.spec.ts
 - [ ] T071 [US5] Write integration test for configuration changes in test/integration/cache-config.integration.spec.ts
 - [ ] T072 [US5] Write integration test for cache statistics in test/integration/cache-stats.integration.spec.ts
 
@@ -175,9 +168,9 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T073 [P] Add comprehensive TSDoc comments to all public APIs in libs/infra/cache/src/
-- [ ] T074 [P] Update README.md with usage examples in libs/infra/cache/
-- [ ] T075 [P] Add error handling for edge cases (cache invalidation failure, etc.) in libs/infra/cache/src/
+- [X] T073 [P] Add comprehensive TSDoc comments to all public APIs in libs/infra/cache/src/
+- [X] T074 [P] Update README.md with usage examples in libs/infra/cache/
+- [X] T075 [P] Add error handling for edge cases (cache invalidation failure, etc.) in libs/infra/cache/src/
 - [ ] T076 [P] Implement null value caching to prevent cache penetration in libs/infra/cache/src/implementations/in-memory-cache.ts
 - [ ] T077 [P] Add cache warming support (preload common entities) in libs/infra/cache/src/services/cache-warming.service.ts
 - [ ] T078 [P] Add distributed cache invalidation support (for future Redis integration) in libs/infra/cache/src/invalidation/distributed-invalidation.ts
