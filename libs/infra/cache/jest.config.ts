@@ -1,5 +1,5 @@
 export default {
-  displayName: "config",
+  displayName: "cache",
   preset: "ts-jest/presets/default-esm",
   testEnvironment: "node",
   rootDir: ".",
@@ -22,7 +22,7 @@ export default {
     ],
   },
   moduleFileExtensions: ["ts", "js"],
-  coverageDirectory: "../../coverage/libs/config",
+  coverageDirectory: "../../coverage/libs/cache",
   testMatch: ["**/*.spec.ts"],
   setupFilesAfterEnv: ["<rootDir>/../../../jest.setup.js"],
 };

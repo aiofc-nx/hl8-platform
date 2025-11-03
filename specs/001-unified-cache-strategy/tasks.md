@@ -43,14 +43,21 @@
 
 - [X] T007 [US4] Create ICache interface definition in libs/infra/cache/src/cache.interface.ts
 - [ ] T008 [US4] Create CacheConfig class using @hl8/config decorators in libs/infra/cache/src/config/cache.config.ts
+- [X] T008 [US4] Create CacheConfig class using @hl8/config decorators in libs/infra/cache/src/config/cache.config.ts
 - [ ] T009 [US4] Create CacheStats interface in libs/infra/cache/src/cache.interface.ts
 - [ ] T010 [US4] Create CacheItemMetadata interface in libs/infra/cache/src/cache.interface.ts
-- [ ] T011 [P] [US4] Create CacheKeyBuilder utility in libs/infra/cache/src/utils/cache-key-builder.ts
-- [ ] T012 [P] [US4] Create CacheStatsCollector utility in libs/infra/cache/src/utils/cache-stats-collector.ts
-- [ ] T013 [US4] Implement InMemoryCache class implementing ICache in libs/infra/cache/src/implementations/in-memory-cache.ts
-- [ ] T014 [US4] Integrate @hl8/logger for logging in libs/infra/cache/src/implementations/in-memory-cache.ts
-- [ ] T015 [US4] Create CacheModule using TypedConfigModule from @hl8/config in libs/infra/cache/src/module/cache.module.ts
-- [ ] T016 [US4] Export all public APIs in libs/infra/cache/src/index.ts
+- [X] T011 [P] [US4] Create CacheKeyBuilder utility in libs/infra/cache/src/utils/cache-key-builder.ts
+- [X] T012 [P] [US4] Create CacheStatsCollector utility in libs/infra/cache/src/utils/cache-stats-collector.ts
+
+* [Note] Utilities created; tests pending
+
+- [X] T013 [US4] Implement InMemoryCache class implementing ICache in libs/infra/cache/src/implementations/in-memory-cache.ts
+- [X] T014 [US4] Integrate @hl8/logger for logging in libs/infra/cache/src/implementations/in-memory-cache.ts
+- [X] T015 [US4] Create CacheModule using TypedConfigModule from @hl8/config in libs/infra/cache/src/module/cache.module.ts
+- [X] T016 [US4] Export all public APIs in libs/infra/cache/src/index.ts
+
+* [Note] InMemoryCache/CacheModule/index created; tests next
+
 - [ ] T017 [US4] Write unit tests for InMemoryCache in libs/infra/cache/src/implementations/in-memory-cache.spec.ts
 - [ ] T018 [US4] Write unit tests for CacheKeyBuilder in libs/infra/cache/src/utils/cache-key-builder.spec.ts
 - [ ] T019 [US4] Write unit tests for CacheStatsCollector in libs/infra/cache/src/utils/cache-stats-collector.spec.ts
@@ -312,6 +319,7 @@ With multiple developers:
 **Minimum Viable Product**: Phase 1 + Phase 2 (US4) + Phase 3 (US1)
 
 This delivers:
+
 - ✅ Working cache library as independent infrastructure
 - ✅ Repository query caching for Infrastructure Kernel
 - ✅ Basic cache operations (get, set, delete)
@@ -338,4 +346,3 @@ Total MVP tasks: 31 tasks
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
 - **CRITICAL**: US4 (Foundational) must complete before any other user story can begin
-
