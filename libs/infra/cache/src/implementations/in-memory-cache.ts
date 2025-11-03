@@ -272,6 +272,11 @@ export class InMemoryCache implements ICache {
       return undefined;
     }
 
+    // 检查是否过期
+    if (this.isExpired(item)) {
+      return undefined;
+    }
+
     return {
       key,
       expiresAt: item.expiresAt,
