@@ -618,6 +618,7 @@ class CacheConfig {
 - [快速开始示例](./docs/quickstart.md)
 - [仓储缓存示例](./docs/repository-cache-usage.md)
 - [事件驱动失效示例](./docs/event-invalidation.md)
+- [Application Kernel 集成示例](./docs/application-kernel-integration.md)
 
 ## License
 
