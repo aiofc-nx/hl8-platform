@@ -119,13 +119,13 @@
 - [X] T043 [US3] Implement tag index (Map<string, Set<string>>) in libs/infra/cache/src/invalidation/tag-based-invalidation.ts
 - [X] T044 [US3] Create pattern-based invalidation implementation in libs/infra/cache/src/invalidation/pattern-based-invalidation.ts
 - [X] T045 [US3] Implement glob pattern matching for cache keys in libs/infra/cache/src/invalidation/pattern-based-invalidation.ts
-- [ ] T046 [US3] Create event-driven invalidation handler in libs/infra/cache/src/invalidation/event-driven-invalidation.ts
-- [ ] T047 [US3] Create CacheInvalidationRule interface in libs/infra/cache/src/invalidation/cache-invalidation-rule.interface.ts
-- [ ] T048 [US3] Implement invalidation rule registry in libs/infra/cache/src/invalidation/invalidation-rule-registry.ts
+- [X] T046 [US3] Create event-driven invalidation handler in libs/infra/cache/src/invalidation/event-driven-invalidation.ts
+- [X] T047 [US3] Create CacheInvalidationRule interface in libs/infra/cache/src/invalidation/cache-invalidation-rule.interface.ts
+- [X] T048 [US3] Implement invalidation rule registry in libs/infra/cache/src/invalidation/invalidation-rule-registry.ts
 - [X] T049 [US3] Register entity tags automatically (entity:{entityName}) in libs/infra/cache/src/interceptors/repository-cache.interceptor.ts
 - [X] T050 [US3] Write unit tests for tag-based invalidation in libs/infra/cache/src/invalidation/tag-based-invalidation.spec.ts
 - [X] T051 [US3] Write unit tests for pattern-based invalidation in libs/infra/cache/src/invalidation/pattern-based-invalidation.spec.ts
-- [ ] T052 [US3] Write unit tests for event-driven invalidation in libs/infra/cache/src/invalidation/event-driven-invalidation.spec.ts
+- [X] T052 [US3] Write unit tests for event-driven invalidation in libs/infra/cache/src/invalidation/event-driven-invalidation.spec.ts
 - [ ] T053 [US3] Write integration test for TTL expiration in test/integration/ttl-expiration.integration.spec.ts
 - [ ] T054 [US3] Write integration test for tag-based invalidation in test/integration/tag-invalidation.integration.spec.ts
 - [ ] T055 [US3] Write integration test for pattern-based invalidation in test/integration/pattern-invalidation.integration.spec.ts

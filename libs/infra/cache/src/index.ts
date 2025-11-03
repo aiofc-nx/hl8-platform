@@ -6,3 +6,6 @@ export * from "./implementations/in-memory-cache.js";
 export * from "./module/cache.module.js";
 export * from "./context/tenant-context.provider.js";
 export * from "./services/cache-coordination.service.js";
+export * from "./invalidation/cache-invalidation-rule.interface.js";
+export * from "./invalidation/invalidation-rule-registry.js";
+export * from "./invalidation/event-driven-invalidation.js";
