@@ -22,11 +22,7 @@ export class PhoneNumberValueObject extends ValueObject<string> {
    * @param version 版本号，默认为1
    * @throws {Error} 当手机号格式无效时抛出异常
    */
-  constructor(
-    value: string,
-    createdAt?: Date,
-    version?: number,
-  ) {
+  constructor(value: string, createdAt?: Date, version?: number) {
     super(value, createdAt, version);
   }
 
@@ -52,7 +48,9 @@ export class PhoneNumberValueObject extends ValueObject<string> {
     const phoneRegex = /^1[3-9]\d{9}$/;
 
     if (!phoneRegex.test(digitsOnly)) {
-      throw new Error(`手机号格式无效: ${trimmedValue}。应为11位数字，以1开头，第二位为3-9`);
+      throw new Error(
+        `手机号格式无效: ${trimmedValue}。应为11位数字，以1开头，第二位为3-9`,
+      );
     }
   }
 
@@ -71,4 +69,3 @@ export class PhoneNumberValueObject extends ValueObject<string> {
     return new PhoneNumberValueObject(value, createdAt, version);
   }
 }
-

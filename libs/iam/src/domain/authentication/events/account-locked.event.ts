@@ -98,4 +98,3 @@ export class AccountLockedEvent extends DomainEvent {
     );
   }
 }
-

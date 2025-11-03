@@ -117,4 +117,3 @@ export class UserStatusChangedEvent extends DomainEvent {
     );
   }
 }
-

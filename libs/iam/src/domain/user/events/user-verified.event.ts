@@ -78,7 +78,10 @@ export class UserVerifiedEvent extends DomainEvent {
     if (!eventData.userId) {
       throw new Error("用户ID不能为空");
     }
-    if (!eventData.verificationType || !["EMAIL", "PHONE"].includes(eventData.verificationType)) {
+    if (
+      !eventData.verificationType ||
+      !["EMAIL", "PHONE"].includes(eventData.verificationType)
+    ) {
       throw new Error("验证类型必须为EMAIL或PHONE");
     }
   }
@@ -95,4 +98,3 @@ export class UserVerifiedEvent extends DomainEvent {
     );
   }
 }
-

@@ -22,11 +22,7 @@ export class TenantDomainValueObject extends ValueObject<string> {
    * @param version 版本号，默认为1
    * @throws {Error} 当域名格式无效时抛出异常
    */
-  constructor(
-    value: string,
-    createdAt?: Date,
-    version?: number,
-  ) {
+  constructor(value: string, createdAt?: Date, version?: number) {
     super(value, createdAt, version);
   }
 
@@ -85,4 +81,3 @@ export class TenantDomainValueObject extends ValueObject<string> {
     return new TenantDomainValueObject(value, createdAt, version);
   }
 }
-

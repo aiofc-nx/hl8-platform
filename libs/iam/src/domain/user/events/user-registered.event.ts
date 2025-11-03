@@ -98,4 +98,3 @@ export class UserRegisteredEvent extends DomainEvent {
     );
   }
 }
-

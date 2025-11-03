@@ -110,13 +110,13 @@
 
 #### 领域层 - 用户管理子领域
 
-- [ ] T033 [P] [US1] Create UserNameValueObject in libs/iam/src/domain/user/value-objects/user-name.value-object.ts
-- [ ] T034 [P] [US1] Create VerificationCode entity in libs/iam/src/domain/user/entities/verification-code.entity.ts
-- [ ] T035 [US1] Create User entity in libs/iam/src/domain/user/entities/user.entity.ts
-- [ ] T036 [US1] Create User aggregate root in libs/iam/src/domain/user/aggregates/user.aggregate.ts
-- [ ] T037 [US1] Create UserRepository interface in libs/iam/src/domain/user/repositories/user.repository.interface.ts
-- [ ] T038 [US1] Create UserRegisteredEvent implementation
-- [ ] T039 [US1] Create UserVerifiedEvent implementation
+- [X] T033 [P] [US1] Create UserNameValueObject in libs/iam/src/domain/user/value-objects/user-name.value-object.ts
+- [X] T034 [P] [US1] Create VerificationCode entity in libs/iam/src/domain/user/entities/verification-code.entity.ts
+- [X] T035 [US1] Create User entity in libs/iam/src/domain/user/entities/user.entity.ts
+- [X] T036 [US1] Create User aggregate root in libs/iam/src/domain/user/aggregates/user.aggregate.ts
+- [X] T037 [US1] Create UserRepository interface in libs/iam/src/domain/user/repositories/user.repository.interface.ts
+- [X] T038 [US1] Create UserRegisteredEvent implementation
+- [X] T039 [US1] Create UserVerifiedEvent implementation
 
 #### 应用层 - 用户注册用例
 
@@ -395,12 +395,14 @@
 ### MVP Scope
 
 **第一阶段MVP（最小可行产品）**：
+
 - Phase 1: Setup
 - Phase 2: Foundational
 - Phase 3: User Story 1 - 用户注册
 - Phase 4: User Story 2 - 租户创建和初始化
 
 **MVP交付价值**：
+
 - 用户可以注册并验证账户
 - 用户可以创建租户并开始使用平台
 - 系统自动创建默认组织和根部门
@@ -430,4 +432,3 @@
 - 使用充血模型，聚合根委托业务逻辑给内部实体
 - 所有状态变更通过领域事件记录
 - 实现CQRS模式，命令和查询分离
-

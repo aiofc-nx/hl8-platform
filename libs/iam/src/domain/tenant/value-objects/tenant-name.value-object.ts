@@ -22,11 +22,7 @@ export class TenantNameValueObject extends ValueObject<string> {
    * @param version 版本号，默认为1
    * @throws {Error} 当租户名称格式无效时抛出异常
    */
-  constructor(
-    value: string,
-    createdAt?: Date,
-    version?: number,
-  ) {
+  constructor(value: string, createdAt?: Date, version?: number) {
     super(value, createdAt, version);
   }
 
@@ -71,4 +67,3 @@ export class TenantNameValueObject extends ValueObject<string> {
     return new TenantNameValueObject(value, createdAt, version);
   }
 }
-

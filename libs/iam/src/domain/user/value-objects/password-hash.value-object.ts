@@ -21,11 +21,7 @@ export class PasswordHashValueObject extends ValueObject<string> {
    * @param version 版本号，默认为1
    * @throws {Error} 当哈希格式无效时抛出异常
    */
-  constructor(
-    value: string,
-    createdAt?: Date,
-    version?: number,
-  ) {
+  constructor(value: string, createdAt?: Date, version?: number) {
     super(value, createdAt, version);
   }
 
@@ -47,7 +43,8 @@ export class PasswordHashValueObject extends ValueObject<string> {
     // bcrypt哈希格式：$2a$, $2b$, $2y$ 开头，60字符
     // 也支持其他哈希算法（如argon2）
     const bcryptRegex = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
-    const argon2Regex = /^\$argon2(id|i|d)\$v=\d+\$m=\d+,t=\d+,p=\d+\$[./A-Za-z0-9]+$/;
+    const argon2Regex =
+      /^\$argon2(id|i|d)\$v=\d+\$m=\d+,t=\d+,p=\d+\$[./A-Za-z0-9]+$/;
 
     // 允许bcrypt、argon2或至少32字符的哈希（支持其他算法）
     if (
@@ -76,4 +73,3 @@ export class PasswordHashValueObject extends ValueObject<string> {
     return new PasswordHashValueObject(value, createdAt, version);
   }
 }
-
