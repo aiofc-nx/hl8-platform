@@ -5,11 +5,11 @@
 
 import type { Logger } from "@hl8/logger";
 import type {
-  CacheConfig,
   CacheItemMetadata,
   CacheStats,
   ICache,
 } from "../cache.interface.js";
+import type { CacheConfig } from "../config/cache.config.js";
 import { CacheStatsCollector } from "../utils/cache-stats-collector.js";
 import { minimatch } from "minimatch";
 
@@ -68,7 +68,7 @@ export class InMemoryCache implements ICache {
     // 启动清理定时器
     this.startCleanupTimer();
 
-    this.logger.info("InMemoryCache 初始化完成", {
+    this.logger.log("InMemoryCache 初始化完成", {
       maxSize: config.maxSize,
       defaultTtl: config.defaultTtl,
       evictionStrategy: config.evictionStrategy,
@@ -250,7 +250,7 @@ export class InMemoryCache implements ICache {
     this.tagIndex.clear();
     this.statsCollector.reset();
 
-    this.logger.info("缓存已清空", { clearedItems: size });
+    this.logger.log("缓存已清空", { clearedItems: size });
   }
 
   /**
@@ -420,7 +420,6 @@ export class InMemoryCache implements ICache {
    */
   private cleanupExpiredItems(): void {
     const keysToDelete: string[] = [];
-    const now = Date.now();
 
     for (const [key, item] of this.cache.entries()) {
       if (this.isExpired(item)) {
@@ -453,7 +452,6 @@ export class InMemoryCache implements ICache {
     this.cache.clear();
     this.tagIndex.clear();
 
-    this.logger.info("InMemoryCache 已销毁");
+    this.logger.log("InMemoryCache 已销毁");
   }
 }
-

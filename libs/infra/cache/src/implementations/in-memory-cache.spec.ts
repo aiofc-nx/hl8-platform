@@ -4,22 +4,24 @@
  */
 
 import { InMemoryCache } from "./in-memory-cache.js";
-import type { CacheConfig, Logger } from "../cache.interface.js";
-import type { Logger as LoggerType } from "@hl8/logger";
+import type { CacheConfig } from "../config/cache.config.js";
+import type { Logger } from "@hl8/logger";
+
+type TestLogger = Logger & { info: (...args: unknown[]) => void };
 
 describe("InMemoryCache", () => {
   let cache: InMemoryCache;
-  let mockLogger: Logger;
+  let mockLogger: TestLogger;
   let config: CacheConfig;
 
-  const createMockLogger = (): Logger => {
+  const createMockLogger = (): TestLogger => {
     return {
       log: jest.fn(),
       error: jest.fn(),
       warn: jest.fn(),
       debug: jest.fn(),
       info: jest.fn(),
-    } as unknown as LoggerType;
+    } as unknown as TestLogger;
   };
 
   beforeEach(() => {
@@ -131,8 +133,8 @@ describe("InMemoryCache", () => {
     it("应该使用自定义 TTL", async () => {
       await cache.set("key1", "value1", 500);
       const metadata = await cache.getMetadata("key1");
-      const expectedExpiresAt = metadata?.createdAt! + 500;
-      expect(metadata?.expiresAt).toBe(expectedExpiresAt);
+      const { createdAt = 0, expiresAt = 0 } = metadata ?? {};
+      expect(expiresAt).toBe(createdAt + 500);
     });
 
     it("应该支持永不过期的缓存项（TTL=0）", async () => {

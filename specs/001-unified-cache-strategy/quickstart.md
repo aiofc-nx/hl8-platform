@@ -167,7 +167,107 @@ console.log(`命中次数: ${stats.hits}`);
 console.log(`未命中次数: ${stats.misses}`);
 ```
 
-### 7. 多租户场景
+### 7. 基础设施层仓储查询缓存（US1）
+
+```typescript
+import { Module } from '@nestjs/common';
+import { TypedConfigModule, fileLoader } from '@hl8/config';
+import { LoggerModule } from '@hl8/logger';
+import { CacheModule } from '@hl8/cache';
+import { InfrastructureKernelModule } from '@hl8/infrastructure-kernel';
+import { 
+  createCachedRepository,
+  RepositoryCacheConfig,
+  CacheInvalidationService 
+} from '@hl8/infrastructure-kernel';
+import { MikroORMRepository } from '@hl8/infrastructure-kernel';
+import type { ICache, TenantContextProvider } from '@hl8/cache';
+
+// 配置类（使用 @hl8/config）
+export class RootConfig {
+  repositoryCache!: RepositoryCacheConfig;
+}
+
+@Module({
+  imports: [
+    TypedConfigModule.forRoot({
+      schema: RootConfig,
+      load: fileLoader({ path: './config/app.yml' }),
+    }),
+    LoggerModule.forRoot(),
+    CacheModule.forRoot(CacheConfig),
+    InfrastructureKernelModule.forRoot({ /* ... */ }),
+  ],
+  providers: [
+    {
+      provide: 'UserRepository',
+      useFactory: (
+        em: EntityManager,
+        cache: ICache,
+        tenantContext: TenantContextProvider,
+        config: RepositoryCacheConfig,
+      ) => {
+        const inner = new MikroORMRepository<UserEntity>(em, 'UserEntity');
+        return createCachedRepository(
+          inner,
+          'user',
+          { cache, tenantContext },
+          {
+            enabled: config.enabled,
+            defaultTtlMs: config.defaultTtlMs,
+            keyPrefix: config.keyPrefix,
+          },
+        );
+      },
+      inject: ['EntityManager', 'CacheService', 'TenantContextProvider', RepositoryCacheConfig],
+    },
+  ],
+})
+export class AppModule {}
+```
+
+#### 使用示例
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { CacheInvalidationService } from '@hl8/infrastructure-kernel';
+import type { IRepository } from '@hl8/domain-kernel';
+
+@Injectable()
+export class UserService {
+  constructor(
+    private readonly userRepo: IRepository<User>,
+    private readonly cacheInvalidation: CacheInvalidationService,
+  ) {}
+
+  async getUser(id: string): Promise<User | null> {
+    // CachedRepository 自动处理缓存
+    return await this.userRepo.findById(EntityId.from(id));
+  }
+
+  async updateUser(id: string, data: Partial<User>): Promise<void> {
+    const user = await this.userRepo.findById(EntityId.from(id));
+    if (!user) throw new Error('User not found');
+    
+    Object.assign(user, data);
+    await this.userRepo.save(user);
+    // save 操作会自动失效缓存，无需手动调用
+  }
+
+  async invalidateUserCache(id: string, tenantId?: string): Promise<void> {
+    // 手动失效：按实体ID
+    await this.cacheInvalidation.invalidateEntityId('user', id, tenantId);
+    
+    // 或按实体类型失效（失效所有 user 实体缓存）
+    await this.cacheInvalidation.invalidateEntity('user', tenantId);
+    
+    // 或按模式失效
+    await this.cacheInvalidation.invalidateByPattern(`${tenantId}:repo:user:*`);
+  }
+}
+```
+
+### 8. 多租户场景
 
 ```typescript
 import { CacheKeyBuilder } from '@hl8/cache';
@@ -245,4 +345,3 @@ await this.cache.set(lockKey, true, 1000); // 锁 1 秒
 - 查看 [data-model.md](./data-model.md) 了解数据模型
 - 查看 [research.md](./research.md) 了解技术决策
 - 查看 [plan.md](./plan.md) 了解实施计划
-

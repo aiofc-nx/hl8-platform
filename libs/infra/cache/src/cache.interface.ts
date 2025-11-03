@@ -10,7 +10,7 @@ import type { Logger } from "@hl8/logger";
  * 缓存配置
  * @description 控制缓存的容量、过期、统计与清理等行为。
  */
-export interface CacheConfig {
+export interface CacheConfigShape {
   /** 默认过期时间（毫秒）。0 表示不过期，需要调用方显式传递 ttl 才会过期。 */
   defaultTtl: number;
   /** 最大缓存项数量（达到上限时按淘汰策略驱逐）。 */
@@ -90,6 +90,6 @@ export interface ICache {
  * @description 统一约束实现类初始化所需依赖（配置与日志）。
  */
 export interface CacheDependencies {
-  config: CacheConfig;
+  config: CacheConfigShape;
   logger: Logger;
 }

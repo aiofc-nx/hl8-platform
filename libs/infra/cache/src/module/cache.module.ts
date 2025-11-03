@@ -7,7 +7,8 @@ import { TypedConfigModule, fileLoader } from "@hl8/config";
 import { LoggerModule, Logger } from "@hl8/logger";
 import { ClsModule } from "nestjs-cls";
 import { InMemoryCache } from "../implementations/in-memory-cache.js";
-import type { ICache, CacheConfig } from "../cache.interface.js";
+import type { ICache } from "../cache.interface.js";
+import type { CacheConfig } from "../config/cache.config.js";
 
 @Global()
 @Module({})

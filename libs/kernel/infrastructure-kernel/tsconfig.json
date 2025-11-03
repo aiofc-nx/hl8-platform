@@ -5,7 +5,10 @@
     "esModuleInterop": true,
     "incremental": false,
     "baseUrl": ".",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "paths": {
+      "@hl8/cache": ["../../infra/cache/src/index.ts"]
+    }
   },
   "include": ["src", "src/**/*.spec.ts", "src/**/*.test.ts", "test"],
   "exclude": ["node_modules", "dist"]

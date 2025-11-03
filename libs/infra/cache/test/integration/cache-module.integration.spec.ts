@@ -61,7 +61,7 @@ describe("CacheModule 集成测试", () => {
               warn: jest.fn(),
               debug: jest.fn(),
               info: jest.fn(),
-            } satisfies Partial<Logger>,
+            } as unknown as Logger,
           },
         ],
       }).compile();
@@ -97,7 +97,7 @@ describe("CacheModule 集成测试", () => {
               warn: jest.fn(),
               debug: jest.fn(),
               info: jest.fn(),
-            } satisfies Partial<Logger>,
+            } as unknown as Logger,
           },
         ],
       }).compile();
@@ -146,7 +146,7 @@ describe("CacheModule 集成测试", () => {
               warn: jest.fn(),
               debug: jest.fn(),
               info: jest.fn(),
-            } satisfies Partial<Logger>,
+            } as unknown as Logger,
           },
         ],
       }).compile();
@@ -186,7 +186,7 @@ describe("CacheModule 集成测试", () => {
               warn: jest.fn(),
               debug: jest.fn(),
               info: jest.fn(),
-            } satisfies Partial<Logger>,
+            } as unknown as Logger,
           },
         ],
       }).compile();
@@ -230,7 +230,7 @@ describe("CacheModule 集成测试", () => {
               warn: jest.fn(),
               debug: jest.fn(),
               info: jest.fn(),
-            } satisfies Partial<Logger>,
+            } as unknown as Logger,
           },
         ],
       }).compile();
@@ -272,7 +272,7 @@ describe("CacheModule 集成测试", () => {
               warn: jest.fn(),
               debug: jest.fn(),
               info: jest.fn(),
-            } satisfies Partial<Logger>,
+            } as unknown as Logger,
           },
         ],
       }).compile();
@@ -303,7 +303,7 @@ describe("CacheModule 集成测试", () => {
               warn: jest.fn(),
               debug: jest.fn(),
               info: jest.fn(),
-            } as Partial<Logger>,
+            } as unknown as Logger,
           },
           {
             provide: "CacheService",
