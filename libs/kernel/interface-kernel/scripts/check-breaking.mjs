@@ -4,7 +4,7 @@
  * @description 检测 interface-kernel 的公共 API 是否包含破坏性变更
  */
 
-import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -30,7 +30,7 @@ function readPackageJson() {
  */
 function extractExportedSymbols() {
   const indexPath = join(SRC_DIR, "index.ts");
-  const distIndexPath = join(DIST_DIR, "index.d.ts");
+  // const distIndexPath = join(DIST_DIR, "index.d.ts");
 
   const exports = new Set();
 
@@ -38,9 +38,7 @@ function extractExportedSymbols() {
   if (existsSync(indexPath)) {
     const content = readFileSync(indexPath, "utf-8");
     // 匹配 export { ... } 和 export type { ... }
-    const exportMatches = content.matchAll(
-      /export\s+(?:type\s+)?\{[^}]+\}/g,
-    );
+    const exportMatches = content.matchAll(/export\s+(?:type\s+)?\{[^}]+\}/g);
     for (const match of exportMatches) {
       const exportsList = match[0]
         .replace(/export\s+(?:type\s+)?\{/, "")
@@ -149,7 +147,9 @@ function main() {
 
     // 检查 dist 目录是否存在（需要先构建）
     if (!existsSync(DIST_DIR)) {
-      console.warn("⚠️  dist/ directory not found. Please run 'pnpm build' first.\n");
+      console.warn(
+        "⚠️  dist/ directory not found. Please run 'pnpm build' first.\n",
+      );
     }
 
     const { issues, warnings } = checkBreakingChanges(currentPkg, baselinePkg);
@@ -167,7 +167,9 @@ function main() {
       warnings.forEach((warning, idx) => {
         console.log(`${idx + 1}. [${warning.category}] ${warning.message}`);
       });
-      console.log("\n✅ No breaking changes detected, but please review warnings.\n");
+      console.log(
+        "\n✅ No breaking changes detected, but please review warnings.\n",
+      );
       process.exit(0);
     } else {
       console.log("✅ No breaking changes detected.\n");
@@ -182,4 +184,3 @@ function main() {
 
 // 运行
 main();
-
