@@ -152,13 +152,13 @@
 - [X] T063 [US5] Implement getStats() method returning CacheStats in libs/infra/cache/src/implementations/in-memory-cache.ts
 - [X] T064 [US5] Implement getMetadata() method returning CacheItemMetadata in libs/infra/cache/src/implementations/in-memory-cache.ts
 - [X] T065 [US5] Implement resetStats() method in libs/infra/cache/src/implementations/in-memory-cache.ts
-- [ ] T066 [US5] Add configuration hot-reload support (if @hl8/config supports it) in libs/infra/cache/src/module/cache.module.ts
+- [N] T066 [US5] Add configuration hot-reload support (if @hl8/config supports it) in libs/infra/cache/src/module/cache.module.ts
 - [X] T067 [US5] Write unit tests for LRU eviction in libs/infra/cache/src/implementations/in-memory-cache.spec.ts
 - [X] T068 [US5] Write unit tests for FIFO eviction in libs/infra/cache/src/implementations/in-memory-cache.spec.ts
 - [X] T069 [US5] Write unit tests for LFU eviction in libs/infra/cache/src/implementations/in-memory-cache.spec.ts
 - [X] T070 [US5] Write unit tests for cache statistics in libs/infra/cache/src/utils/cache-stats-collector.spec.ts
-- [ ] T071 [US5] Write integration test for configuration changes in test/integration/cache-config.integration.spec.ts
-- [ ] T072 [US5] Write integration test for cache statistics in test/integration/cache-stats.integration.spec.ts
+- [X] T071 [US5] Write integration test for configuration changes in test/integration/cache-config.integration.spec.ts
+- [X] T072 [US5] Write integration test for cache statistics in test/integration/cache-stats.integration.spec.ts
 
 **Checkpoint**: 缓存配置和监控功能完成，管理员可以配置缓存策略并查看统计信息。
 
