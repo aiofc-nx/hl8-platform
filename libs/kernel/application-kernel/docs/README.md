@@ -5,7 +5,7 @@
 ## 安装
 
 ```bash
-pnpm add @hl8/application-kernel @hl8/domain-kernel @hl8/config @hl8/logger @nestjs/cqrs
+pnpm add @hl8/application-kernel @hl8/domain-kernel @hl8/config @hl8/logger @hl8/cache @nestjs/cqrs
 
 # 如果需要使用 JWT Token 提取租户上下文（可选）
 pnpm add jsonwebtoken @types/jsonwebtoken
@@ -19,6 +19,7 @@ pnpm add jsonwebtoken @types/jsonwebtoken
 - ✅ 命令（Commands）和查询（Queries）实现
 - ✅ 事件存储和事件总线使用
 - ✅ 投影器（Projectors）和 Saga 模式
+- ✅ 缓存服务使用
 - ✅ 完整示例代码
 
 或参考功能规格的 `quickstart.md`，在应用模块中引入 `ApplicationKernelModule` 并完成配置加载与校验。
@@ -52,7 +53,8 @@ pnpm add jsonwebtoken @types/jsonwebtoken
 - **命令查询总线 (CommandQueryBus)**: 统一分发和执行命令/查询，支持中间件管道
 - **命令处理器 (CommandHandler)**: 使用 `@CommandHandler` 装饰器标记，处理命令业务逻辑
 - **查询处理器 (QueryHandler)**: 使用 `@QueryHandler` 装饰器标记，处理查询业务逻辑
-- **中间件 (Middleware)**: 支持日志、性能监控、验证、重试、缓存等中间件
+- **中间件 (Middleware)**: 支持日志、性能监控、验证、重试等中间件
+- **缓存服务 (Cache)**: 集成 @hl8/cache 统一缓存服务
 - **执行结果 (CommandResult/QueryResult)**: 统一的执行结果封装
 
 ### CQRS 快速开始
@@ -261,7 +263,7 @@ class ProductController {
 ```typescript
 import { Module } from "@nestjs/common";
 import { ApplicationKernelModule } from "@hl8/application-kernel";
-import { LoggingMiddleware, PerformanceMonitoringMiddleware, ValidationMiddleware, RetryMiddleware, CacheMiddleware } from "@hl8/application-kernel";
+import { LoggingMiddleware, PerformanceMonitoringMiddleware, ValidationMiddleware, RetryMiddleware } from "@hl8/application-kernel";
 
 @Module({
   imports: [ApplicationKernelModule.forRoot()],
@@ -271,11 +273,12 @@ import { LoggingMiddleware, PerformanceMonitoringMiddleware, ValidationMiddlewar
     PerformanceMonitoringMiddleware, // 性能监控
     ValidationMiddleware, // 输入验证
     RetryMiddleware, // 重试机制
-    CacheMiddleware, // 查询缓存
   ],
 })
 export class AppModule {}
 ```
+
+**注意**: `CacheMiddleware` 已弃用，缓存功能由 `@hl8/cache` 统一提供。请直接使用 `ICache` 服务进行缓存操作。参见下文"缓存服务使用"章节。
 
 #### 5. 自定义中间件
 
@@ -575,6 +578,164 @@ import { ApplicationKernelModule } from "@hl8/application-kernel";
 })
 export class AppModule {}
 ```
+
+---
+
+## 💾 缓存服务使用
+
+Application Kernel 集成 `@hl8/cache` 提供统一缓存服务，支持查询结果缓存、事件驱动失效等功能。
+
+### 缓存服务核心组件
+
+- **ICache**: 统一缓存接口，提供 get、set、delete、invalidateByTags 等操作
+- **InMemoryCache**: 内存缓存实现
+- **CacheKeyBuilder**: 缓存键构建工具
+- **CacheCoordinationService**: 跨层缓存协调服务
+- **EventDrivenCacheInvalidation**: 事件驱动失效处理器
+
+### 缓存服务快速开始
+
+#### 1. 注入缓存服务
+
+```typescript
+import { Injectable, Inject } from '@nestjs/common';
+import { ICache, CacheKeyBuilder } from '@hl8/application-kernel';
+
+@Injectable()
+export class UserService {
+  private readonly keyBuilder = new CacheKeyBuilder();
+
+  constructor(@Inject('CacheService') private readonly cache: ICache) {}
+
+  async getUserProfile(userId: string): Promise<UserProfile | null> {
+    // 构建缓存键
+    const cacheKey = this.keyBuilder.buildQueryKey(
+      'GetUserProfile',
+      { userId }
+    );
+
+    // 先查缓存
+    const cached = await this.cache.get<UserProfile>(cacheKey);
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    // 查询数据库
+    const profile = await this.userRepository.getProfile(userId);
+
+    // 缓存结果
+    await this.cache.set(cacheKey, profile, 3600000, ['entity:User']);
+
+    return profile;
+  }
+}
+```
+
+#### 2. 使用缓存配置
+
+```typescript
+import { Module } from '@nestjs/common';
+import { ApplicationKernelModule } from '@hl8/application-kernel';
+import { TypedConfigModule, fileLoader } from '@hl8/config';
+
+@Module({
+  imports: [
+    TypedConfigModule.forRoot({
+      schema: ApplicationKernelConfig,
+      load: [fileLoader({ path: './config/app.yml' })],
+    }),
+    ApplicationKernelModule.forRoot(),
+  ],
+})
+export class AppModule {}
+```
+
+配置示例 (`config/app.yml`):
+
+```yaml
+cache:
+  type: memory
+  ttl:
+    default: 3600  # 默认 1 小时（秒）
+  invalidation:
+    strategy: event-based
+    events:
+      - UserUpdatedEvent
+  performance:
+    maxSize: 10000
+```
+
+#### 3. 事件驱动缓存失效
+
+```typescript
+import { Injectable, Inject } from '@nestjs/common';
+import { ICache, EventDrivenCacheInvalidation, Logger } from '@hl8/application-kernel';
+import { EventBus } from '@nestjs/cqrs';
+
+@Injectable()
+export class CacheEventHandler {
+  private invalidation: EventDrivenCacheInvalidation;
+
+  constructor(
+    @Inject('CacheService') private readonly cache: ICache,
+    private readonly logger: Logger,
+  ) {}
+
+  onModuleInit() {
+    this.invalidation = new EventDrivenCacheInvalidation(
+      this.cache,
+      this.logger
+    );
+
+    // 注册失效规则
+    this.invalidation.registerRule({
+      id: 'user-update-invalidation',
+      eventType: 'UserUpdatedEvent',
+      keyGenerator: (event) => [`repo:User:${(event.data as any).userId}`],
+      tags: ['entity:User'],
+      enabled: true,
+      priority: 100,
+    });
+
+    // 监听事件
+    this.eventBus.subscribe('UserUpdatedEvent', (event) => {
+      this.invalidation.handleEvent(event);
+    });
+  }
+}
+```
+
+#### 4. 监控缓存统计
+
+```typescript
+import { Injectable, Inject } from '@nestjs/common';
+import { ICache } from '@hl8/application-kernel';
+
+@Injectable()
+export class CacheMonitoringService {
+  constructor(@Inject('CacheService') private readonly cache: ICache) {}
+
+  async getStats() {
+    const stats = await this.cache.getStats();
+
+    console.log(`命中率: ${(stats.hitRate * 100).toFixed(2)}%`);
+    console.log(`当前大小: ${stats.currentSize}/${stats.maxSize}`);
+    console.log(`命中次数: ${stats.hits}`);
+    console.log(`未命中次数: ${stats.misses}`);
+
+    return stats;
+  }
+}
+```
+
+### 注意事项
+
+1. **CacheMiddleware 已弃用**: 请直接使用 `ICache` 服务进行缓存操作
+2. **配置映射**: Application Kernel 自动将配置映射到 `@hl8/cache`
+3. **自动注入**: 使用 `@Inject('CacheService')` 注入缓存服务
+4. **跨层协调**: 使用 `CacheCoordinationService` 实现跨层缓存失效
+
+更多详细信息请参考 [@hl8/cache 文档](../../infra/cache/README.md)。
 
 ---
 
@@ -1331,7 +1492,8 @@ pnpm test --testPathPatterns="api.contract"
 
 ### 主要改进成果
 
-- ✅ 所有模块导出已启用（projectors, sagas, bus, cache, monitoring）
+- ✅ 所有模块导出已启用（projectors, sagas, bus, monitoring）
+- ✅ 缓存功能集成 `@hl8/cache` 统一缓存库
 - ✅ 所有类型错误已修复（TypeScript 严格模式通过）
 - ✅ 所有测试通过（42 个测试套件，537 个测试用例）
 - ✅ 代码质量提升（优化导出结构，避免命名冲突）

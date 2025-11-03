@@ -36,12 +36,17 @@ export {
   CacheKeyBuilder,
   CacheStatsCollector,
   CacheCoordinationService,
+  EventDrivenCacheInvalidation,
+  InvalidationRuleRegistry,
 } from "@hl8/cache";
 export type {
   ICache,
   CacheStats,
   CacheItemMetadata,
   CacheConfigShape,
+  CacheInvalidationRule,
+  GenericDomainEvent,
+  InvalidationResult,
 } from "@hl8/cache";
 
 // Monitoring - 避免 MonitoringConfig 冲突
