@@ -43,9 +43,15 @@ export class RepositoryFactory implements IRepositoryFactory {
    * 创建基础仓储实例
    * @description 为普通实体创建基础仓储，实现 IRepository 接口
    * @template T 持久化实体类型，必须继承 BaseEntity
-   * @param entityClass 实体类构造函数
-   * @param entityName 实体类名称
-   * @returns 仓储实例
+   * @param entityClass - 实体类构造函数
+   * @param entityName - 实体类名称，用于日志和异常消息
+   * @returns 仓储实例，实现 IRepository<T> 接口
+   * @throws {Error} 当实体类或实体名称为空，或实体类未继承 BaseEntity 时抛出
+   * @example
+   * ```typescript
+   * const repository = factory.createRepository(ProductEntity, 'ProductEntity');
+   * await repository.save(product);
+   * ```
    */
   createRepository<T extends BaseEntity>(
     entityClass: new (...args: any[]) => T,
@@ -72,9 +78,18 @@ export class RepositoryFactory implements IRepositoryFactory {
    * @description 为租户隔离实体创建仓储，实现 ITenantIsolatedRepository 接口
    * @template T 持久化实体类型，必须继承 TenantIsolatedPersistenceEntity
    * @template TDomain 领域实体类型，必须实现 TenantIsolatedEntity 接口
-   * @param entityClass 实体类构造函数
-   * @param entityName 实体类名称
-   * @returns 租户隔离仓储实例
+   * @param entityClass - 实体类构造函数
+   * @param entityName - 实体类名称，用于日志和异常消息
+   * @returns 租户隔离仓储实例，实现 ITenantIsolatedRepository<TDomain> 接口
+   * @throws {Error} 当实体类或实体名称为空，或实体类未继承 TenantIsolatedPersistenceEntity 时抛出
+   * @example
+   * ```typescript
+   * const repository = factory.createTenantIsolatedRepository<ProductEntity, DomainProduct>(
+   *   ProductEntity,
+   *   'ProductEntity'
+   * );
+   * await repository.findAllByContext(context);
+   * ```
    */
   createTenantIsolatedRepository<
     T extends TenantIsolatedPersistenceEntity,
@@ -109,11 +124,17 @@ export class RepositoryFactory implements IRepositoryFactory {
 
   /**
    * 注册实体映射器
-   * @description 注册领域实体和持久化实体之间的映射器
+   * @description 注册领域实体和持久化实体之间的映射器，用于仓储工厂创建仓储时自动使用
    * @template TDomain 领域实体类型
    * @template TPersistence 持久化实体类型
-   * @param entityName 实体类名称
-   * @param mapper 实体映射器实例
+   * @param entityName - 实体类名称，用作映射器的键
+   * @param mapper - 实体映射器实例，实现 IEntityMapper 接口
+   * @throws {Error} 当实体名称或映射器为空时抛出
+   * @example
+   * ```typescript
+   * const mapper = new EntityMapper<Product, ProductEntity>(config);
+   * factory.registerMapper('ProductEntity', mapper);
+   * ```
    */
   registerMapper<TDomain, TPersistence extends BaseEntity>(
     entityName: string,
@@ -131,11 +152,18 @@ export class RepositoryFactory implements IRepositoryFactory {
 
   /**
    * 获取实体映射器
-   * @description 获取指定实体的映射器
+   * @description 获取指定实体的映射器，如果未注册则返回 null
    * @template TDomain 领域实体类型
    * @template TPersistence 持久化实体类型
-   * @param entityName 实体类名称
+   * @param entityName - 实体类名称，用于查找映射器
    * @returns 实体映射器实例，如果不存在则返回 null
+   * @example
+   * ```typescript
+   * const mapper = factory.getMapper<Product, ProductEntity>('ProductEntity');
+   * if (mapper) {
+   *   const domainEntity = mapper.toDomain(persistenceEntity);
+   * }
+   * ```
    */
   getMapper<TDomain, TPersistence extends BaseEntity>(
     entityName: string,

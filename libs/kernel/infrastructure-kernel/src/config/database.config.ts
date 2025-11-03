@@ -28,9 +28,19 @@ export interface DatabaseConfig {
 
 /**
  * 获取数据库配置
- * @description 从配置对象创建数据库配置
- * @param config 配置对象（通常通过依赖注入获取）
- * @returns 数据库配置对象
+ * @description 从配置对象创建标准化的数据库配置，支持连接池和健康检查配置
+ * @param config - 配置对象（通常通过依赖注入获取），包含数据库连接信息
+ * @returns 数据库配置对象，如果配置无效则返回 null
+ * @example
+ * ```typescript
+ * const dbConfig = getDatabaseConfig({
+ *   type: 'postgresql',
+ *   dbName: 'hl8_saas',
+ *   connectionUrl: 'postgresql://...',
+ *   pool: { min: 2, max: 10 },
+ *   healthCheck: true
+ * });
+ * ```
  */
 export function getDatabaseConfig(config?: {
   type?: string;

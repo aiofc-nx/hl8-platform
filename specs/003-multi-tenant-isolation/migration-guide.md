@@ -17,6 +17,7 @@
 ### 迁移目标
 
 将现有系统迁移到支持多租户和多层级（租户 → 组织 → 部门）数据隔离的架构，确保：
+
 - 数据完全隔离：不同租户的数据严格分离
 - 向后兼容：现有功能不受影响
 - 平滑迁移：支持逐步迁移，不影响现有业务
@@ -49,6 +50,7 @@ class Order extends AggregateRoot {
 ```
 
 **迁移决策**：
+
 - ✅ **需要迁移**：包含业务数据的实体/聚合根（如 Product、Order、User 等）
 - ❌ **不需要迁移**：配置实体、系统元数据（使用特殊系统租户）
 
@@ -73,29 +75,14 @@ class Product extends Entity {
   }
 
   clone(): Product {
-    return new Product(
-      this.name,
-      this.price,
-      this.id,
-      this.auditInfo?.clone(),
-      this.lifecycleState,
-      this.version,
-    );
+    return new Product(this.name, this.price, this.id, this.auditInfo?.clone(), this.lifecycleState, this.version);
   }
 }
 ```
 
 ```typescript
 // ✅ 迁移后
-import {
-  TenantIsolatedEntity,
-  TenantId,
-  OrganizationId,
-  DepartmentId,
-  EntityId,
-  AuditInfo,
-  EntityLifecycle,
-} from "@hl8/domain-kernel";
+import { TenantIsolatedEntity, TenantId, OrganizationId, DepartmentId, EntityId, AuditInfo, EntityLifecycle } from "@hl8/domain-kernel";
 
 class Product extends TenantIsolatedEntity {
   constructor(
@@ -109,29 +96,11 @@ class Product extends TenantIsolatedEntity {
     lifecycleState?: EntityLifecycle,
     version?: number,
   ) {
-    super(
-      tenantId,
-      organizationId,
-      departmentId,
-      id,
-      auditInfo,
-      lifecycleState,
-      version,
-    );
+    super(tenantId, organizationId, departmentId, id, auditInfo, lifecycleState, version);
   }
 
   clone(): Product {
-    return new Product(
-      this.tenantId,
-      this.name,
-      this.price,
-      this.organizationId,
-      this.departmentId,
-      this.id,
-      this.auditInfo?.clone(),
-      this.lifecycleState,
-      this.version,
-    );
+    return new Product(this.tenantId, this.name, this.price, this.organizationId, this.departmentId, this.id, this.auditInfo?.clone(), this.lifecycleState, this.version);
   }
 }
 ```
@@ -190,28 +159,14 @@ class Order extends AggregateRoot {
   }
 
   clone(): Order {
-    return new Order(
-      this.orderNumber,
-      this.id,
-      this.auditInfo?.clone(),
-      this.lifecycleState,
-      this.version,
-    );
+    return new Order(this.orderNumber, this.id, this.auditInfo?.clone(), this.lifecycleState, this.version);
   }
 }
 ```
 
 ```typescript
 // ✅ 迁移后
-import {
-  TenantIsolatedAggregateRoot,
-  TenantId,
-  OrganizationId,
-  DepartmentId,
-  EntityId,
-  AuditInfo,
-  EntityLifecycle,
-} from "@hl8/domain-kernel";
+import { TenantIsolatedAggregateRoot, TenantId, OrganizationId, DepartmentId, EntityId, AuditInfo, EntityLifecycle } from "@hl8/domain-kernel";
 
 class Order extends TenantIsolatedAggregateRoot {
   constructor(
@@ -224,28 +179,11 @@ class Order extends TenantIsolatedAggregateRoot {
     lifecycleState?: EntityLifecycle,
     version?: number,
   ) {
-    super(
-      tenantId,
-      organizationId,
-      departmentId,
-      id,
-      auditInfo,
-      lifecycleState,
-      version,
-    );
+    super(tenantId, organizationId, departmentId, id, auditInfo, lifecycleState, version);
   }
 
   clone(): Order {
-    return new Order(
-      this.tenantId,
-      this.orderNumber,
-      this.organizationId,
-      this.departmentId,
-      this.id,
-      this.auditInfo?.clone(),
-      this.lifecycleState,
-      this.version,
-    );
+    return new Order(this.tenantId, this.orderNumber, this.organizationId, this.departmentId, this.id, this.auditInfo?.clone(), this.lifecycleState, this.version);
   }
 }
 ```
@@ -296,17 +234,10 @@ interface IProductRepository extends IRepository<Product> {
 
 ```typescript
 // ✅ 迁移后
-import {
-  ITenantIsolatedRepository,
-  TenantContext,
-} from "@hl8/domain-kernel";
+import { ITenantIsolatedRepository, TenantContext } from "@hl8/domain-kernel";
 
-interface IProductRepository
-  extends ITenantIsolatedRepository<Product> {
-  findByName(
-    name: string,
-    context: TenantContext,
-  ): Promise<Product | null>;
+interface IProductRepository extends ITenantIsolatedRepository<Product> {
+  findByName(name: string, context: TenantContext): Promise<Product | null>;
 }
 ```
 
@@ -315,24 +246,16 @@ interface IProductRepository
 ```typescript
 // ✅ 迁移后（仓储实现示例）
 class ProductRepository implements IProductRepository {
-  async findByIdWithContext(
-    id: EntityId,
-    context: TenantContext,
-  ): Promise<Product | null> {
+  async findByIdWithContext(id: EntityId, context: TenantContext): Promise<Product | null> {
     // 仓储实现会自动应用租户隔离过滤
     // 实现细节由基础设施层提供
   }
 
-  async findAllByContext(
-    context: TenantContext,
-  ): Promise<Product[]> {
+  async findAllByContext(context: TenantContext): Promise<Product[]> {
     // 根据上下文自动应用多层级过滤
   }
 
-  async findByName(
-    name: string,
-    context: TenantContext,
-  ): Promise<Product | null> {
+  async findByName(name: string, context: TenantContext): Promise<Product | null> {
     // 在查询中自动应用租户过滤
   }
 }
@@ -361,20 +284,11 @@ class CreateProductHandler {
   async handle(command: CreateProductCommand): Promise<CommandResult> {
     // 检查租户上下文（由中间件自动注入）
     if (!command.tenantContext) {
-      return CommandResult.failure(
-        "MISSING_TENANT_CONTEXT",
-        "命令缺少租户上下文",
-      );
+      return CommandResult.failure("MISSING_TENANT_CONTEXT", "命令缺少租户上下文");
     }
 
     // 使用租户上下文创建实体
-    const product = new Product(
-      command.tenantContext.tenantId,
-      command.productName,
-      command.price,
-      command.tenantContext.organizationId,
-      command.tenantContext.departmentId,
-    );
+    const product = new Product(command.tenantContext.tenantId, command.productName, command.price, command.tenantContext.organizationId, command.tenantContext.departmentId);
 
     await this.repository.save(product);
     return CommandResult.success({ productId: product.id.value });
@@ -389,9 +303,7 @@ class CreateProductHandler {
 @QueryHandler(GetProductQuery)
 class GetProductHandler {
   async handle(query: GetProductQuery): Promise<QueryResult> {
-    const product = await this.repository.findById(
-      EntityId.fromString(query.productId),
-    );
+    const product = await this.repository.findById(EntityId.fromString(query.productId));
     return QueryResult.successItem(product);
   }
 }
@@ -404,17 +316,11 @@ class GetProductHandler {
   async handle(query: GetProductQuery): Promise<QueryResult> {
     // 检查租户上下文（由中间件自动注入）
     if (!query.tenantContext) {
-      return QueryResult.failure(
-        "MISSING_TENANT_CONTEXT",
-        "查询缺少租户上下文",
-      );
+      return QueryResult.failure("MISSING_TENANT_CONTEXT", "查询缺少租户上下文");
     }
 
     // 使用上下文查询（自动应用租户隔离过滤）
-    const product = await this.repository.findByIdWithContext(
-      EntityId.fromString(query.productId),
-      query.tenantContext,
-    );
+    const product = await this.repository.findByIdWithContext(EntityId.fromString(query.productId), query.tenantContext);
 
     if (!product) {
       return QueryResult.failure("PRODUCT_NOT_FOUND", "产品不存在");
@@ -448,11 +354,7 @@ export class AppModule {}
 
 ```typescript
 import { Module } from "@nestjs/common";
-import {
-  ApplicationKernelModule,
-  IUserContextQuery,
-  JwtConfig,
-} from "@hl8/application-kernel";
+import { ApplicationKernelModule, IUserContextQuery, JwtConfig } from "@hl8/application-kernel";
 
 // 实现用户上下文查询接口
 class MyUserContextQuery implements IUserContextQuery {
@@ -536,11 +438,11 @@ db.products.updateMany(
   { tenantId: { $exists: false } },
   {
     $set: {
-      tenantId: "default-tenant-id",  // 替换为实际的默认租户ID
+      tenantId: "default-tenant-id", // 替换为实际的默认租户ID
       organizationId: null,
       departmentId: null,
     },
-  }
+  },
 );
 
 // 创建复合索引（提升查询性能）
@@ -560,6 +462,7 @@ db.products.createIndex({
 根据业务逻辑确定现有数据的租户归属：
 
 **场景 1：用户数据**
+
 ```typescript
 // 用户数据通常属于用户所在的租户
 // 迁移逻辑：
@@ -567,25 +470,27 @@ const users = await userRepository.findAll();
 for (const user of users) {
   // 用户的租户ID可以从用户属性中获取，或使用默认租户
   const tenantId = user.tenantId || defaultTenantId;
-  
+
   // 更新实体
   await productRepository.updateTenantId(user.id, tenantId);
 }
 ```
 
 **场景 2：订单数据**
+
 ```typescript
 // 订单数据属于下单用户所在的租户
 const orders = await orderRepository.findAll();
 for (const order of orders) {
   const user = await userRepository.findById(order.userId);
   const tenantId = user.tenantId || defaultTenantId;
-  
+
   await orderRepository.updateTenantId(order.id, tenantId);
 }
 ```
 
 **场景 3：系统配置数据**
+
 ```typescript
 // 系统配置数据使用特殊的系统租户
 const systemTenantId = TenantId.fromString("system-tenant-uuid");
@@ -600,27 +505,20 @@ import { TenantId } from "@hl8/domain-kernel";
 
 async function migrateProductsToTenantIsolation() {
   // 1. 获取所有现有产品（无租户ID）
-  const products = await db.query(
-    "SELECT * FROM products WHERE tenant_id = '' OR tenant_id IS NULL"
-  );
+  const products = await db.query("SELECT * FROM products WHERE tenant_id = '' OR tenant_id IS NULL");
 
   // 2. 为每个产品分配租户ID
   for (const product of products) {
     // 根据业务逻辑确定租户ID
     const tenantId = determineTenantId(product);
-    
+
     // 3. 更新数据库
-    await db.query(
-      "UPDATE products SET tenant_id = ? WHERE id = ?",
-      [tenantId.value, product.id]
-    );
+    await db.query("UPDATE products SET tenant_id = ? WHERE id = ?", [tenantId.value, product.id]);
   }
 
   // 4. 验证迁移结果
-  const unmigrated = await db.query(
-    "SELECT COUNT(*) FROM products WHERE tenant_id = '' OR tenant_id IS NULL"
-  );
-  
+  const unmigrated = await db.query("SELECT COUNT(*) FROM products WHERE tenant_id = '' OR tenant_id IS NULL");
+
   if (unmigrated > 0) {
     throw new Error(`还有 ${unmigrated} 条数据未迁移`);
   }
@@ -632,7 +530,7 @@ function determineTenantId(product: any): TenantId {
   if (product.creatorTenantId) {
     return TenantId.fromString(product.creatorTenantId);
   }
-  
+
   // 使用默认租户（仅用于遗留数据）
   return TenantId.fromString("default-tenant-id");
 }
@@ -651,7 +549,7 @@ async function validateTenantIsolation() {
     FROM products 
     WHERE tenant_id IS NULL OR tenant_id = ''
   `);
-  
+
   if (nullTenantData.count > 0) {
     throw new Error(`发现 ${nullTenantData.count} 条数据缺少租户ID`);
   }
@@ -662,7 +560,7 @@ async function validateTenantIsolation() {
     FROM products 
     WHERE tenant_id NOT SIMILAR TO '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
   `);
-  
+
   if (invalidTenantData.length > 0) {
     throw new Error(`发现 ${invalidTenantData.length} 条数据的租户ID格式无效`);
   }
@@ -674,7 +572,7 @@ async function validateTenantIsolation() {
     WHERE department_id IS NOT NULL 
       AND organization_id IS NULL
   `);
-  
+
   if (inconsistentData.length > 0) {
     throw new Error(`发现 ${inconsistentData.length} 条数据的层级关系不一致`);
   }
@@ -692,14 +590,14 @@ async function validateTenantIsolationFunctionality() {
   // 1. 创建测试数据
   const product1 = new Product(tenant1Id, "产品1", 100);
   const product2 = new Product(tenant2Id, "产品2", 200);
-  
+
   await repository.save(product1);
   await repository.save(product2);
 
   // 2. 使用租户1的上下文查询
   const context1 = new TenantContext(tenant1Id);
   const products1 = await repository.findAllByContext(context1);
-  
+
   // 3. 验证只能查询到租户1的数据
   expect(products1).toHaveLength(1);
   expect(products1[0].name).toBe("产品1");
@@ -707,7 +605,7 @@ async function validateTenantIsolationFunctionality() {
   // 4. 使用租户2的上下文查询
   const context2 = new TenantContext(tenant2Id);
   const products2 = await repository.findAllByContext(context2);
-  
+
   // 5. 验证只能查询到租户2的数据
   expect(products2).toHaveLength(1);
   expect(products2[0].name).toBe("产品2");
@@ -874,15 +772,7 @@ async function validateTenantIsolationFunctionality() {
 
 ```typescript
 // Product.ts - 迁移后的完整代码
-import {
-  TenantIsolatedEntity,
-  TenantId,
-  OrganizationId,
-  DepartmentId,
-  EntityId,
-  AuditInfo,
-  EntityLifecycle,
-} from "@hl8/domain-kernel";
+import { TenantIsolatedEntity, TenantId, OrganizationId, DepartmentId, EntityId, AuditInfo, EntityLifecycle } from "@hl8/domain-kernel";
 
 export class Product extends TenantIsolatedEntity {
   constructor(
@@ -897,30 +787,11 @@ export class Product extends TenantIsolatedEntity {
     lifecycleState?: EntityLifecycle,
     version?: number,
   ) {
-    super(
-      tenantId,
-      organizationId,
-      departmentId,
-      id,
-      auditInfo,
-      lifecycleState,
-      version,
-    );
+    super(tenantId, organizationId, departmentId, id, auditInfo, lifecycleState, version);
   }
 
   clone(): Product {
-    return new Product(
-      this.tenantId,
-      this.name,
-      this.price,
-      this.description,
-      this.organizationId,
-      this.departmentId,
-      this.id,
-      this.auditInfo?.clone(),
-      this.lifecycleState,
-      this.version,
-    );
+    return new Product(this.tenantId, this.name, this.price, this.description, this.organizationId, this.departmentId, this.id, this.auditInfo?.clone(), this.lifecycleState, this.version);
   }
 }
 ```
@@ -929,24 +800,13 @@ export class Product extends TenantIsolatedEntity {
 
 ```typescript
 // IProductRepository.ts
-import {
-  ITenantIsolatedRepository,
-  TenantContext,
-} from "@hl8/domain-kernel";
+import { ITenantIsolatedRepository, TenantContext } from "@hl8/domain-kernel";
 import { Product } from "../entities/product.js";
 
-export interface IProductRepository
-  extends ITenantIsolatedRepository<Product> {
-  findByName(
-    name: string,
-    context: TenantContext,
-  ): Promise<Product | null>;
+export interface IProductRepository extends ITenantIsolatedRepository<Product> {
+  findByName(name: string, context: TenantContext): Promise<Product | null>;
 
-  findByPriceRange(
-    minPrice: number,
-    maxPrice: number,
-    context: TenantContext,
-  ): Promise<Product[]>;
+  findByPriceRange(minPrice: number, maxPrice: number, context: TenantContext): Promise<Product[]>;
 }
 ```
 
@@ -969,12 +829,7 @@ export class CreateProductCommand extends BaseCommand {
   }
 
   clone(): BaseCommand {
-    return new CreateProductCommand(
-      this.aggregateId,
-      this.name,
-      this.price,
-      this.description,
-    );
+    return new CreateProductCommand(this.aggregateId, this.name, this.price, this.description);
   }
 }
 
@@ -987,26 +842,14 @@ import { IProductRepository } from "../repositories/product-repository.interface
 
 @CommandHandler(CreateProductCommand)
 export class CreateProductHandler {
-  constructor(
-    private readonly productRepository: IProductRepository,
-  ) {}
+  constructor(private readonly productRepository: IProductRepository) {}
 
   async handle(command: CreateProductCommand): Promise<CommandResult> {
     if (!command.tenantContext) {
-      return CommandResult.failure(
-        "MISSING_TENANT_CONTEXT",
-        "命令缺少租户上下文",
-      );
+      return CommandResult.failure("MISSING_TENANT_CONTEXT", "命令缺少租户上下文");
     }
 
-    const product = new Product(
-      command.tenantContext.tenantId,
-      command.name,
-      command.price,
-      command.description,
-      command.tenantContext.organizationId,
-      command.tenantContext.departmentId,
-    );
+    const product = new Product(command.tenantContext.tenantId, command.name, command.price, command.description, command.tenantContext.organizationId, command.tenantContext.departmentId);
 
     await this.productRepository.save(product);
 
@@ -1037,7 +880,7 @@ ALTER TABLE products ALTER COLUMN tenant_id SET NOT NULL;
 -- 4. 创建索引
 CREATE INDEX CONCURRENTLY idx_products_tenant_id ON products(tenant_id);
 CREATE INDEX CONCURRENTLY idx_products_tenant_org ON products(tenant_id, organization_id);
-CREATE INDEX CONCURRENTLY idx_products_tenant_org_dept 
+CREATE INDEX CONCURRENTLY idx_products_tenant_org_dept
   ON products(tenant_id, organization_id, department_id);
 
 -- 5. 验证数据完整性
@@ -1069,4 +912,3 @@ END $$;
 
 **最后更新**: 2025-01-02  
 **维护者**: 开发团队
-

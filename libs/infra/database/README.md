@@ -167,9 +167,7 @@ export class UserRepository {
   @IsolationAware(IsolationLevel.TENANT)
   async findAll(): Promise<User[]> {
     // 自动应用租户隔离
-    const filter = this.isolationService.buildIsolationFilter(
-      IsolationLevel.TENANT,
-    );
+    const filter = this.isolationService.buildIsolationFilter(IsolationLevel.TENANT);
     return this.em.find(User, filter);
   }
 }

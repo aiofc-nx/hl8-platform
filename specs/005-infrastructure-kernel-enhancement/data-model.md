@@ -128,7 +128,7 @@ Infrastructure Kernel Enhancement 数据模型定义了增强后的基础设施�
 - `aggregateId` - 单列索引
 - `(aggregateId, version)` - 复合索引（快照查询优化）
 
-**Relationships**: 
+**Relationships**:
 
 - 与 EventEntity 通过 aggregateId 关联
 - 一个聚合根可以有多个快照（不同版本）
@@ -497,4 +497,3 @@ db.event_snapshots.createIndex({ aggregateId: 1, version: 1 });
 2. **事件存储迁移**:
    - 如果从内存实现迁移到数据库实现，需要数据导入
    - 支持批量导入事件数据
-

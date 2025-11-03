@@ -90,7 +90,8 @@ export class MikroORMTenantIsolatedRepository<
       this.validateTenantAccess(entity, context);
 
       // 类型断言：持久化实体适配为领域实体
-      // TODO: User Story 2 中将通过实体映射器进行实际转换
+      // 注意：此处返回持久化实体，需要通过实体映射器转换为领域实体
+      // 实际使用中，建议使用 RepositoryFactory 和 IEntityMapper 进行类型安全的转换
       return entity as unknown as TDomain;
     } catch (error) {
       if (error instanceof BusinessException) {
@@ -117,7 +118,7 @@ export class MikroORMTenantIsolatedRepository<
       const filters = this.buildTenantFilters(context);
       const entities = await this.em.find(this.entityName, filters);
       // 类型断言：持久化实体适配为领域实体
-      // TODO: User Story 2 中将通过实体映射器进行实际转换
+      // 注意：此处返回持久化实体列表，需要通过实体映射器转换为领域实体列表
       return entities as unknown as TDomain[];
     } catch (error) {
       throw this.exceptionConverter.convertToDomainException(
@@ -153,7 +154,7 @@ export class MikroORMTenantIsolatedRepository<
       const filters: any = { tenantId: tenantId.value };
       const entities = await this.em.find(this.entityName, filters);
       // 类型断言：持久化实体适配为领域实体
-      // TODO: User Story 2 中将通过实体映射器进行实际转换
+      // 注意：此处返回持久化实体列表，需要通过实体映射器转换为领域实体列表
       return entities as unknown as TDomain[];
     } catch (error) {
       throw this.exceptionConverter.convertToDomainException(
@@ -192,7 +193,7 @@ export class MikroORMTenantIsolatedRepository<
       };
       const entities = await this.em.find(this.entityName, filters);
       // 类型断言：持久化实体适配为领域实体
-      // TODO: User Story 2 中将通过实体映射器进行实际转换
+      // 注意：此处返回持久化实体列表，需要通过实体映射器转换为领域实体列表
       return entities as unknown as TDomain[];
     } catch (error) {
       throw this.exceptionConverter.convertToDomainException(
@@ -232,7 +233,7 @@ export class MikroORMTenantIsolatedRepository<
       };
       const entities = await this.em.find(this.entityName, filters);
       // 类型断言：持久化实体适配为领域实体
-      // TODO: User Story 2 中将通过实体映射器进行实际转换
+      // 注意：此处返回持久化实体列表，需要通过实体映射器转换为领域实体列表
       return entities as unknown as TDomain[];
     } catch (error) {
       throw this.exceptionConverter.convertToDomainException(

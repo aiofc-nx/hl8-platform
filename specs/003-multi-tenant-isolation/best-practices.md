@@ -27,12 +27,7 @@
 
 ```typescript
 // ✅ 正确：使用租户隔离实体
-import {
-  TenantIsolatedEntity,
-  TenantId,
-  OrganizationId,
-  DepartmentId,
-} from "@hl8/domain-kernel";
+import { TenantIsolatedEntity, TenantId, OrganizationId, DepartmentId } from "@hl8/domain-kernel";
 
 class Product extends TenantIsolatedEntity {
   constructor(
@@ -46,13 +41,7 @@ class Product extends TenantIsolatedEntity {
   }
 
   clone(): Product {
-    return new Product(
-      this.tenantId,
-      this.name,
-      this.price,
-      this.organizationId,
-      this.departmentId,
-    );
+    return new Product(this.tenantId, this.name, this.price, this.organizationId, this.departmentId);
   }
 }
 
@@ -113,20 +102,11 @@ class CreateProductHandler {
   async handle(command: CreateProductCommand): Promise<CommandResult> {
     // 1. 检查租户上下文是否存在
     if (!command.tenantContext) {
-      return CommandResult.failure(
-        "MISSING_TENANT_CONTEXT",
-        "命令缺少租户上下文",
-      );
+      return CommandResult.failure("MISSING_TENANT_CONTEXT", "命令缺少租户上下文");
     }
 
     // 2. 使用租户上下文创建实体
-    const product = new Product(
-      command.tenantContext.tenantId,
-      command.productName,
-      command.price,
-      command.tenantContext.organizationId,
-      command.tenantContext.departmentId,
-    );
+    const product = new Product(command.tenantContext.tenantId, command.productName, command.price, command.tenantContext.organizationId, command.tenantContext.departmentId);
 
     // 3. 使用租户隔离仓储保存
     await this.repository.save(product);
@@ -140,17 +120,11 @@ class CreateProductHandler {
 class GetProductHandler {
   async handle(query: GetProductQuery): Promise<QueryResult> {
     if (!query.tenantContext) {
-      return QueryResult.failure(
-        "MISSING_TENANT_CONTEXT",
-        "查询缺少租户上下文",
-      );
+      return QueryResult.failure("MISSING_TENANT_CONTEXT", "查询缺少租户上下文");
     }
 
     // 使用 findByIdWithContext（自动应用租户隔离）
-    const product = await this.repository.findByIdWithContext(
-      EntityId.fromString(query.productId),
-      query.tenantContext,
-    );
+    const product = await this.repository.findByIdWithContext(EntityId.fromString(query.productId), query.tenantContext);
 
     if (!product) {
       return QueryResult.failure("PRODUCT_NOT_FOUND", "产品不存在");
@@ -181,9 +155,7 @@ class CreateProductHandler {
 class GetProductHandler {
   async handle(query: GetProductQuery): Promise<QueryResult> {
     // 没有应用租户过滤，可能返回其他租户的数据
-    const product = await this.repository.findById(
-      EntityId.fromString(query.productId),
-    );
+    const product = await this.repository.findById(EntityId.fromString(query.productId));
   }
 }
 ```
@@ -196,10 +168,7 @@ class GetProductHandler {
 // ✅ 正确：使用租户隔离仓储方法
 class ProductRepository implements ITenantIsolatedRepository<Product> {
   // 使用 findByIdWithContext 而不是 findById
-  async findByIdWithContext(
-    id: EntityId,
-    context: TenantContext,
-  ): Promise<Product | null> {
+  async findByIdWithContext(id: EntityId, context: TenantContext): Promise<Product | null> {
     // 实现会自动应用租户过滤
     return await this.db.findOne({
       id: id.value,
@@ -240,37 +209,22 @@ class GetCrossTenantResourceHandler {
 
   async handle(query: GetCrossTenantResourceQuery): Promise<QueryResult> {
     if (!query.tenantContext) {
-      return QueryResult.failure(
-        "MISSING_TENANT_CONTEXT",
-        "查询缺少租户上下文",
-      );
+      return QueryResult.failure("MISSING_TENANT_CONTEXT", "查询缺少租户上下文");
     }
 
     // 1. 验证是否允许跨租户访问
-    const canAccess = await this.permissionValidator.validateCrossTenantAccess(
-      query.tenantContext,
-    );
+    const canAccess = await this.permissionValidator.validateCrossTenantAccess(query.tenantContext);
 
     if (!canAccess) {
-      return QueryResult.failure(
-        "CROSS_TENANT_ACCESS_DENIED",
-        "跨租户访问被拒绝",
-      );
+      return QueryResult.failure("CROSS_TENANT_ACCESS_DENIED", "跨租户访问被拒绝");
     }
 
     // 2. 验证是否可以访问目标租户
     const targetTenantId = TenantId.fromString(query.targetTenantId);
-    const canAccessTenant =
-      await this.permissionValidator.validateTenantAccess(
-        query.tenantContext,
-        targetTenantId,
-      );
+    const canAccessTenant = await this.permissionValidator.validateTenantAccess(query.tenantContext, targetTenantId);
 
     if (!canAccessTenant) {
-      return QueryResult.failure(
-        "TENANT_ACCESS_DENIED",
-        "无权访问该租户",
-      );
+      return QueryResult.failure("TENANT_ACCESS_DENIED", "无权访问该租户");
     }
 
     // 3. 执行跨租户查询
@@ -308,9 +262,11 @@ import { ApplicationKernelModule } from "@hl8/application-kernel";
       provide: "JWT_CONFIG",
       useValue: {
         // ✅ 使用强密钥（至少32个字符）
-        secret: process.env.JWT_SECRET || (() => {
-          throw new Error("JWT_SECRET 必须配置");
-        })(),
+        secret:
+          process.env.JWT_SECRET ||
+          (() => {
+            throw new Error("JWT_SECRET 必须配置");
+          })(),
         // ✅ 明确指定算法（推荐 HS256 或 RS256）
         algorithm: process.env.JWT_ALGORITHM || "HS256",
       },
@@ -379,9 +335,7 @@ function generateJWT(user: User, tenant: Tenant): string {
 import { TenantContextExtractorImpl } from "@hl8/application-kernel";
 
 class AuthService {
-  constructor(
-    private readonly extractor: TenantContextExtractorImpl,
-  ) {}
+  constructor(private readonly extractor: TenantContextExtractorImpl) {}
 
   async authenticate(token: string): Promise<TenantContext | null> {
     try {
@@ -398,9 +352,7 @@ class AuthService {
       }
 
       // 3. 验证租户是否仍然有效（可选）
-      const tenant = await this.tenantRepository.findById(
-        context.tenantId,
-      );
+      const tenant = await this.tenantRepository.findById(context.tenantId);
       if (!tenant || !tenant.isActive()) {
         return null;
       }
@@ -422,6 +374,7 @@ class AuthService {
 #### ⚠️ 安全注意事项
 
 1. **密钥管理**
+
    ```typescript
    // ✅ 使用环境变量或密钥管理系统
    const secret = process.env.JWT_SECRET;
@@ -431,6 +384,7 @@ class AuthService {
    ```
 
 2. **密钥强度**
+
    ```typescript
    // ✅ 使用强密钥（至少32个字符）
    const secret = generateStrongSecret(32);
@@ -440,6 +394,7 @@ class AuthService {
    ```
 
 3. **Token 过期时间**
+
    ```typescript
    // ✅ 设置合理的过期时间（推荐1-24小时）
    const expiresIn = "1h";
@@ -449,6 +404,7 @@ class AuthService {
    ```
 
 4. **算法选择**
+
    ```typescript
    // ✅ 使用安全的算法（HS256 或 RS256）
    algorithm: "HS256", // 对称加密，适合单服务
@@ -468,10 +424,7 @@ class AuthService {
 #### ✅ 推荐实现
 
 ```typescript
-import {
-  IUserContextQuery,
-  UserTenantContext,
-} from "@hl8/application-kernel";
+import { IUserContextQuery, UserTenantContext } from "@hl8/application-kernel";
 import { Injectable } from "@nestjs/common";
 
 @Injectable()
@@ -531,8 +484,7 @@ class UserContextQueryImpl implements IUserContextQuery {
 
   private isValidUserId(userId: string): boolean {
     // 验证 UUID 格式
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     return uuidRegex.test(userId);
   }
 
@@ -560,9 +512,7 @@ import { InMemoryCache } from "@hl8/application-kernel";
 class CachedUserContextQueryImpl implements IUserContextQuery {
   private readonly cache: InMemoryCache<UserTenantContext>;
 
-  constructor(
-    private readonly userContextQuery: IUserContextQuery,
-  ) {
+  constructor(private readonly userContextQuery: IUserContextQuery) {
     // 缓存5分钟
     this.cache = new InMemoryCache<UserTenantContext>({
       defaultTtl: 5 * 60 * 1000, // 5分钟
@@ -603,20 +553,20 @@ class CachedUserContextQueryImpl implements IUserContextQuery {
 ```sql
 -- PostgreSQL 索引
 -- 1. 单列索引（租户ID）
-CREATE INDEX CONCURRENTLY idx_products_tenant_id 
+CREATE INDEX CONCURRENTLY idx_products_tenant_id
   ON products(tenant_id);
 
 -- 2. 复合索引（租户 + 组织）
-CREATE INDEX CONCURRENTLY idx_products_tenant_org 
+CREATE INDEX CONCURRENTLY idx_products_tenant_org
   ON products(tenant_id, organization_id);
 
 -- 3. 复合索引（租户 + 组织 + 部门）
-CREATE INDEX CONCURRENTLY idx_products_tenant_org_dept 
+CREATE INDEX CONCURRENTLY idx_products_tenant_org_dept
   ON products(tenant_id, organization_id, department_id);
 
 -- 4. 部分索引（仅索引活跃租户）
-CREATE INDEX CONCURRENTLY idx_products_active_tenant 
-  ON products(tenant_id) 
+CREATE INDEX CONCURRENTLY idx_products_active_tenant
+  ON products(tenant_id)
   WHERE deleted_at IS NULL;
 ```
 
@@ -631,10 +581,7 @@ db.products.createIndex({
 });
 
 // 部分索引（仅索引活跃数据）
-db.products.createIndex(
-  { tenantId: 1 },
-  { partialFilterExpression: { deletedAt: null } }
-);
+db.products.createIndex({ tenantId: 1 }, { partialFilterExpression: { deletedAt: null } });
 ```
 
 ### 2. 查询优化
@@ -704,9 +651,12 @@ class OptimizedTenantContextExtractor {
 
     // 4. 缓存结果（设置合理的过期时间）
     this.contextCache.set(cacheKey, context);
-    setTimeout(() => {
-      this.contextCache.delete(cacheKey);
-    }, 5 * 60 * 1000); // 5分钟后过期
+    setTimeout(
+      () => {
+        this.contextCache.delete(cacheKey);
+      },
+      5 * 60 * 1000,
+    ); // 5分钟后过期
 
     return context;
   }
@@ -726,10 +676,7 @@ class OptimizedTenantContextExtractor {
 ```typescript
 // ✅ 正确：批量查询，减少数据库往返
 class ProductService {
-  async findMultipleProducts(
-    productIds: string[],
-    context: TenantContext,
-  ): Promise<Product[]> {
+  async findMultipleProducts(productIds: string[], context: TenantContext): Promise<Product[]> {
     // 一次性查询多个产品，应用租户过滤
     const products = await this.repository.findMany({
       ids: productIds.map((id) => EntityId.fromString(id)),
@@ -742,17 +689,11 @@ class ProductService {
 
 // ❌ 错误：循环查询，性能差
 class ProductService {
-  async findMultipleProducts(
-    productIds: string[],
-    context: TenantContext,
-  ): Promise<Product[]> {
+  async findMultipleProducts(productIds: string[], context: TenantContext): Promise<Product[]> {
     const products: Product[] = [];
     for (const id of productIds) {
       // 多次数据库往返
-      const product = await this.repository.findByIdWithContext(
-        EntityId.fromString(id),
-        context,
-      );
+      const product = await this.repository.findByIdWithContext(EntityId.fromString(id), context);
       if (product) {
         products.push(product);
       }
@@ -777,29 +718,18 @@ class CreateProductHandler {
   async handle(command: CreateProductCommand): Promise<CommandResult> {
     // 1. 检查租户上下文是否存在
     if (!command.tenantContext) {
-      return CommandResult.failure(
-        "MISSING_TENANT_CONTEXT",
-        "命令缺少租户上下文",
-      );
+      return CommandResult.failure("MISSING_TENANT_CONTEXT", "命令缺少租户上下文");
     }
 
     // 2. 验证租户上下文有效性
     if (!command.tenantContext.validate()) {
-      return CommandResult.failure(
-        "INVALID_TENANT_CONTEXT",
-        "租户上下文无效",
-      );
+      return CommandResult.failure("INVALID_TENANT_CONTEXT", "租户上下文无效");
     }
 
     // 3. 验证租户是否仍然有效（可选，用于高安全场景）
-    const tenant = await this.tenantRepository.findById(
-      command.tenantContext.tenantId,
-    );
+    const tenant = await this.tenantRepository.findById(command.tenantContext.tenantId);
     if (!tenant || !tenant.isActive()) {
-      return CommandResult.failure(
-        "TENANT_INACTIVE",
-        "租户无效或未激活",
-      );
+      return CommandResult.failure("TENANT_INACTIVE", "租户无效或未激活");
     }
 
     // 4. 执行业务逻辑
@@ -815,9 +745,7 @@ class CreateProductHandler {
 ```typescript
 // ✅ 正确：验证提取的租户上下文
 class SecureTenantContextExtractor {
-  async extractFromHeader(
-    headers: Record<string, string>,
-  ): Promise<TenantContext | null> {
+  async extractFromHeader(headers: Record<string, string>): Promise<TenantContext | null> {
     const tenantIdStr = headers["x-tenant-id"];
 
     // 1. 验证租户ID格式
@@ -834,7 +762,7 @@ class SecureTenantContextExtractor {
     // 3. 创建租户上下文
     try {
       const tenantId = TenantId.fromString(tenantIdStr);
-      return new TenantContext(tenantId, /* ... */);
+      return new TenantContext(tenantId /* ... */);
     } catch (error) {
       // 记录错误但不泄露详细信息
       this.logger.warn("无效的租户ID", { tenantId: tenantIdStr });
@@ -843,8 +771,7 @@ class SecureTenantContextExtractor {
   }
 
   private isValidUUID(str: string): boolean {
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     return uuidRegex.test(str);
   }
 }
@@ -888,10 +815,7 @@ class GetCrossTenantResourceHandler {
 @QueryHandler(GetUserQuery)
 class GetUserHandler {
   async handle(query: GetUserQuery): Promise<QueryResult> {
-    const user = await this.repository.findByIdWithContext(
-      EntityId.fromString(query.userId),
-      query.tenantContext,
-    );
+    const user = await this.repository.findByIdWithContext(EntityId.fromString(query.userId), query.tenantContext);
 
     if (!user) {
       return QueryResult.failure("USER_NOT_FOUND", "用户不存在");
@@ -967,12 +891,14 @@ try {
 **A**: 使用以下策略：
 
 1. **创建复合索引**
+
    ```sql
-   CREATE INDEX idx_products_tenant_org_dept 
+   CREATE INDEX idx_products_tenant_org_dept
      ON products(tenant_id, organization_id, department_id);
    ```
 
 2. **使用正确的查询方法**
+
    ```typescript
    // ✅ 使用 findByContext（自动应用层级过滤）
    const products = await repository.findAllByContext(context);
@@ -997,16 +923,11 @@ try {
 
 ```typescript
 // 1. 检查是否允许跨租户访问
-const canAccess = await permissionValidator.validateCrossTenantAccess(
-  context,
-);
+const canAccess = await permissionValidator.validateCrossTenantAccess(context);
 
 // 2. 检查是否可以访问特定租户
 if (canAccess) {
-  const canAccessTenant = await permissionValidator.validateTenantAccess(
-    context,
-    targetTenantId,
-  );
+  const canAccessTenant = await permissionValidator.validateTenantAccess(context, targetTenantId);
 
   if (!canAccessTenant) {
     throw new Error("无权访问该租户");
@@ -1032,10 +953,7 @@ const tenant2Id = TenantId.generate();
 const context2 = new TenantContext(tenant2Id);
 
 // 4. 验证租户隔离
-const result = await repository.findByIdWithContext(
-  product.id,
-  context2,
-);
+const result = await repository.findByIdWithContext(product.id, context2);
 expect(result).toBeNull(); // 应该返回 null
 ```
 
@@ -1043,12 +961,12 @@ expect(result).toBeNull(); // 应该返回 null
 
 **A**: 根据规格要求，性能目标如下：
 
-| 指标              | 目标值 | 说明                           |
-| ----------------- | ------ | ------------------------------ |
-| 查询延迟增加      | ≤ 10%  | 相比无隔离查询的延迟增加       |
-| 系统吞吐量下降    | ≤ 5%   | 相比无隔离系统的吞吐量下降     |
-| P95 查询时间      | ≤ 100ms | 95% 的查询在 100ms 内完成    |
-| 上下文提取开销    | ≤ 5ms  | 从请求提取上下文的 P95 时间    |
+| 指标           | 目标值  | 说明                        |
+| -------------- | ------- | --------------------------- |
+| 查询延迟增加   | ≤ 10%   | 相比无隔离查询的延迟增加    |
+| 系统吞吐量下降 | ≤ 5%    | 相比无隔离系统的吞吐量下降  |
+| P95 查询时间   | ≤ 100ms | 95% 的查询在 100ms 内完成   |
+| 上下文提取开销 | ≤ 5ms   | 从请求提取上下文的 P95 时间 |
 
 ---
 
@@ -1062,6 +980,7 @@ expect(result).toBeNull(); // 应该返回 null
 4. ✅ **降低维护成本**：清晰的代码结构和规范降低维护成本
 
 如有其他问题，请参考：
+
 - [迁移指南](./migration-guide.md)
 - [Domain Kernel README](../../../libs/kernel/domain-kernel/README.md)
 - [Application Kernel README](../../../libs/kernel/application-kernel/README.md)
@@ -1070,4 +989,3 @@ expect(result).toBeNull(); // 应该返回 null
 
 **最后更新**: 2025-01-02  
 **维护者**: 开发团队
-

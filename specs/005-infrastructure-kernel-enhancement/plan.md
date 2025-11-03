@@ -151,6 +151,6 @@ libs/kernel/infrastructure-kernel/
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
-| Violation                  | Why Needed         | Simpler Alternative Rejected Because |
-| -------------------------- | ------------------ | ------------------------------------ |
-| N/A                        | N/A                | N/A                                  |
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+| --------- | ---------- | ------------------------------------ |
+| N/A       | N/A        | N/A                                  |

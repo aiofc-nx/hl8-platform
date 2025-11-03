@@ -173,9 +173,7 @@ class MockResourceStore {
    */
   async findByIdWithoutIsolation(id: string): Promise<unknown | null> {
     // 模拟数据库查询延迟（1-5ms）
-    await new Promise((resolve) =>
-      setTimeout(resolve, 1 + Math.random() * 4),
-    );
+    await new Promise((resolve) => setTimeout(resolve, 1 + Math.random() * 4));
     return this.resources.get(id) || null;
   }
 
@@ -187,9 +185,7 @@ class MockResourceStore {
     context: TenantContext,
   ): Promise<unknown | null> {
     // 模拟数据库查询延迟（1-5ms）
-    await new Promise((resolve) =>
-      setTimeout(resolve, 1 + Math.random() * 4),
-    );
+    await new Promise((resolve) => setTimeout(resolve, 1 + Math.random() * 4));
 
     const resource = this.resources.get(id);
     if (!resource) {
@@ -225,9 +221,7 @@ class MockResourceStore {
    */
   async findAllWithoutIsolation(): Promise<unknown[]> {
     // 模拟数据库查询延迟（5-15ms）
-    await new Promise((resolve) =>
-      setTimeout(resolve, 5 + Math.random() * 10),
-    );
+    await new Promise((resolve) => setTimeout(resolve, 5 + Math.random() * 10));
     return Array.from(this.resources.values());
   }
 
@@ -236,9 +230,7 @@ class MockResourceStore {
    */
   async findAllWithIsolation(context: TenantContext): Promise<unknown[]> {
     // 模拟数据库查询延迟（5-15ms）
-    await new Promise((resolve) =>
-      setTimeout(resolve, 5 + Math.random() * 10),
-    );
+    await new Promise((resolve) => setTimeout(resolve, 5 + Math.random() * 10));
 
     // 模拟租户隔离过滤
     return Array.from(this.resources.values()).filter((resource) => {
@@ -478,9 +470,7 @@ describe("租户隔离性能基准测试", () => {
         const startTime = process.hrtime.bigint();
         await resourceStore.findByIdWithoutIsolation(resourceId);
         const endTime = process.hrtime.bigint();
-        statsWithoutIsolation.addTime(
-          Number(endTime - startTime) / 1_000_000,
-        );
+        statsWithoutIsolation.addTime(Number(endTime - startTime) / 1_000_000);
       }
 
       // 测试有隔离查询
@@ -489,9 +479,7 @@ describe("租户隔离性能基准测试", () => {
         const startTime = process.hrtime.bigint();
         await resourceStore.findByIdWithIsolation(resourceId, context1);
         const endTime = process.hrtime.bigint();
-        statsWithIsolation.addTime(
-          Number(endTime - startTime) / 1_000_000,
-        );
+        statsWithIsolation.addTime(Number(endTime - startTime) / 1_000_000);
       }
 
       statsWithoutIsolation.printReport("无隔离查询");
@@ -528,9 +516,7 @@ describe("租户隔离性能基准测试", () => {
         const startTime = process.hrtime.bigint();
         await resourceStore.findAllWithoutIsolation();
         const endTime = process.hrtime.bigint();
-        statsWithoutIsolation.addTime(
-          Number(endTime - startTime) / 1_000_000,
-        );
+        statsWithoutIsolation.addTime(Number(endTime - startTime) / 1_000_000);
       }
 
       // 测试有隔离查询
@@ -538,9 +524,7 @@ describe("租户隔离性能基准测试", () => {
         const startTime = process.hrtime.bigint();
         await resourceStore.findAllWithIsolation(context1);
         const endTime = process.hrtime.bigint();
-        statsWithIsolation.addTime(
-          Number(endTime - startTime) / 1_000_000,
-        );
+        statsWithIsolation.addTime(Number(endTime - startTime) / 1_000_000);
       }
 
       statsWithoutIsolation.printReport("无隔离列表查询");
@@ -773,4 +757,3 @@ describe("租户隔离性能基准测试", () => {
     });
   });
 });
-

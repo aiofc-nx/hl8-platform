@@ -47,8 +47,7 @@ export interface IRepository<T> {
 ### Interface Definition
 
 ```typescript
-export interface ITenantIsolatedRepository<T extends TenantIsolatedEntity>
-  extends IRepository<T> {
+export interface ITenantIsolatedRepository<T extends TenantIsolatedEntity> extends IRepository<T> {
   findByIdWithContext(id: EntityId, context: TenantContext): Promise<T | null>;
   findAllByContext(context: TenantContext): Promise<T[]>;
   findByTenant(tenantId: TenantId, context: TenantContext): Promise<T[]>;
@@ -117,9 +116,7 @@ export interface ITransactionManager {
   begin(): Promise<TransactionContext>;
   commit(context: TransactionContext): Promise<void>;
   rollback(context: TransactionContext): Promise<void>;
-  runInTransaction<T>(
-    callback: (em: EntityManager) => Promise<T>
-  ): Promise<T>;
+  runInTransaction<T>(callback: (em: EntityManager) => Promise<T>): Promise<T>;
   getCurrentContext(): TransactionContext | null;
 }
 ```
@@ -162,14 +159,8 @@ export interface IEntityMapper<TDomain, TPersistence> {
 ```typescript
 export interface ISpecificationConverter<T> {
   convertToQuery(spec: ISpecification<T>): QueryCriteria;
-  convertAnd(
-    left: ISpecification<T>,
-    right: ISpecification<T>
-  ): QueryCriteria;
-  convertOr(
-    left: ISpecification<T>,
-    right: ISpecification<T>
-  ): QueryCriteria;
+  convertAnd(left: ISpecification<T>, right: ISpecification<T>): QueryCriteria;
+  convertOr(left: ISpecification<T>, right: ISpecification<T>): QueryCriteria;
   convertNot(spec: ISpecification<T>): QueryCriteria;
 }
 ```
@@ -188,13 +179,8 @@ export interface ISpecificationConverter<T> {
 
 ```typescript
 export interface IRepositoryFactory {
-  createRepository<T>(
-    entityType: string,
-    em: EntityManager
-  ): IRepository<T> | ITenantIsolatedRepository<T>;
-  registerMapper<TDomain, TPersistence>(
-    mapper: IEntityMapper<TDomain, TPersistence>
-  ): void;
+  createRepository<T>(entityType: string, em: EntityManager): IRepository<T> | ITenantIsolatedRepository<T>;
+  registerMapper<TDomain, TPersistence>(mapper: IEntityMapper<TDomain, TPersistence>): void;
   getMapper<TDomain, TPersistence>(): IEntityMapper<TDomain, TPersistence>;
 }
 ```
@@ -226,4 +212,3 @@ export interface IRepositoryFactory {
 - ✅ 与 domain-kernel 接口对齐测试
 - ✅ 与 application-kernel 接口对齐测试
 - ✅ 端到端集成测试
-

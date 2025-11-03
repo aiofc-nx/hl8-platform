@@ -14,17 +14,8 @@
 ### 基础用法
 
 ```typescript
-import {
-  MikroORMTenantIsolatedRepository,
-  TenantIsolatedPersistenceEntity,
-} from "@hl8/infrastructure-kernel";
-import {
-  ITenantIsolatedRepository,
-  TenantContext,
-  TenantId,
-  OrganizationId,
-  EntityId,
-} from "@hl8/domain-kernel";
+import { MikroORMTenantIsolatedRepository, TenantIsolatedPersistenceEntity } from "@hl8/infrastructure-kernel";
+import { ITenantIsolatedRepository, TenantContext, TenantId, OrganizationId, EntityId } from "@hl8/domain-kernel";
 import { EntityManager, Entity, Property } from "@mikro-orm/core";
 
 // 定义持久化实体
@@ -38,8 +29,7 @@ class ProductEntity extends TenantIsolatedPersistenceEntity {
 }
 
 // 类型安全：可以赋值给接口类型
-const repository: ITenantIsolatedRepository<ProductEntity> =
-  new MikroORMTenantIsolatedRepository<ProductEntity>(em, "ProductEntity");
+const repository: ITenantIsolatedRepository<ProductEntity> = new MikroORMTenantIsolatedRepository<ProductEntity>(em, "ProductEntity");
 
 // 创建租户上下文
 const tenantId = TenantId.generate();
@@ -64,7 +54,7 @@ import { ProductEntity } from "./product.entity";
 class CreateProductHandler {
   constructor(
     @Inject("PRODUCT_REPOSITORY")
-    private readonly repository: ITenantIsolatedRepository<ProductEntity>
+    private readonly repository: ITenantIsolatedRepository<ProductEntity>,
   ) {}
 
   async handle(command: CreateProductCommand): Promise<CommandResult> {
@@ -99,12 +89,7 @@ const mapper = new EntityMapper<Product, ProductEntity>({
 });
 
 // 领域实体 → 持久化实体
-const domainProduct = new Product(
-  tenantId,
-  "商品名称",
-  100.0,
-  organizationId
-);
+const domainProduct = new Product(tenantId, "商品名称", 100.0, organizationId);
 const persistenceProduct = mapper.toPersistence(domainProduct);
 
 // 持久化实体 → 领域实体
@@ -229,10 +214,7 @@ async complexOperation(): Promise<void> {
 ### 简单规范查询
 
 ```typescript
-import {
-  QueryBuilder,
-  SpecificationConverter,
-} from "@hl8/infrastructure-kernel";
+import { QueryBuilder, SpecificationConverter } from "@hl8/infrastructure-kernel";
 import { ISpecification } from "@hl8/domain-kernel";
 
 // 定义业务规范
@@ -271,7 +253,7 @@ const notSpec = priceSpec.not(); // 价格 <= 100
 const notQuery = converter.convertToQuery(notSpec);
 
 // 复杂嵌套（最多5层）
-const complexSpec = (spec1.and(spec2)).or(spec3.not());
+const complexSpec = spec1.and(spec2).or(spec3.not());
 const complexQuery = converter.convertToQuery(complexSpec);
 ```
 
@@ -392,15 +374,12 @@ export class ProductService {
     @Inject("RepositoryFactory")
     private readonly factory: RepositoryFactory,
     @Inject("EntityManager")
-    private readonly em: EntityManager
+    private readonly em: EntityManager,
   ) {}
 
   async createProduct(productData: ProductData): Promise<Product> {
     // 使用工厂创建仓储
-    const repository = this.factory.createRepository<ProductEntity>(
-      "ProductEntity",
-      this.em
-    );
+    const repository = this.factory.createRepository<ProductEntity>("ProductEntity", this.em);
 
     const product = new ProductEntity(productData);
     await repository.save(product);
@@ -427,7 +406,7 @@ export class OrderService {
   constructor(
     private readonly repositoryFactory: RepositoryFactory,
     private readonly transactionManager: ITransactionManager,
-    private readonly eventStore: IEventStore
+    private readonly eventStore: IEventStore,
   ) {}
 }
 ```
@@ -468,20 +447,9 @@ async bulkOperation(products: ProductEntity[], idsToDelete: EntityId[]): Promise
 ```typescript
 import { Injectable, Inject } from "@nestjs/common";
 import { CommandHandler } from "@nestjs/cqrs";
-import {
-  CreateOrderCommand,
-  CommandResult,
-} from "@hl8/application-kernel";
-import {
-  ITransactionManager,
-  IEntityMapper,
-  RepositoryFactory,
-} from "@hl8/infrastructure-kernel";
-import {
-  ITenantIsolatedRepository,
-  Order,
-  OrderEntity,
-} from "@hl8/domain-kernel";
+import { CreateOrderCommand, CommandResult } from "@hl8/application-kernel";
+import { ITransactionManager, IEntityMapper, RepositoryFactory } from "@hl8/infrastructure-kernel";
+import { ITenantIsolatedRepository, Order, OrderEntity } from "@hl8/domain-kernel";
 
 @CommandHandler(CreateOrderCommand)
 @Injectable()
@@ -494,7 +462,7 @@ export class CreateOrderHandler {
     @Inject("OrderMapper")
     private readonly orderMapper: IEntityMapper<Order, OrderEntity>,
     @Inject("EventStore")
-    private readonly eventStore: IEventStore
+    private readonly eventStore: IEventStore,
   ) {}
 
   async handle(command: CreateOrderCommand): Promise<CommandResult> {
@@ -503,33 +471,22 @@ export class CreateOrderHandler {
     }
 
     // 在事务中执行
-    const order = await this.transactionManager.runInTransaction(
-      async (em) => {
-        // 1. 创建领域实体
-        const domainOrder = new Order(
-          command.tenantContext!.tenantId,
-          command.orderNumber,
-          command.items,
-          command.tenantContext!.organizationId
-        );
+    const order = await this.transactionManager.runInTransaction(async (em) => {
+      // 1. 创建领域实体
+      const domainOrder = new Order(command.tenantContext!.tenantId, command.orderNumber, command.items, command.tenantContext!.organizationId);
 
-        // 2. 转换为持久化实体
-        const orderEntity = this.orderMapper.toPersistence(domainOrder);
+      // 2. 转换为持久化实体
+      const orderEntity = this.orderMapper.toPersistence(domainOrder);
 
-        // 3. 保存实体
-        await this.orderRepository.save(orderEntity);
+      // 3. 保存实体
+      await this.orderRepository.save(orderEntity);
 
-        // 4. 保存领域事件
-        const events = domainOrder.getDomainEvents();
-        await this.eventStore.saveEvents(
-          domainOrder.id,
-          events,
-          domainOrder.version
-        );
+      // 4. 保存领域事件
+      const events = domainOrder.getDomainEvents();
+      await this.eventStore.saveEvents(domainOrder.id, events, domainOrder.version);
 
-        return domainOrder;
-      }
-    );
+      return domainOrder;
+    });
 
     return CommandResult.success({
       orderId: order.id.value,
@@ -544,11 +501,7 @@ export class CreateOrderHandler {
 ## 9. 错误处理示例
 
 ```typescript
-import {
-  RepositoryException,
-  OptimisticLockException,
-  BusinessException,
-} from "@hl8/domain-kernel";
+import { RepositoryException, OptimisticLockException, BusinessException } from "@hl8/domain-kernel";
 
 try {
   await repository.save(entity);
@@ -657,4 +610,3 @@ A: 支持 100,000+ 事件/聚合，查询性能 < 100ms（10万条记录内）�
 - 查看 [data-model.md](./data-model.md) 了解详细的数据模型设计
 - 查看 [contracts/](./contracts/) 了解接口契约定义
 - 查看 [research.md](./research.md) 了解技术决策和实现策略
-

@@ -41,25 +41,25 @@
 
 ### T001-T020: Project Structure Setup
 
-- [X] T001 Create project directory structure in libs/kernel/infrastructure-kernel/
-- [X] T002 [P] Initialize package.json with dependencies in libs/kernel/infrastructure-kernel/package.json
-- [X] T003 [P] Configure TypeScript with NodeNext module system in libs/kernel/infrastructure-kernel/tsconfig.json
-- [X] T004 [P] Setup Jest configuration for testing in libs/kernel/infrastructure-kernel/jest.config.js
-- [X] T005 [P] Create source directory structure in libs/kernel/infrastructure-kernel/src/
-- [X] T006 [P] Create test directory structure in libs/kernel/infrastructure-kernel/test/
-- [X] T007 [P] Setup ESLint configuration extending root config
-- [X] T008 [P] Create main index.ts export file in libs/kernel/infrastructure-kernel/src/index.ts
-- [X] T009 [P] Setup build scripts in package.json
-- [X] T010 [P] Create README.md with basic documentation
-- [X] T011 [P] Configure MikroORM dependencies (@mikro-orm/core, @mikro-orm/postgresql, @mikro-orm/mongodb)
-- [X] T012 [P] Setup testcontainers for integration tests
-- [X] T013 [P] Create mikro-orm.config.ts skeleton in libs/kernel/infrastructure-kernel/src/config/
-- [X] T014 [P] Setup migration scripts in package.json
-- [X] T015 [P] Create migrations directory in libs/kernel/infrastructure-kernel/migrations/
-- [X] T016 [P] Configure tsconfig.build.json for production builds
-- [X] T017 [P] Setup Prettier configuration
-- [X] T018 [P] Create .gitignore for infrastructure-kernel
-- [X] T019 [P] Setup module exports in libs/kernel/infrastructure-kernel/src/index.ts
+- [x] T001 Create project directory structure in libs/kernel/infrastructure-kernel/
+- [x] T002 [P] Initialize package.json with dependencies in libs/kernel/infrastructure-kernel/package.json
+- [x] T003 [P] Configure TypeScript with NodeNext module system in libs/kernel/infrastructure-kernel/tsconfig.json
+- [x] T004 [P] Setup Jest configuration for testing in libs/kernel/infrastructure-kernel/jest.config.js
+- [x] T005 [P] Create source directory structure in libs/kernel/infrastructure-kernel/src/
+- [x] T006 [P] Create test directory structure in libs/kernel/infrastructure-kernel/test/
+- [x] T007 [P] Setup ESLint configuration extending root config
+- [x] T008 [P] Create main index.ts export file in libs/kernel/infrastructure-kernel/src/index.ts
+- [x] T009 [P] Setup build scripts in package.json
+- [x] T010 [P] Create README.md with basic documentation
+- [x] T011 [P] Configure MikroORM dependencies (@mikro-orm/core, @mikro-orm/postgresql, @mikro-orm/mongodb)
+- [x] T012 [P] Setup testcontainers for integration tests
+- [x] T013 [P] Create mikro-orm.config.ts skeleton in libs/kernel/infrastructure-kernel/src/config/
+- [x] T014 [P] Setup migration scripts in package.json
+- [x] T015 [P] Create migrations directory in libs/kernel/infrastructure-kernel/migrations/
+- [x] T016 [P] Configure tsconfig.build.json for production builds
+- [x] T017 [P] Setup Prettier configuration
+- [x] T018 [P] Create .gitignore for infrastructure-kernel
+- [x] T019 [P] Setup module exports in libs/kernel/infrastructure-kernel/src/index.ts
 - [ ] T020 [P] Create infrastructure-kernel.module.ts NestJS module wrapper
 
 ---
@@ -70,16 +70,16 @@
 
 ### T021-T035: Core Components
 
-- [X] T021 [P] Create BaseEntity MikroORM base class in libs/kernel/infrastructure-kernel/src/entities/base/base-entity.ts
-- [X] T022 [P] Create BaseEntity unit tests in libs/kernel/infrastructure-kernel/src/entities/base/base-entity.spec.ts
-- [X] T023 [P] Create TenantIsolatedPersistenceEntity base class in libs/kernel/infrastructure-kernel/src/entities/base/tenant-isolated-persistence-entity.ts
-- [X] T024 [P] Create TenantIsolatedPersistenceEntity unit tests in libs/kernel/infrastructure-kernel/src/entities/base/tenant-isolated-persistence-entity.spec.ts
-- [X] T025 [P] Create entities index exports in libs/kernel/infrastructure-kernel/src/entities/index.ts
+- [x] T021 [P] Create BaseEntity MikroORM base class in libs/kernel/infrastructure-kernel/src/entities/base/base-entity.ts
+- [x] T022 [P] Create BaseEntity unit tests in libs/kernel/infrastructure-kernel/src/entities/base/base-entity.spec.ts
+- [x] T023 [P] Create TenantIsolatedPersistenceEntity base class in libs/kernel/infrastructure-kernel/src/entities/base/tenant-isolated-persistence-entity.ts
+- [x] T024 [P] Create TenantIsolatedPersistenceEntity unit tests in libs/kernel/infrastructure-kernel/src/entities/base/tenant-isolated-persistence-entity.spec.ts
+- [x] T025 [P] Create entities index exports in libs/kernel/infrastructure-kernel/src/entities/index.ts
 - [ ] T026 [P] Create MikroORM configuration in libs/kernel/infrastructure-kernel/src/config/mikro-orm.config.ts
 - [ ] T027 [P] Create MikroORM configuration tests in libs/kernel/infrastructure-kernel/src/config/mikro-orm.config.spec.ts
-- [X] T028 [P] Create RepositoryException in libs/kernel/infrastructure-kernel/src/errors/repository.exception.ts
+- [x] T028 [P] Create RepositoryException in libs/kernel/infrastructure-kernel/src/errors/repository.exception.ts
 - [ ] T029 [P] Create RepositoryException tests in libs/kernel/infrastructure-kernel/src/errors/repository.exception.spec.ts
-- [X] T030 [P] Create errors index exports in libs/kernel/infrastructure-kernel/src/errors/index.ts
+- [x] T030 [P] Create errors index exports in libs/kernel/infrastructure-kernel/src/errors/index.ts
 - ~~T031-T033: 已由 @hl8/database 提供健康检查功能~~
 
 **Checkpoint**: 基础组件完成，可以开始仓储实现
@@ -96,21 +96,21 @@
 
 > **NOTE: 遵循TDD原则，先写测试，确保失败后再实现**
 
-- [X] T036 [US1] Create integration test for PostgreSQL repository in libs/kernel/infrastructure-kernel/test/integration/postgresql-repository.integration.spec.ts
-- [X] T037 [US1] Create test fixtures in libs/kernel/infrastructure-kernel/test/fixtures/test-entities.ts
+- [x] T036 [US1] Create integration test for PostgreSQL repository in libs/kernel/infrastructure-kernel/test/integration/postgresql-repository.integration.spec.ts
+- [x] T037 [US1] Create test fixtures in libs/kernel/infrastructure-kernel/test/fixtures/test-entities.ts
 
 ### Implementation for User Story 1
 
-- [X] T038 [US1] Create MikroORMRepository base class in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
+- [x] T038 [US1] Create MikroORMRepository base class in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.ts
 - [ ] T039 [US1] Create MikroORMRepository unit tests in libs/kernel/infrastructure-kernel/src/repositories/base/repository.base.spec.ts
-- [X] T040 [US1] Implement save method in MikroORMRepository
-- [X] T041 [US1] Implement findById method in MikroORMRepository
-- [X] T042 [US1] Implement findAll method in MikroORMRepository
-- [X] T043 [US1] Implement delete method in MikroORMRepository
-- [X] T044 [US1] Implement exists method in MikroORMRepository
+- [x] T040 [US1] Implement save method in MikroORMRepository
+- [x] T041 [US1] Implement findById method in MikroORMRepository
+- [x] T042 [US1] Implement findAll method in MikroORMRepository
+- [x] T043 [US1] Implement delete method in MikroORMRepository
+- [x] T044 [US1] Implement exists method in MikroORMRepository
 - [ ] T045 [US1] Implement count method in MikroORMRepository
-- [X] T046 [US1] Add error handling and logging to repository methods
-- [X] T047 [US1] Create repositories index exports in libs/kernel/infrastructure-kernel/src/repositories/index.ts
+- [x] T046 [US1] Add error handling and logging to repository methods
+- [x] T047 [US1] Create repositories index exports in libs/kernel/infrastructure-kernel/src/repositories/index.ts
 
 **Checkpoint**: PostgreSQL仓储可以独立使用，支持基本CRUD操作
 
@@ -124,16 +124,16 @@
 
 ### Tests for User Story 2
 
-- [X] T048 [US2] Create integration test for MongoDB repository in libs/kernel/infrastructure-kernel/test/integration/mongodb-repository.integration.spec.ts
+- [x] T048 [US2] Create integration test for MongoDB repository in libs/kernel/infrastructure-kernel/test/integration/mongodb-repository.integration.spec.ts
 
 ### Implementation for User Story 2
 
-- [X] T049 [US2] Verify MikroORMRepository works with MongoDB in libs/kernel/infrastructure-kernel/test/integration/mongodb-repository.integration.spec.ts
+- [x] T049 [US2] Verify MikroORMRepository works with MongoDB in libs/kernel/infrastructure-kernel/test/integration/mongodb-repository.integration.spec.ts
 - [ ] T050 [US2] Add MongoDB-specific configuration in libs/kernel/infrastructure-kernel/src/config/mikro-orm.config.ts
-- [X] T051 [US2] Test document operations with MikroORM MongoDB driver
-- [X] T052 [US2] Verify transaction support for MongoDB
-- [X] T053 [US2] Add MongoDB collection creation handling
-- [X] T054 [US2] Test optimistic locking with MongoDB
+- [x] T051 [US2] Test document operations with MikroORM MongoDB driver
+- [x] T052 [US2] Verify transaction support for MongoDB
+- [x] T053 [US2] Add MongoDB collection creation handling
+- [x] T054 [US2] Test optimistic locking with MongoDB
 
 **Checkpoint**: MongoDB仓储与PostgreSQL仓储使用相同接口，行为一致
 
@@ -147,25 +147,25 @@
 
 ### Tests for User Story 3
 
-- [X] T055 [US3] Create integration test for tenant isolation in libs/kernel/infrastructure-kernel/test/integration/tenant-isolation.integration.spec.ts
+- [x] T055 [US3] Create integration test for tenant isolation in libs/kernel/infrastructure-kernel/test/integration/tenant-isolation.integration.spec.ts
 
 ### Implementation for User Story 3
 
-- [X] T056 [US3] Create TenantFilter MikroORM filter in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-filter.ts
-- [X] T057 [US3] Create TenantFilter unit tests in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-filter.spec.ts
-- [X] T058 [US3] Create MikroORMTenantIsolatedRepository class in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-isolated-repository.ts
+- [x] T056 [US3] Create TenantFilter MikroORM filter in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-filter.ts
+- [x] T057 [US3] Create TenantFilter unit tests in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-filter.spec.ts
+- [x] T058 [US3] Create MikroORMTenantIsolatedRepository class in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-isolated-repository.ts
 - [ ] T059 [US3] Create MikroORMTenantIsolatedRepository unit tests in libs/kernel/infrastructure-kernel/src/repositories/tenant-isolated/tenant-isolated-repository.spec.ts
-- [X] T060 [US3] Implement findByIdWithContext method
-- [X] T061 [US3] Implement findAllByContext method
-- [X] T062 [US3] Implement findByTenant method
-- [X] T063 [US3] Implement findByOrganization method
-- [X] T064 [US3] Implement findByDepartment method
-- [X] T065 [US3] Implement belongsToTenant method
-- [X] T066 [US3] Implement belongsToOrganization method
-- [X] T067 [US3] Implement belongsToDepartment method
-- [X] T068 [US3] Implement cross-tenant access blocking
-- [X] T069 [US3] Add permission validation logic
-- [X] T070 [US3] Create tenant-isolated repositories index exports
+- [x] T060 [US3] Implement findByIdWithContext method
+- [x] T061 [US3] Implement findAllByContext method
+- [x] T062 [US3] Implement findByTenant method
+- [x] T063 [US3] Implement findByOrganization method
+- [x] T064 [US3] Implement findByDepartment method
+- [x] T065 [US3] Implement belongsToTenant method
+- [x] T066 [US3] Implement belongsToOrganization method
+- [x] T067 [US3] Implement belongsToDepartment method
+- [x] T068 [US3] Implement cross-tenant access blocking
+- [x] T069 [US3] Add permission validation logic
+- [x] T070 [US3] Create tenant-isolated repositories index exports
 
 **Checkpoint**: 租户隔离仓储确保100%的数据隔离，跨租户访问被阻止
 
@@ -179,14 +179,14 @@
 
 ### Tests for User Story 4
 
-- [X] T071 [US4] Create integration test for MongoDB tenant isolation
+- [x] T071 [US4] Create integration test for MongoDB tenant isolation
 
 ### Implementation for User Story 4
 
-- [X] T072 [US4] Verify TenantFilter works with MongoDB
-- [X] T073 [US4] Test tenant-isolated queries in MongoDB
-- [X] T074 [US4] Verify cross-tenant access blocking in MongoDB
-- [X] T075 [US4] Test multi-level isolation in MongoDB
+- [x] T072 [US4] Verify TenantFilter works with MongoDB
+- [x] T073 [US4] Test tenant-isolated queries in MongoDB
+- [x] T074 [US4] Verify cross-tenant access blocking in MongoDB
+- [x] T075 [US4] Test multi-level isolation in MongoDB
 
 **Checkpoint**: MongoDB和PostgreSQL租户隔离机制行为一致
 
@@ -220,15 +220,15 @@
 **Purpose**: 完善和优化，影响多个用户故事的改进
 
 - [ ] T090 Create entity mappers in libs/kernel/infrastructure-kernel/src/mappers/
-- [X] T091 Add comprehensive documentation in README.md
+- [x] T091 Add comprehensive documentation in README.md
 - [ ] T092 Add migration guide for using infrastructure-kernel
 - [ ] T093 Create quickstart guide examples
 - [ ] T094 Add performance tuning documentation
-- [X] T095 Run full test suite and verify all tests pass
+- [x] T095 Run full test suite and verify all tests pass
 - [ ] T096 Code cleanup and refactoring
 - [ ] T097 Security review and hardening
-- [X] T098 Update infrastructure-kernel exports in src/index.ts
-- [X] T099 Add JSDoc comments to all public APIs
+- [x] T098 Update infrastructure-kernel exports in src/index.ts
+- [x] T099 Add JSDoc comments to all public APIs
 - [ ] T100 Run quickstart.md validation
 - [ ] T101 Create change log
 

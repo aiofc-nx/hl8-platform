@@ -78,40 +78,23 @@ class CreateProductCommand extends BaseCommand {
   }
 
   clone(): BaseCommand {
-    return new CreateProductCommand(
-      this.aggregateId,
-      this.productName,
-      this.price,
-      this.description,
-    );
+    return new CreateProductCommand(this.aggregateId, this.productName, this.price, this.description);
   }
 }
 
 // 实现命令处理器
 @CommandHandler(CreateProductCommand)
 class CreateProductHandler {
-  constructor(
-    private readonly productRepository: ITenantIsolatedRepository<Product>,
-  ) {}
+  constructor(private readonly productRepository: ITenantIsolatedRepository<Product>) {}
 
   async handle(command: CreateProductCommand): Promise<CommandResult> {
     // 检查租户上下文（由中间件自动注入）
     if (!command.tenantContext) {
-      return CommandResult.failure(
-        "MISSING_TENANT_CONTEXT",
-        "命令缺少租户上下文",
-      );
+      return CommandResult.failure("MISSING_TENANT_CONTEXT", "命令缺少租户上下文");
     }
 
     // 创建产品实体
-    const product = new Product(
-      command.tenantContext.tenantId,
-      command.productName,
-      command.price,
-      command.description,
-      command.tenantContext.organizationId,
-      command.tenantContext.departmentId,
-    );
+    const product = new Product(command.tenantContext.tenantId, command.productName, command.price, command.description, command.tenantContext.organizationId, command.tenantContext.departmentId);
 
     // 保存到仓储
     await this.productRepository.save(product);
@@ -165,24 +148,16 @@ class ListProductsQuery extends BaseQuery {
 // 实现查询处理器
 @QueryHandler(GetProductQuery)
 class GetProductHandler {
-  constructor(
-    private readonly productRepository: ITenantIsolatedRepository<Product>,
-  ) {}
+  constructor(private readonly productRepository: ITenantIsolatedRepository<Product>) {}
 
   async handle(query: GetProductQuery): Promise<QueryResult> {
     // 检查租户上下文
     if (!query.tenantContext) {
-      return QueryResult.failure(
-        "MISSING_TENANT_CONTEXT",
-        "查询缺少租户上下文",
-      );
+      return QueryResult.failure("MISSING_TENANT_CONTEXT", "查询缺少租户上下文");
     }
 
     // 使用上下文查询（自动应用租户隔离）
-    const product = await this.productRepository.findByIdWithContext(
-      EntityId.fromString(query.productId),
-      query.tenantContext,
-    );
+    const product = await this.productRepository.findByIdWithContext(EntityId.fromString(query.productId), query.tenantContext);
 
     if (!product) {
       return QueryResult.failure("PRODUCT_NOT_FOUND", "产品不存在");
@@ -195,30 +170,19 @@ class GetProductHandler {
 
 @QueryHandler(ListProductsQuery)
 class ListProductsHandler {
-  constructor(
-    private readonly productRepository: ITenantIsolatedRepository<Product>,
-  ) {}
+  constructor(private readonly productRepository: ITenantIsolatedRepository<Product>) {}
 
   async handle(query: ListProductsQuery): Promise<QueryResult> {
     if (!query.tenantContext) {
-      return QueryResult.failure(
-        "MISSING_TENANT_CONTEXT",
-        "查询缺少租户上下文",
-      );
+      return QueryResult.failure("MISSING_TENANT_CONTEXT", "查询缺少租户上下文");
     }
 
     // 使用上下文查询所有产品（自动应用租户隔离）
-    const products = await this.productRepository.findAllByContext(
-      query.tenantContext,
-    );
+    const products = await this.productRepository.findAllByContext(query.tenantContext);
 
     // 应用分页和过滤
     const filteredProducts = this.applyFilters(products, query.filters);
-    const paginatedProducts = this.applyPagination(
-      filteredProducts,
-      query.page,
-      query.pageSize,
-    );
+    const paginatedProducts = this.applyPagination(filteredProducts, query.page, query.pageSize);
 
     // 返回列表结果
     return QueryResult.success(paginatedProducts, {
@@ -228,20 +192,13 @@ class ListProductsHandler {
     });
   }
 
-  private applyFilters(
-    products: Product[],
-    filters?: Record<string, unknown>,
-  ): Product[] {
+  private applyFilters(products: Product[], filters?: Record<string, unknown>): Product[] {
     if (!filters) return products;
     // 实现过滤逻辑
     return products;
   }
 
-  private applyPagination<T>(
-    items: T[],
-    page: number,
-    pageSize: number,
-  ): T[] {
+  private applyPagination<T>(items: T[], page: number, pageSize: number): T[] {
     const start = (page - 1) * pageSize;
     return items.slice(start, start + pageSize);
   }
@@ -258,17 +215,8 @@ class ProductController {
   constructor(private readonly bus: CommandQueryBusImpl) {}
 
   // 执行命令
-  async createProduct(
-    productName: string,
-    price: number,
-    description: string,
-  ): Promise<void> {
-    const command = new CreateProductCommand(
-      EntityId.generate().value,
-      productName,
-      price,
-      description,
-    );
+  async createProduct(productName: string, price: number, description: string): Promise<void> {
+    const command = new CreateProductCommand(EntityId.generate().value, productName, price, description);
 
     const result = await this.bus.executeCommand(command);
 
@@ -292,10 +240,7 @@ class ProductController {
   }
 
   // 执行列表查询
-  async listProducts(
-    page: number = 1,
-    pageSize: number = 10,
-  ): Promise<{ products: Product[]; total: number }> {
+  async listProducts(page: number = 1, pageSize: number = 10): Promise<{ products: Product[]; total: number }> {
     const query = new ListProductsQuery(page, pageSize);
     const result = await this.bus.executeQuery(query);
 
@@ -316,23 +261,17 @@ class ProductController {
 ```typescript
 import { Module } from "@nestjs/common";
 import { ApplicationKernelModule } from "@hl8/application-kernel";
-import {
-  LoggingMiddleware,
-  PerformanceMonitoringMiddleware,
-  ValidationMiddleware,
-  RetryMiddleware,
-  CacheMiddleware,
-} from "@hl8/application-kernel";
+import { LoggingMiddleware, PerformanceMonitoringMiddleware, ValidationMiddleware, RetryMiddleware, CacheMiddleware } from "@hl8/application-kernel";
 
 @Module({
   imports: [ApplicationKernelModule.forRoot()],
   providers: [
     // 中间件会自动注册到命令查询总线
-    LoggingMiddleware,              // 日志记录
+    LoggingMiddleware, // 日志记录
     PerformanceMonitoringMiddleware, // 性能监控
-    ValidationMiddleware,           // 输入验证
-    RetryMiddleware,                // 重试机制
-    CacheMiddleware,                // 查询缓存
+    ValidationMiddleware, // 输入验证
+    RetryMiddleware, // 重试机制
+    CacheMiddleware, // 查询缓存
   ],
 })
 export class AppModule {}
@@ -341,14 +280,7 @@ export class AppModule {}
 #### 5. 自定义中间件
 
 ```typescript
-import {
-  BaseBusMiddleware,
-  BaseCommand,
-  BaseQuery,
-  CommandResult,
-  QueryResult,
-  ExecutionContext,
-} from "@hl8/application-kernel";
+import { BaseBusMiddleware, BaseCommand, BaseQuery, CommandResult, QueryResult, ExecutionContext } from "@hl8/application-kernel";
 import { Logger } from "@hl8/logger";
 
 // 创建自定义中间件
@@ -362,10 +294,7 @@ class CustomMiddleware extends BaseBusMiddleware {
   }
 
   // 命令执行前的处理
-  async beforeCommand(
-    command: BaseCommand,
-    context: ExecutionContext,
-  ): Promise<boolean> {
+  async beforeCommand(command: BaseCommand, context: ExecutionContext): Promise<boolean> {
     this.logger.debug("执行命令前的自定义处理", {
       commandType: command.commandType,
       commandId: command.commandId,
@@ -376,11 +305,7 @@ class CustomMiddleware extends BaseBusMiddleware {
   }
 
   // 命令执行后的处理
-  async afterCommand(
-    command: BaseCommand,
-    result: CommandResult,
-    context: ExecutionContext,
-  ): Promise<CommandResult> {
+  async afterCommand(command: BaseCommand, result: CommandResult, context: ExecutionContext): Promise<CommandResult> {
     if (!result.success) {
       this.logger.warn("命令执行失败", {
         commandType: command.commandType,
@@ -393,10 +318,7 @@ class CustomMiddleware extends BaseBusMiddleware {
   }
 
   // 查询执行前的处理
-  async beforeQuery(
-    query: BaseQuery,
-    context: ExecutionContext,
-  ): Promise<boolean> {
+  async beforeQuery(query: BaseQuery, context: ExecutionContext): Promise<boolean> {
     this.logger.debug("执行查询前的自定义处理", {
       queryType: query.queryType,
       queryId: query.queryId,
@@ -406,11 +328,7 @@ class CustomMiddleware extends BaseBusMiddleware {
   }
 
   // 查询执行后的处理
-  async afterQuery(
-    query: BaseQuery,
-    result: QueryResult,
-    context: ExecutionContext,
-  ): Promise<QueryResult> {
+  async afterQuery(query: BaseQuery, result: QueryResult, context: ExecutionContext): Promise<QueryResult> {
     // 可以添加查询结果的处理逻辑
     return result;
   }
@@ -437,9 +355,7 @@ class BusMonitoringService {
     console.log(`平均查询执行时间: ${stats.averageQueryTime}ms`);
 
     // 按命令类型查看统计
-    for (const [commandType, typeStats] of Object.entries(
-      stats.byCommandType,
-    )) {
+    for (const [commandType, typeStats] of Object.entries(stats.byCommandType)) {
       console.log(`命令类型 ${commandType}:`);
       console.log(`  执行次数: ${typeStats.totalExecutions}`);
       console.log(`  成功次数: ${typeStats.successfulExecutions}`);
@@ -447,9 +363,7 @@ class BusMonitoringService {
     }
 
     // 查看处理器统计
-    for (const [handlerName, handlerStats] of Object.entries(
-      stats.byHandler,
-    )) {
+    for (const [handlerName, handlerStats] of Object.entries(stats.byHandler)) {
       console.log(`处理器 ${handlerName}:`);
       console.log(`  处理次数: ${handlerStats.totalExecutions}`);
       console.log(`  成功次数: ${handlerStats.successfulExecutions}`);
@@ -511,11 +425,7 @@ class OrderService {
   }
 
   // 查询事件流（支持版本范围）
-  async getOrderEventStream(
-    orderId: EntityId,
-    fromVersion?: number,
-    toVersion?: number,
-  ): Promise<EventStream> {
+  async getOrderEventStream(orderId: EntityId, fromVersion?: number, toVersion?: number): Promise<EventStream> {
     return await this.eventStore.getEventStream(orderId, fromVersion, toVersion);
   }
 
@@ -525,10 +435,7 @@ class OrderService {
   }
 
   // 保存事件快照
-  async saveOrderSnapshot(
-    orderId: EntityId,
-    snapshot: EventSnapshot,
-  ): Promise<void> {
+  async saveOrderSnapshot(orderId: EntityId, snapshot: EventSnapshot): Promise<void> {
     await this.eventStore.saveSnapshot(snapshot);
   }
 }
@@ -560,23 +467,17 @@ class OrderEventService {
 
   // 订阅事件
   async subscribeToOrderEvents(): Promise<void> {
-    await this.eventBus.subscribeToDomainEvent(
-      "OrderCreated",
-      async (event) => {
-        // 处理订单创建事件
-        console.log("订单已创建:", event.data);
-        return { success: true };
-      },
-    );
+    await this.eventBus.subscribeToDomainEvent("OrderCreated", async (event) => {
+      // 处理订单创建事件
+      console.log("订单已创建:", event.data);
+      return { success: true };
+    });
 
-    await this.eventBus.subscribeToDomainEvent(
-      "OrderCancelled",
-      async (event) => {
-        // 处理订单取消事件
-        console.log("订单已取消:", event.data);
-        return { success: true };
-      },
-    );
+    await this.eventBus.subscribeToDomainEvent("OrderCancelled", async (event) => {
+      // 处理订单取消事件
+      console.log("订单已取消:", event.data);
+      return { success: true };
+    });
   }
 
   // 批量发布事件
@@ -593,12 +494,7 @@ class OrderEventService {
 #### 3. 事件重放和聚合重建
 
 ```typescript
-import {
-  EventStore,
-  DomainEvent,
-  EntityId,
-  AggregateRoot,
-} from "@hl8/application-kernel";
+import { EventStore, DomainEvent, EntityId, AggregateRoot } from "@hl8/application-kernel";
 
 // 通过事件重放重建聚合根
 class OrderAggregateService {
@@ -620,10 +516,7 @@ class OrderAggregateService {
     }
 
     // 2. 获取快照版本之后的所有事件
-    const events = await this.eventStore.getEvents(
-      orderId,
-      fromVersion,
-    );
+    const events = await this.eventStore.getEvents(orderId, fromVersion);
 
     // 3. 重放事件重建聚合根状态
     for (const event of events) {
@@ -703,11 +596,7 @@ export class AppModule {}
 #### 1. 创建事件处理器
 
 ```typescript
-import {
-  EventHandler,
-  DomainEvent,
-  EventHandlerResult,
-} from "@hl8/application-kernel";
+import { EventHandler, DomainEvent, EventHandlerResult } from "@hl8/application-kernel";
 
 // 定义订单创建事件处理器
 class OrderCreatedHandler implements EventHandler<DomainEvent> {
@@ -734,13 +623,13 @@ class OrderCreatedHandler implements EventHandler<DomainEvent> {
       // 处理订单创建事件
       if (event.eventType === "OrderCreated") {
         const orderData = event.data;
-        
+
         // 发送通知邮件
         await this.sendNotificationEmail(orderData.customerEmail, orderData);
-        
+
         // 更新库存
         await this.updateInventory(orderData.items);
-        
+
         return {
           success: true,
           processingTime: Date.now() - startTime,
@@ -789,15 +678,9 @@ class OrderEventService {
     const orderCancelledHandler = new OrderCancelledHandler();
 
     // 订阅领域事件
-    await this.eventBus.subscribeToDomainEvent(
-      "OrderCreated",
-      orderCreatedHandler,
-    );
+    await this.eventBus.subscribeToDomainEvent("OrderCreated", orderCreatedHandler);
 
-    await this.eventBus.subscribeToDomainEvent(
-      "OrderCancelled",
-      orderCancelledHandler,
-    );
+    await this.eventBus.subscribeToDomainEvent("OrderCancelled", orderCancelledHandler);
   }
 }
 ```
@@ -805,12 +688,7 @@ class OrderEventService {
 #### 3. 使用投影器构建读模型
 
 ```typescript
-import {
-  Projector,
-  ProjectorHandler,
-  DomainEvent,
-  ReadModelManager,
-} from "@hl8/application-kernel";
+import { Projector, ProjectorHandler, DomainEvent, ReadModelManager } from "@hl8/application-kernel";
 
 // 定义订单读模型
 interface OrderReadModel {
@@ -825,19 +703,14 @@ interface OrderReadModel {
 // 创建投影器处理器
 class OrderProjectorHandler extends ProjectorHandler<DomainEvent> {
   supportsEventType(eventType: string): boolean {
-    return ["OrderCreated", "OrderStatusUpdated", "OrderCancelled"].includes(
-      eventType,
-    );
+    return ["OrderCreated", "OrderStatusUpdated", "OrderCancelled"].includes(eventType);
   }
 
   getSupportedEventTypes(): string[] {
     return ["OrderCreated", "OrderStatusUpdated", "OrderCancelled"];
   }
 
-  protected async processEvent(
-    event: DomainEvent,
-    readModel: OrderReadModel,
-  ): Promise<OrderReadModel> {
+  protected async processEvent(event: DomainEvent, readModel: OrderReadModel): Promise<OrderReadModel> {
     switch (event.eventType) {
       case "OrderCreated":
         return {
@@ -924,9 +797,7 @@ class IntegrationEventService {
     );
 
     // 发布集成事件
-    const result = await this.eventBus.publishIntegrationEvent(
-      integrationEvent,
-    );
+    const result = await this.eventBus.publishIntegrationEvent(integrationEvent);
 
     if (!result.success) {
       throw new Error(`发布集成事件失败: ${result.error}`);
@@ -935,24 +806,21 @@ class IntegrationEventService {
 
   // 订阅其他服务的集成事件
   async subscribeToPaymentEvents(): Promise<void> {
-    await this.eventBus.subscribeToIntegrationEvent(
-      "PaymentCompleted",
-      {
-        handle: async (event: IntegrationEvent) => {
-          // 处理支付完成事件
-          console.log("支付完成:", event.data);
-          return {
-            success: true,
-            processingTime: 0,
-            handlerName: "PaymentCompletedHandler",
-          };
-        },
-        getHandlerName: () => "PaymentCompletedHandler",
-        getDescription: () => "处理支付完成事件",
-        getVersion: () => "1.0.0",
-        isAvailable: () => true,
+    await this.eventBus.subscribeToIntegrationEvent("PaymentCompleted", {
+      handle: async (event: IntegrationEvent) => {
+        // 处理支付完成事件
+        console.log("支付完成:", event.data);
+        return {
+          success: true,
+          processingTime: 0,
+          handlerName: "PaymentCompletedHandler",
+        };
       },
-    );
+      getHandlerName: () => "PaymentCompletedHandler",
+      getDescription: () => "处理支付完成事件",
+      getVersion: () => "1.0.0",
+      isAvailable: () => true,
+    });
   }
 }
 ```
@@ -1055,7 +923,7 @@ import { TypedConfigModule } from "@hl8/config";
     TypedConfigModule.forRoot({
       // ...
     }),
-    
+
     // 应用内核模块（自动提供租户隔离功能）
     ApplicationKernelModule.forRoot(),
   ],
@@ -1127,38 +995,23 @@ class CreateProductCommand extends BaseCommand {
   }
 
   clone(): BaseCommand {
-    return new CreateProductCommand(
-      this.aggregateId,
-      this.productName,
-      this.price,
-    );
+    return new CreateProductCommand(this.aggregateId, this.productName, this.price);
   }
 }
 
 // 实现命令处理器
 @CommandHandler(CreateProductCommand)
 class CreateProductHandler {
-  constructor(
-    private readonly productRepository: ITenantIsolatedRepository<Product>,
-  ) {}
+  constructor(private readonly productRepository: ITenantIsolatedRepository<Product>) {}
 
   async handle(command: CreateProductCommand): Promise<CommandResult> {
     // 租户上下文已由中间件自动注入到 command.tenantContext
     if (!command.tenantContext) {
-      return CommandResult.failure(
-        "MISSING_TENANT_CONTEXT",
-        "命令缺少租户上下文",
-      );
+      return CommandResult.failure("MISSING_TENANT_CONTEXT", "命令缺少租户上下文");
     }
 
     // 创建产品实体（自动包含租户信息）
-    const product = new Product(
-      command.tenantContext.tenantId,
-      command.productName,
-      command.price,
-      command.tenantContext.organizationId,
-      command.tenantContext.departmentId,
-    );
+    const product = new Product(command.tenantContext.tenantId, command.productName, command.price, command.tenantContext.organizationId, command.tenantContext.departmentId);
 
     // 保存到仓储（自动应用租户隔离）
     await this.productRepository.save(product);
@@ -1191,24 +1044,16 @@ class GetProductQuery extends BaseQuery {
 // 实现查询处理器
 @QueryHandler(GetProductQuery)
 class GetProductHandler {
-  constructor(
-    private readonly productRepository: ITenantIsolatedRepository<Product>,
-  ) {}
+  constructor(private readonly productRepository: ITenantIsolatedRepository<Product>) {}
 
   async handle(query: GetProductQuery): Promise<QueryResult> {
     // 租户上下文已由中间件自动注入到 query.tenantContext
     if (!query.tenantContext) {
-      return QueryResult.failure(
-        "MISSING_TENANT_CONTEXT",
-        "查询缺少租户上下文",
-      );
+      return QueryResult.failure("MISSING_TENANT_CONTEXT", "查询缺少租户上下文");
     }
 
     // 使用上下文查询（自动应用租户隔离过滤）
-    const product = await this.productRepository.findByIdWithContext(
-      EntityId.fromString(query.productId),
-      query.tenantContext,
-    );
+    const product = await this.productRepository.findByIdWithContext(EntityId.fromString(query.productId), query.tenantContext);
 
     if (!product) {
       return QueryResult.failure("PRODUCT_NOT_FOUND", "产品不存在");
@@ -1267,7 +1112,7 @@ class MyUserContextQuery implements IUserContextQuery {
   async queryUserTenantContext(userId: string): Promise<UserTenantContext> {
     // 从数据库或服务查询用户的租户信息
     const user = await this.userService.findById(userId);
-    
+
     return {
       tenantId: user.tenantId,
       organizationId: user.organizationId,
@@ -1291,29 +1136,18 @@ import { TenantContext, TenantId } from "@hl8/domain-kernel";
 
 // 在服务中注入权限验证器
 class CrossTenantService {
-  constructor(
-    private readonly permissionValidator: ITenantPermissionValidator,
-  ) {}
+  constructor(private readonly permissionValidator: ITenantPermissionValidator) {}
 
-  async accessOtherTenant(
-    context: TenantContext,
-    targetTenantId: TenantId,
-  ): Promise<boolean> {
+  async accessOtherTenant(context: TenantContext, targetTenantId: TenantId): Promise<boolean> {
     // 验证是否可以跨租户访问
-    const canAccess = await this.permissionValidator.validateCrossTenantAccess(
-      context,
-    );
-    
+    const canAccess = await this.permissionValidator.validateCrossTenantAccess(context);
+
     if (!canAccess) {
       throw new Error("不允许跨租户访问，需要管理员权限");
     }
 
     // 验证是否可以访问特定租户
-    const canAccessTenant =
-      await this.permissionValidator.validateTenantAccess(
-        context,
-        targetTenantId,
-      );
+    const canAccessTenant = await this.permissionValidator.validateTenantAccess(context, targetTenantId);
 
     return canAccessTenant;
   }
@@ -1567,8 +1401,8 @@ interface UserTenantContext {
 
 ```typescript
 interface JwtConfig {
-  secret: string;        // JWT 签名密钥（必需）
-  algorithm?: string;    // JWT 算法（可选，默认 HS256）
+  secret: string; // JWT 签名密钥（必需）
+  algorithm?: string; // JWT 算法（可选，默认 HS256）
 }
 ```
 

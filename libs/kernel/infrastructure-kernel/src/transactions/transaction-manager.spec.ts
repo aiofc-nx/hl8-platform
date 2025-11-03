@@ -161,6 +161,12 @@ describe("MikroORMTransactionManager", () => {
       expect(context.entityManager).toBe(mockEm);
       expect(context.isCommitted).toBe(false);
       expect(context.isRolledBack).toBe(false);
+
+      // 清理超时句柄，避免测试后仍有未清理的资源
+      const timeoutHandle = (context as any)._timeoutHandle;
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+      }
     });
 
     it("应该在嵌套层级超过限制时抛出错误", async () => {

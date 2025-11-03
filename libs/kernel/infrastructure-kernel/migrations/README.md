@@ -56,13 +56,13 @@ SELECT create_tenant_isolation_indexes('users');
 
 ```sql
 -- 为 products 表创建索引
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_products_tenant_id 
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_products_tenant_id
   ON products(tenant_id);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_products_tenant_org 
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_products_tenant_org
   ON products(tenant_id, organization_id);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_products_tenant_org_dept 
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_products_tenant_org_dept
   ON products(tenant_id, organization_id, department_id);
 ```
 
@@ -87,9 +87,9 @@ createTenantIsolationIndexes('products')
 
 ```javascript
 const COLLECTIONS = [
-  'products',  // 产品表
-  'orders',    // 订单表
-  'users',     // 用户表
+  "products", // 产品表
+  "orders", // 订单表
+  "users", // 用户表
   // 添加其他集合
 ];
 ```
@@ -100,30 +100,21 @@ const COLLECTIONS = [
 
 ```javascript
 // 在 Node.js 应用程序中
-const { MongoClient } = require('mongodb');
+const { MongoClient } = require("mongodb");
 
 async function createIndexes() {
   const client = new MongoClient(process.env.MONGODB_URI);
   await client.connect();
-  
-  const db = client.db('your_database');
-  
+
+  const db = client.db("your_database");
+
   // 创建单个集合的索引
-  await db.collection('products').createIndex(
-    { tenantId: 1 },
-    { name: 'idx_products_tenantId', background: true }
-  );
-  
-  await db.collection('products').createIndex(
-    { tenantId: 1, organizationId: 1 },
-    { name: 'idx_products_tenant_org', background: true }
-  );
-  
-  await db.collection('products').createIndex(
-    { tenantId: 1, organizationId: 1, departmentId: 1 },
-    { name: 'idx_products_tenant_org_dept', background: true }
-  );
-  
+  await db.collection("products").createIndex({ tenantId: 1 }, { name: "idx_products_tenantId", background: true });
+
+  await db.collection("products").createIndex({ tenantId: 1, organizationId: 1 }, { name: "idx_products_tenant_org", background: true });
+
+  await db.collection("products").createIndex({ tenantId: 1, organizationId: 1, departmentId: 1 }, { name: "idx_products_tenant_org_dept", background: true });
+
   await client.close();
 }
 ```
@@ -158,7 +149,7 @@ async function createIndexes() {
 ### 执行前检查
 
 1. **确认字段存在**: 确保表已添加 `tenant_id`、`organization_id`、`department_id` 字段
-2. **确认字段类型**: 
+2. **确认字段类型**:
    - PostgreSQL: `VARCHAR(36)` 或 `UUID`
    - MongoDB: `String` (UUID 格式)
 3. **确认数据完整性**: `tenant_id` 字段不能为 NULL
@@ -167,7 +158,7 @@ async function createIndexes() {
 ### 执行建议
 
 1. **执行时机**: 建议在低峰期执行，避免影响业务
-2. **并发创建**: 
+2. **并发创建**:
    - PostgreSQL: 使用 `CONCURRENTLY` 选项（不锁表）
    - MongoDB: 使用 `background: true` 选项（后台创建）
 3. **监控**: 创建索引时监控数据库性能
@@ -185,7 +176,7 @@ async function createIndexes() {
 
 ```sql
 -- 查看索引信息
-SELECT 
+SELECT
   schemaname,
   tablename,
   indexname,
@@ -196,7 +187,7 @@ WHERE tablename = 'products'
 ORDER BY indexname;
 
 -- 查看索引使用情况
-SELECT 
+SELECT
   schemaname,
   tablename,
   indexname,
@@ -216,10 +207,10 @@ ORDER BY idx_scan DESC;
 db.products.getIndexes();
 
 // 验证索引是否存在
-validateIndexes('products');
+validateIndexes("products");
 
 // 查看索引使用情况（需要启用查询分析）
-db.products.find({ tenantId: 'xxx' }).explain('executionStats');
+db.products.find({ tenantId: "xxx" }).explain("executionStats");
 ```
 
 ## 🔄 回滚操作
@@ -240,12 +231,12 @@ DROP INDEX IF EXISTS idx_products_tenant_org_dept;
 
 ```javascript
 // 使用函数回滚
-dropTenantIsolationIndexes('products');
+dropTenantIsolationIndexes("products");
 
 // 或手动删除
-db.products.dropIndex('idx_products_tenantId');
-db.products.dropIndex('idx_products_tenant_org');
-db.products.dropIndex('idx_products_tenant_org_dept');
+db.products.dropIndex("idx_products_tenantId");
+db.products.dropIndex("idx_products_tenant_org");
+db.products.dropIndex("idx_products_tenant_org_dept");
 ```
 
 ## 📈 性能基准测试
@@ -255,9 +246,9 @@ db.products.dropIndex('idx_products_tenant_org_dept');
 ```sql
 -- 测试查询性能（创建索引前后对比）
 EXPLAIN ANALYZE
-SELECT * FROM products 
-WHERE tenant_id = 'xxx' 
-  AND organization_id = 'yyy' 
+SELECT * FROM products
+WHERE tenant_id = 'xxx'
+  AND organization_id = 'yyy'
   AND department_id = 'zzz';
 ```
 
@@ -265,23 +256,25 @@ WHERE tenant_id = 'xxx'
 
 ```javascript
 // 测试查询性能
-db.products.find({
-  tenantId: 'xxx',
-  organizationId: 'yyy',
-  departmentId: 'zzz'
-}).explain('executionStats');
+db.products
+  .find({
+    tenantId: "xxx",
+    organizationId: "yyy",
+    departmentId: "zzz",
+  })
+  .explain("executionStats");
 ```
 
 ## 🎯 性能目标
 
 根据规格要求，索引创建后的性能目标：
 
-| 指标              | 目标值 | 说明                           |
-| ----------------- | ------ | ------------------------------ |
-| 索引覆盖率        | ≥ 90%  | 90% 以上的查询使用索引         |
-| 查询延迟增加      | ≤ 10%  | 相比无隔离查询的延迟增加       |
-| 系统吞吐量下降    | ≤ 5%   | 相比无隔离系统的吞吐量下降     |
-| P95 查询时间      | ≤ 100ms | 95% 的查询在 100ms 内完成    |
+| 指标           | 目标值  | 说明                       |
+| -------------- | ------- | -------------------------- |
+| 索引覆盖率     | ≥ 90%   | 90% 以上的查询使用索引     |
+| 查询延迟增加   | ≤ 10%   | 相比无隔离查询的延迟增加   |
+| 系统吞吐量下降 | ≤ 5%    | 相比无隔离系统的吞吐量下降 |
+| P95 查询时间   | ≤ 100ms | 95% 的查询在 100ms 内完成  |
 
 ## 📝 常见问题
 
@@ -306,9 +299,10 @@ db.products.find({
 
 ### Q3: 如何为多个表批量创建索引？
 
-**A**: 
+**A**:
 
 **PostgreSQL**: 使用脚本中的函数
+
 ```sql
 SELECT create_tenant_isolation_indexes('products');
 SELECT create_tenant_isolation_indexes('orders');
@@ -327,15 +321,17 @@ SELECT create_tenant_isolation_indexes('users');
 
 ### Q5: 如何监控索引使用情况？
 
-**A**: 
+**A**:
 
 **PostgreSQL**:
+
 ```sql
-SELECT * FROM pg_stat_user_indexes 
+SELECT * FROM pg_stat_user_indexes
 WHERE indexname LIKE 'idx_%tenant%';
 ```
 
 **MongoDB**:
+
 ```javascript
 db.products.aggregate([{ $indexStats: {} }]);
 ```
@@ -344,4 +340,3 @@ db.products.aggregate([{ $indexStats: {} }]);
 
 **最后更新**: 2025-01-02  
 **维护者**: 开发团队
-
