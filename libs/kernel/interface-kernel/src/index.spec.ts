@@ -16,5 +16,3 @@ describe("@hl8/interface-kernel public API", () => {
     );
   });
 });
-
-
