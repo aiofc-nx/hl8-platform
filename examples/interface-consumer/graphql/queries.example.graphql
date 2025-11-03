@@ -1,0 +1,48 @@
+# GraphQL 查询示例
+# schema: v1
+
+# 查询单个实体
+query GetEntity($tenantId: ID!, $entityId: ID!) {
+  entity(tenantId: $tenantId, entityId: $entityId) {
+    id
+    tenantId
+    name
+    createdAt
+  }
+}
+
+# 分页查询实体列表
+query ListEntities(
+  $tenantId: ID!
+  $page: Int!
+  $limit: Int!
+  $sortField: String!
+  $sortDirection: SortDirection!
+) {
+  entities(
+    tenantId: $tenantId
+    pagination: { page: $page, limit: $limit }
+    sorting: { field: $sortField, direction: $sortDirection }
+  ) {
+    items {
+      id
+      tenantId
+      name
+      createdAt
+    }
+    total
+    page
+    limit
+  }
+}
+
+# 创建实体
+mutation CreateEntity($tenantId: ID!, $input: CreateEntityInput!) {
+  createEntity(tenantId: $tenantId, input: $input) {
+    id
+    tenantId
+    name
+    createdAt
+  }
+}
+

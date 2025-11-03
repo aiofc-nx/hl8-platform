@@ -26,21 +26,21 @@
 - [X] T019 [US1] Unit tests for all public contracts (≥90% coverage) in libs/kernel/interface-kernel/__tests__/
 
 ## Phase 4 — User Story 2 (P2): 稳定一致的接口消费体验
-- [ ] T020 [US2] Create sample consumer demonstrating impl swap without call-site change in examples/interface-consumer/README.md
-- [ ] T021 [P] [US2] Sample consumer: REST adapter using `/v{MAJOR}` path version in examples/interface-consumer/rest/
-- [ ] T022 [P] [US2] Sample consumer: GraphQL adapter with schema version note in examples/interface-consumer/graphql/
-- [ ] T023 [US2] E2E script: switch infra implementations with identical behavior in examples/interface-consumer/scripts/e2e-switch.sh
+- [X] T020 [US2] Create sample consumer demonstrating impl swap without call-site change in examples/interface-consumer/README.md
+- [X] T021 [P] [US2] Sample consumer: REST adapter using `/v{MAJOR}` path version in examples/interface-consumer/rest/
+- [X] T022 [P] [US2] Sample consumer: GraphQL adapter with schema version note in examples/interface-consumer/graphql/
+- [X] T023 [US2] E2E script: switch infra implementations with identical behavior in examples/interface-consumer/scripts/e2e-switch.sh
 
 ## Phase 5 — User Story 3 (P3): 对齐规则与合规
-- [ ] T024 [US3] Generate alignment matrix doc mapping contracts → kernel implementers in specs/001-align-interface-kernel/contracts/MATRIX.md
-- [ ] T025 [US3] Add change report template and SemVer policy doc in specs/001-align-interface-kernel/contracts/CHANGE-POLICY.md
-- [ ] T026 [US3] Lint rule or script to detect breaking surface changes libs/kernel/interface-kernel/scripts/check-breaking.mjs
+- [X] T024 [US3] Generate alignment matrix doc mapping contracts → kernel implementers in specs/001-align-interface-kernel/contracts/MATRIX.md
+- [X] T025 [US3] Add change report template and SemVer policy doc in specs/001-align-interface-kernel/contracts/CHANGE-POLICY.md
+- [X] T026 [US3] Lint rule or script to detect breaking surface changes libs/kernel/interface-kernel/scripts/check-breaking.mjs
 
 ## Phase 6 — Polish & Cross-Cutting
-- [ ] T027 Add quickstart sync: confirm examples align with quickstart.md
-- [ ] T028 Ensure exports map completeness and tree-shaking in package.json
-- [ ] T029 Validate NodeNext/CJS ban and strict mode in tsconfig.json
-- [ ] T030 Add README.md for @hl8/interface-kernel with scope and versioning
+- [X] T027 Add quickstart sync: confirm examples align with quickstart.md
+- [X] T028 Ensure exports map completeness and tree-shaking in package.json
+- [X] T029 Validate NodeNext/CJS ban and strict mode in tsconfig.json
+- [X] T030 Add README.md for @hl8/interface-kernel with scope and versioning
 
 ## Dependencies (Story Order)
 1) US1 → 2) US2 → 3) US3

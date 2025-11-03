@@ -12,6 +12,38 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./errors": {
+      "types": "./dist/errors/index.d.ts",
+      "import": "./dist/errors/index.js"
+    },
+    "./identifiers": {
+      "types": "./dist/identifiers/index.d.ts",
+      "import": "./dist/identifiers/index.js"
+    },
+    "./context": {
+      "types": "./dist/context/index.d.ts",
+      "import": "./dist/context/index.js"
+    },
+    "./repositories": {
+      "types": "./dist/repositories/index.d.ts",
+      "import": "./dist/repositories/index.js"
+    },
+    "./cqrs": {
+      "types": "./dist/cqrs/index.d.ts",
+      "import": "./dist/cqrs/index.js"
+    },
+    "./events": {
+      "types": "./dist/events/index.d.ts",
+      "import": "./dist/events/index.js"
+    },
+    "./results": {
+      "types": "./dist/results/index.d.ts",
+      "import": "./dist/results/index.js"
+    },
+    "./models": {
+      "types": "./dist/models/index.d.ts",
+      "import": "./dist/models/index.js"
     }
   },
   "scripts": {
