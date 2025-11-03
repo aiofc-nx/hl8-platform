@@ -29,6 +29,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@hl8/cache": "workspace:*",
     "@hl8/application-kernel": "workspace:*",
     "@hl8/config": "workspace:*",
     "@hl8/domain-kernel": "workspace:*",

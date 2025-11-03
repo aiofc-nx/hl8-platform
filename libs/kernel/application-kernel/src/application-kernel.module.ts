@@ -20,9 +20,8 @@ import {
   type SagaStateQuery,
   type SagaStateQueryResult,
 } from "./sagas/base/saga-state.js";
-import { InMemoryCache } from "./cache/cache.impl.js";
+import { InMemoryCache, CacheConfig } from "@hl8/cache";
 import { MonitoringService } from "./monitoring/monitoring.service.js";
-import type { CacheConfig } from "./cache/cache.interface.js";
 import type { MonitoringConfig } from "./monitoring/monitoring.service.js";
 import { ApplicationKernelConfigService } from "./config/application-kernel.config.js";
 
@@ -192,6 +191,7 @@ export class ApplicationKernelModule {
               enableEventInvalidation: cfg.invalidation.strategy !== "manual",
               cleanupInterval: 60_000,
               enableCompression: false,
+              evictionStrategy: "LRU",
             };
             return new InMemoryCache(cacheConfig, logger);
           },
@@ -378,6 +378,7 @@ export class ApplicationKernelModule {
               enableEventInvalidation: cfg.invalidation.strategy !== "manual",
               cleanupInterval: 60_000,
               enableCompression: false,
+              evictionStrategy: "LRU",
             };
             return new InMemoryCache(cacheConfig, logger);
           },

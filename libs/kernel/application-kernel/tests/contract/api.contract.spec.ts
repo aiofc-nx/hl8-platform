@@ -13,7 +13,7 @@ import { EventStore } from "../../src/events/store/event-store.impl.js";
 import { EventBusImpl as EventBus } from "../../src/events/bus/event-bus.impl.js";
 import { ProjectorRegistry } from "../../src/projectors/registry/projector-registry.js";
 import { SagaStateManager } from "../../src/sagas/base/saga-state.js";
-import { InMemoryCache as CacheService } from "../../src/cache/cache.impl.js";
+import { InMemoryCache as CacheService } from "@hl8/cache";
 import { MonitoringService } from "../../src/monitoring/monitoring.service.js";
 import { DomainEvent } from "../../src/events/types/domain-event.js";
 // duplicate import removed
@@ -240,15 +240,18 @@ describe("API Contract Tests", () => {
 
   describe("Cache Service Contract", () => {
     it("should maintain cache service contract compatibility", () => {
-      // When & Then
+      // When & Then - @hl8/cache ICache interface
       expect(cacheService).toBeDefined();
       expect(typeof cacheService.get).toBe("function");
       expect(typeof cacheService.set).toBe("function");
       expect(typeof cacheService.delete).toBe("function");
       expect(typeof cacheService.clear).toBe("function");
-      expect(typeof cacheService.has).toBe("function");
-      expect(typeof cacheService.keys).toBe("function");
-      expect(typeof cacheService.size).toBe("function");
+      expect(typeof cacheService.deleteMany).toBe("function");
+      expect(typeof cacheService.invalidateByTags).toBe("function");
+      expect(typeof cacheService.invalidateByPattern).toBe("function");
+      expect(typeof cacheService.getStats).toBe("function");
+      expect(typeof cacheService.getMetadata).toBe("function");
+      expect(typeof cacheService.resetStats).toBe("function");
     });
 
     it("should handle cache operations", async () => {
@@ -259,9 +262,13 @@ describe("API Contract Tests", () => {
 
       // When & Then
       await expect(cacheService.set(key, value, ttl)).resolves.not.toThrow();
-      await expect(cacheService.get(key)).resolves.toBeDefined();
-      await expect(cacheService.has(key)).resolves.toBe(true);
+      const cached = await cacheService.get(key);
+      expect(cached).toBeDefined();
       await expect(cacheService.delete(key)).resolves.not.toThrow();
+
+      // Verify key was deleted
+      const deleted = await cacheService.get(key);
+      expect(deleted).toBeUndefined();
     });
   });
 

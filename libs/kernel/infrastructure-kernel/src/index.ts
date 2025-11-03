@@ -23,3 +23,11 @@ export * from "./events/index.js";
 
 // NestJS 模块
 export * from "./module/index.js";
+
+// 查询缓存
+export * from "./cache/cached-repository.js";
+export * from "./cache/cached-repository.factory.js";
+export * from "./cache/repository-cache.interface.js";
+export * from "./cache/repository-cache.config.js";
+export * from "./cache/cache-invalidation.service.js";
+export * from "./cache/cache-tag.util.js";

@@ -30,20 +30,24 @@ export * from "./context/index.js";
 // Middleware - 中间件
 export * from "./middleware/index.js";
 
-// Cache - 避免 CacheConfig 冲突
+// Cache - 从 @hl8/cache 导出统一缓存接口（注意：CacheConfig 与本地配置冲突）
+export {
+  InMemoryCache,
+  CacheKeyBuilder,
+  CacheStatsCollector,
+  CacheCoordinationService,
+  EventDrivenCacheInvalidation,
+  InvalidationRuleRegistry,
+} from "@hl8/cache";
 export type {
   ICache,
-  CacheConfig as CacheConfigType,
   CacheStats,
-  CacheItem,
-  CacheInvalidationStrategy,
-  CacheInvalidationEvent,
-  CacheInvalidationListener,
-  CacheProvider,
-} from "./cache/cache.interface.js";
-export { CacheInvalidationStrategy as CacheInvalidationStrategyEnum } from "./cache/cache.interface.js";
-export { InMemoryCache } from "./cache/cache.impl.js";
-export * from "./cache/invalidation/event-based-invalidation.js";
+  CacheItemMetadata,
+  CacheConfigShape,
+  CacheInvalidationRule,
+  GenericDomainEvent,
+  InvalidationResult,
+} from "@hl8/cache";
 
 // Monitoring - 避免 MonitoringConfig 冲突
 export {
