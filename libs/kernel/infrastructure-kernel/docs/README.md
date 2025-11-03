@@ -997,8 +997,18 @@ export class CreateProductHandler implements ICommandHandler<CreateProductComman
 
 MIT
 
+## 📚 文档索引
+
+完整的文档集合：
+
+| 文档                                 | 说明                     |
+| ------------------------------------ | ------------------------ |
+| [快速入门指南](./QUICKSTART.md)      | 快速上手使用基础设施内核 |
+| [故障排除指南](./TROUBLESHOOTING.md) | 常见问题解决方案         |
+
 ## 📞 支持
 
+- 📖 **快速开始**: 查看 [快速入门指南](./QUICKSTART.md)
 - 📖 **完整文档**: 查看 `specs/005-infrastructure-kernel-enhancement/` 目录
   - `spec.md` - 功能规格说明
   - `quickstart.md` - 快速入门指南
@@ -1009,3 +1019,4 @@ MIT
 - 📚 **参考**:
   - [domain-kernel](../../kernel/domain-kernel) - 领域层核心模块
   - [application-kernel](../../kernel/application-kernel) - 应用层核心模块
+  - [cache](../../infra/cache) - 统一缓存库
