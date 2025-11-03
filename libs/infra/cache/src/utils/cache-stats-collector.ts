@@ -116,4 +116,3 @@ export class CacheStatsCollector {
     this.maxSize = maxSize;
   }
 }
-

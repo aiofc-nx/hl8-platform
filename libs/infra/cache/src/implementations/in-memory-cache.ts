@@ -409,6 +409,12 @@ export class InMemoryCache implements ICache {
       this.cleanupExpiredItems();
     }, this.config.cleanupInterval);
 
+    // 避免保持事件循环存活，防止测试环境的 open handles
+    // Node.js 定时器支持 unref，将其标记为不阻止进程退出
+    // 在某些运行时环境中可能不存在 unref，这里做可选调用
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.cleanupTimer as any)?.unref?.();
+
     this.logger.debug("清理定时器已启动", {
       interval: this.config.cleanupInterval,
     });

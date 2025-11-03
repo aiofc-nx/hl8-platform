@@ -44,7 +44,7 @@ describe("InMemoryCache", () => {
   describe("构造函数", () => {
     it("应该初始化缓存", () => {
       expect(cache).toBeDefined();
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.log).toHaveBeenCalledWith(
         "InMemoryCache 初始化完成",
         expect.objectContaining({
           maxSize: config.maxSize,
@@ -400,7 +400,7 @@ describe("InMemoryCache", () => {
   describe("destroy", () => {
     it("应该清理所有资源", () => {
       cache.destroy();
-      expect(mockLogger.info).toHaveBeenCalledWith("InMemoryCache 已销毁");
+      expect(mockLogger.log).toHaveBeenCalledWith("InMemoryCache 已销毁");
     });
   });
 });

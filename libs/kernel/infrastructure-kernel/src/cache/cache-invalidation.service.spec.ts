@@ -39,5 +39,3 @@ describe("CacheInvalidationService", () => {
     expect(cache.invalidateByPattern).toHaveBeenCalledWith("tX:repo:user:*");
   });
 });
-
-

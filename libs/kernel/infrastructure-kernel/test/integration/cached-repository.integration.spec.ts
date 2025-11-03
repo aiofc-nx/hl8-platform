@@ -55,10 +55,21 @@ function eid(value: string): EntityId {
   return { value } as unknown as EntityId;
 }
 
+// 管理测试期间创建的缓存实例，统一销毁以避免 open handles
+const createdCaches: InMemoryCache[] = [];
+
+afterEach(() => {
+  for (const c of createdCaches) {
+    c.destroy();
+  }
+  createdCaches.length = 0;
+});
+
 describe("CachedRepository integration", () => {
   it("should cache findById result and avoid second inner read", async () => {
     const inner = new InMemoryUserRepo();
-    const cache = new InMemoryCache(config, logger);
+    const cache = new InMemoryCache({ ...config, cleanupInterval: 0 }, logger);
+    createdCaches.push(cache);
     const tenantContext = { getTenantId: () => undefined };
     const repo = new CachedRepository<User>(
       inner,
@@ -81,7 +92,8 @@ describe("CachedRepository integration", () => {
 
   it("should invalidate by delete and miss afterwards", async () => {
     const inner = new InMemoryUserRepo();
-    const cache = new InMemoryCache(config, logger);
+    const cache = new InMemoryCache({ ...config, cleanupInterval: 0 }, logger);
+    createdCaches.push(cache);
     const tenantContext = { getTenantId: () => undefined };
     const repo = new CachedRepository<User>(
       inner,
@@ -103,7 +115,8 @@ describe("CachedRepository integration", () => {
 
   it("should isolate cache by tenant id", async () => {
     const inner = new InMemoryUserRepo();
-    const cache = new InMemoryCache(config, logger);
+    const cache = new InMemoryCache({ ...config, cleanupInterval: 0 }, logger);
+    createdCaches.push(cache);
     const tenantA = { getTenantId: () => "tA" };
     const tenantB = { getTenantId: () => "tB" };
 
@@ -140,7 +153,8 @@ describe("CachedRepository integration", () => {
 
   it("should cache exists and invalidate on save", async () => {
     const inner = new InMemoryUserRepo();
-    const cache = new InMemoryCache(config, logger);
+    const cache = new InMemoryCache({ ...config, cleanupInterval: 0 }, logger);
+    createdCaches.push(cache);
     const tenantContext = { getTenantId: () => undefined };
     const repo = new CachedRepository<User>(
       inner,
@@ -191,7 +205,8 @@ describe("CachedRepository integration", () => {
 
   it("should expire by ttl and refresh from inner store", async () => {
     const inner = new InMemoryUserRepo();
-    const cache = new InMemoryCache({ ...config, cleanupInterval: 5 }, logger);
+    const cache = new InMemoryCache({ ...config, cleanupInterval: 0 }, logger);
+    createdCaches.push(cache);
     const tenantContext = { getTenantId: () => undefined };
     const repo = new CachedRepository<User>(
       inner,
