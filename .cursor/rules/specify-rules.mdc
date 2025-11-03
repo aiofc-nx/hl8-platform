@@ -56,6 +56,8 @@ alwaysApply: true
 ## Active Technologies
 - TypeScript 5.9.3, Node.js >=20 + @nestjs/common, @nestjs/core, @hl8/logger, @hl8/config (001-unified-cache-strategy)
 - 内存缓存（Map），可选 Redis（未来实现） (001-unified-cache-strategy)
+- TypeScript 5.9.3 (ES2022, NodeNext) + `@hl8/domain-kernel`, `@hl8/application-kernel`（类型/契约引用）；不直接依赖第三方实现；外部适配优先 `libs/infra/*` (001-align-interface-kernel)
+- N/A（契约层不落地存储） (001-align-interface-kernel)
 
 - TypeScript 5.9.3, Node.js >=20 + @nestjs/core, @nestjs/common, @nestjs/cqrs, @nestjs/platform-fastify, class-validator, class-transformer, uuid (002-application-kernel)
 - 混合存储策略（PostgreSQL + MongoDB），事件存储支持关系型数据库和NoSQL (002-application-kernel)
