@@ -14,7 +14,7 @@
 ```bash
 # 创建IAM模块目录
 mkdir -p libs/iam/src/{domain,application,infrastructure,interface}
-mkdir -p libs/iam/src/domain/subdomains/{user-management,tenant-management,organization-management,department-management,role-management,permission-management}
+mkdir -p libs/iam/src/domain/{user,tenant,organization,department,role,permission}
 
 # 初始化package.json
 cd libs/iam
@@ -104,8 +104,8 @@ import { EntityId, TenantId, OrganizationId, DepartmentId } from '@hl8/domain-ke
 **示例结构**:
 ```
 domain/
-├── subdomains/
-│   ├── user-management/
+├── 
+│   ├── user/
 │   │   ├── aggregates/
 │   │   │   └── platform-user.aggregate.ts
 │   │   ├── entities/
@@ -400,7 +400,7 @@ export class CaslModule {}
 ### 1. 创建聚合根
 
 ```typescript
-// domain/subdomains/user-management/aggregates/user.aggregate.ts
+// domain/user/aggregates/user.aggregate.ts
 import { AggregateRoot, EntityId } from '@hl8/domain-kernel';
 import { UserEntity } from '../entities/user.entity.js';
 
@@ -500,7 +500,7 @@ export class UsersController {
 ### 单元测试示例
 
 ```typescript
-// domain/subdomains/user-management/aggregates/platform-user.aggregate.spec.ts
+// domain/user/aggregates/platform-user.aggregate.spec.ts
 import { describe, it, expect } from '@jest/globals';
 import { PlatformUser } from './platform-user.aggregate.js';
 

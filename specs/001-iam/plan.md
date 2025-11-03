@@ -149,8 +149,8 @@ specs/[###-feature]/
 libs/iam/
 ├── src/
 │   ├── domain/                    # 领域层（基于@hl8/domain-kernel）
-│   │   ├── subdomains/           # 7个子领域
-│   │   │   ├── user-management/  # 子领域1：用户管理
+│   │   ├──            # 7个子领域
+│   │   │   ├── user/  # 子领域1：用户管理
 │   │   │   │   ├── aggregates/   # 聚合根
 │   │   │   │   ├── entities/     # 内部实体
 │   │   │   │   ├── value-objects/ # 值对象
@@ -162,11 +162,11 @@ libs/iam/
 │   │   │   │   ├── value-objects/ # 值对象
 │   │   │   │   ├── events/        # UserLoggedIn, LoginFailed等
 │   │   │   │   └── services/     # 认证服务
-│   │   │   ├── tenant-management/ # 子领域3：租户管理
-│   │   │   ├── organization-management/ # 子领域4：组织管理
-│   │   │   ├── department-management/   # 子领域5：部门管理
-│   │   │   ├── role-management/         # 子领域6：角色管理
-│   │   │   └── permission-management/   # 子领域7：权限管理（集成CASL）
+│   │   │   ├── tenant/ # 子领域3：租户管理
+│   │   │   ├── organization/ # 子领域4：组织管理
+│   │   │   ├── department/   # 子领域5：部门管理
+│   │   │   ├── role/         # 子领域6：角色管理
+│   │   │   └── permission/   # 子领域7：权限管理（集成CASL）
 │   │   └── shared/               # 共享内核
 │   │       ├── identifiers/      # 标识符
 │   │       └── context/          # 租户上下文

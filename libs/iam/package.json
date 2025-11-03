@@ -1,0 +1,54 @@
+{
+  "name": "@hl8/iam",
+  "version": "1.0.0",
+  "description": "IAM (Identity and Access Management) module for the HL8 platform",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests",
+    "test:cov": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@casl/ability": "^6.7.3",
+    "@hl8/application-kernel": "workspace:*",
+    "@hl8/cache": "workspace:*",
+    "@hl8/config": "workspace:*",
+    "@hl8/domain-kernel": "workspace:*",
+    "@hl8/infrastructure-kernel": "workspace:*",
+    "@hl8/interface-kernel": "workspace:*",
+    "@hl8/logger": "workspace:*",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/cqrs": "^11.0.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "nest-casl": "^1.9.15"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.16.0",
+    "@types/uuid": "^10.0.0",
+    "eslint": "^9.0.0",
+    "jest": "^30.2.0",
+    "prettier": "^3.0.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.9.3"
+  }
+}

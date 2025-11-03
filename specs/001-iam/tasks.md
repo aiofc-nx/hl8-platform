@@ -47,23 +47,23 @@
 
 ### Tasks
 
-- [ ] T001 Create project directory structure in libs/iam/
-- [ ] T002 Create domain layer subdomains directories (7 subdomains)
-- [ ] T003 Create application layer directories (commands, queries, handlers, services, projectors)
-- [ ] T004 Create infrastructure layer directories (persistence, event-store, casl, external)
-- [ ] T005 Create interface layer directories (http/controllers, http/dto, http/guards, events)
-- [ ] T006 Initialize package.json in libs/iam/ with type: "module" and engines: { "node": ">=20" }
-- [ ] T007 Configure tsconfig.json extending root config with NodeNext module system
-- [ ] T008 Setup Jest configuration for testing in libs/iam/jest.config.ts
-- [ ] T009 Install dependencies: @hl8/domain-kernel, @hl8/application-kernel, @hl8/infrastructure-kernel, @hl8/interface-kernel
-- [ ] T010 Install dependencies: @hl8/config, @hl8/logger, @hl8/cache
-- [ ] T011 Install dependencies: @casl/ability, nest-casl, @nestjs/common, @nestjs/cqrs
-- [ ] T012 Install dependencies: class-validator, class-transformer
-- [ ] T013 Install dev dependencies: @jest/globals, @types/node, typescript, jest, ts-jest
-- [ ] T014 Create src/index.ts as main entry point in libs/iam/src/index.ts
-- [ ] T015 Setup ESLint configuration extending root rules in libs/iam/eslint.config.mjs
-- [ ] T016 Create .gitignore for TypeScript project
-- [ ] T017 Verify build system works with pnpm run build
+- [X] T001 Create project directory structure in libs/iam/
+- [X] T002 Create domain layer directories (7 subdomains: user, authentication, tenant, organization, department, role, permission)
+- [X] T003 Create application layer directories (commands, queries, handlers, services, projectors)
+- [X] T004 Create infrastructure layer directories (persistence, event-store, casl, external)
+- [X] T005 Create interface layer directories (http/controllers, http/dto, http/guards, events)
+- [X] T006 Initialize package.json in libs/iam/ with type: "module" and engines: { "node": ">=20" }
+- [X] T007 Configure tsconfig.json extending root config with NodeNext module system
+- [X] T008 Setup Jest configuration for testing in libs/iam/jest.config.ts
+- [X] T009 Install dependencies: @hl8/domain-kernel, @hl8/application-kernel, @hl8/infrastructure-kernel, @hl8/interface-kernel
+- [X] T010 Install dependencies: @hl8/config, @hl8/logger, @hl8/cache
+- [X] T011 Install dependencies: @casl/ability, nest-casl, @nestjs/common, @nestjs/cqrs
+- [X] T012 Install dependencies: class-validator, class-transformer
+- [X] T013 Install dev dependencies: @jest/globals, @types/node, typescript, jest, ts-jest
+- [X] T014 Create src/index.ts as main entry point in libs/iam/src/index.ts
+- [X] T015 Setup ESLint configuration extending root rules in libs/iam/eslint.config.mjs
+- [X] T016 Create .gitignore for TypeScript project
+- [X] T017 Verify build system works with pnpm run build
 
 ## Phase 2: Foundational
 
@@ -78,20 +78,20 @@
 
 ### Tasks
 
-- [ ] T018 [P] Create EmailValueObject in libs/iam/src/domain/subdomains/user-management/value-objects/email.value-object.ts
-- [ ] T019 [P] Create PhoneNumberValueObject in libs/iam/src/domain/subdomains/user-management/value-objects/phone-number.value-object.ts
-- [ ] T020 [P] Create PasswordHashValueObject in libs/iam/src/domain/subdomains/user-management/value-objects/password-hash.value-object.ts
-- [ ] T021 [P] Create TenantCodeValueObject in libs/iam/src/domain/subdomains/tenant-management/value-objects/tenant-code.value-object.ts
-- [ ] T022 [P] Create TenantNameValueObject in libs/iam/src/domain/subdomains/tenant-management/value-objects/tenant-name.value-object.ts
-- [ ] T023 [P] Create TenantDomainValueObject in libs/iam/src/domain/subdomains/tenant-management/value-objects/tenant-domain.value-object.ts
-- [ ] T024 [P] Create UserRegisteredEvent in libs/iam/src/domain/subdomains/user-management/events/user-registered.event.ts
-- [ ] T025 [P] Create UserVerifiedEvent in libs/iam/src/domain/subdomains/user-management/events/user-verified.event.ts
-- [ ] T026 [P] Create UserStatusChangedEvent in libs/iam/src/domain/subdomains/user-management/events/user-status-changed.event.ts
-- [ ] T027 [P] Create UserLoggedInEvent in libs/iam/src/domain/subdomains/authentication/events/user-logged-in.event.ts
-- [ ] T028 [P] Create LoginFailedEvent in libs/iam/src/domain/subdomains/authentication/events/login-failed.event.ts
-- [ ] T029 [P] Create AccountLockedEvent in libs/iam/src/domain/subdomains/authentication/events/account-locked.event.ts
-- [ ] T030 [P] Create TenantCreatedEvent in libs/iam/src/domain/subdomains/tenant-management/events/tenant-created.event.ts
-- [ ] T031 [P] Create TenantStatusChangedEvent in libs/iam/src/domain/subdomains/tenant-management/events/tenant-status-changed.event.ts
+- [X] T018 [P] Create EmailValueObject in libs/iam/src/domain/user/value-objects/email.value-object.ts
+- [X] T019 [P] Create PhoneNumberValueObject in libs/iam/src/domain/user/value-objects/phone-number.value-object.ts
+- [X] T020 [P] Create PasswordHashValueObject in libs/iam/src/domain/user/value-objects/password-hash.value-object.ts
+- [X] T021 [P] Create TenantCodeValueObject in libs/iam/src/domain/tenant/value-objects/tenant-code.value-object.ts
+- [X] T022 [P] Create TenantNameValueObject in libs/iam/src/domain/tenant/value-objects/tenant-name.value-object.ts
+- [X] T023 [P] Create TenantDomainValueObject in libs/iam/src/domain/tenant/value-objects/tenant-domain.value-object.ts
+- [X] T024 [P] Create UserRegisteredEvent in libs/iam/src/domain/user/events/user-registered.event.ts
+- [X] T025 [P] Create UserVerifiedEvent in libs/iam/src/domain/user/events/user-verified.event.ts
+- [X] T026 [P] Create UserStatusChangedEvent in libs/iam/src/domain/user/events/user-status-changed.event.ts
+- [X] T027 [P] Create UserLoggedInEvent in libs/iam/src/domain/authentication/events/user-logged-in.event.ts
+- [X] T028 [P] Create LoginFailedEvent in libs/iam/src/domain/authentication/events/login-failed.event.ts
+- [X] T029 [P] Create AccountLockedEvent in libs/iam/src/domain/authentication/events/account-locked.event.ts
+- [X] T030 [P] Create TenantCreatedEvent in libs/iam/src/domain/tenant/events/tenant-created.event.ts
+- [X] T031 [P] Create TenantStatusChangedEvent in libs/iam/src/domain/tenant/events/tenant-status-changed.event.ts
 - [ ] T032 [P] Setup event bus infrastructure in libs/iam/src/infrastructure/event-store/
 
 ## Phase 3: User Story 1 - 用户注册 [US1]
@@ -110,11 +110,11 @@
 
 #### 领域层 - 用户管理子领域
 
-- [ ] T033 [P] [US1] Create UserNameValueObject in libs/iam/src/domain/subdomains/user-management/value-objects/user-name.value-object.ts
-- [ ] T034 [P] [US1] Create VerificationCode entity in libs/iam/src/domain/subdomains/user-management/entities/verification-code.entity.ts
-- [ ] T035 [US1] Create User entity in libs/iam/src/domain/subdomains/user-management/entities/user.entity.ts
-- [ ] T036 [US1] Create User aggregate root in libs/iam/src/domain/subdomains/user-management/aggregates/user.aggregate.ts
-- [ ] T037 [US1] Create UserRepository interface in libs/iam/src/domain/subdomains/user-management/repositories/user.repository.interface.ts
+- [ ] T033 [P] [US1] Create UserNameValueObject in libs/iam/src/domain/user/value-objects/user-name.value-object.ts
+- [ ] T034 [P] [US1] Create VerificationCode entity in libs/iam/src/domain/user/entities/verification-code.entity.ts
+- [ ] T035 [US1] Create User entity in libs/iam/src/domain/user/entities/user.entity.ts
+- [ ] T036 [US1] Create User aggregate root in libs/iam/src/domain/user/aggregates/user.aggregate.ts
+- [ ] T037 [US1] Create UserRepository interface in libs/iam/src/domain/user/repositories/user.repository.interface.ts
 - [ ] T038 [US1] Create UserRegisteredEvent implementation
 - [ ] T039 [US1] Create UserVerifiedEvent implementation
 
@@ -164,29 +164,29 @@
 
 #### 领域层 - 租户管理子领域
 
-- [ ] T061 [P] [US2] Create TenantType enum in libs/iam/src/domain/subdomains/tenant-management/value-objects/tenant-type.enum.ts
-- [ ] T062 [P] [US2] Create TenantStatus enum in libs/iam/src/domain/subdomains/tenant-management/value-objects/tenant-status.enum.ts
-- [ ] T063 [US2] Create Tenant entity in libs/iam/src/domain/subdomains/tenant-management/entities/tenant.entity.ts
-- [ ] T064 [US2] Create TenantConfiguration entity in libs/iam/src/domain/subdomains/tenant-management/entities/tenant-configuration.entity.ts
-- [ ] T065 [US2] Create Tenant aggregate root in libs/iam/src/domain/subdomains/tenant-management/aggregates/tenant.aggregate.ts
-- [ ] T066 [US2] Create TenantRepository interface in libs/iam/src/domain/subdomains/tenant-management/repositories/tenant.repository.interface.ts
+- [ ] T061 [P] [US2] Create TenantType enum in libs/iam/src/domain/tenant/value-objects/tenant-type.enum.ts
+- [ ] T062 [P] [US2] Create TenantStatus enum in libs/iam/src/domain/tenant/value-objects/tenant-status.enum.ts
+- [ ] T063 [US2] Create Tenant entity in libs/iam/src/domain/tenant/entities/tenant.entity.ts
+- [ ] T064 [US2] Create TenantConfiguration entity in libs/iam/src/domain/tenant/entities/tenant-configuration.entity.ts
+- [ ] T065 [US2] Create Tenant aggregate root in libs/iam/src/domain/tenant/aggregates/tenant.aggregate.ts
+- [ ] T066 [US2] Create TenantRepository interface in libs/iam/src/domain/tenant/repositories/tenant.repository.interface.ts
 - [ ] T067 [US2] Create TenantCreatedEvent implementation
 
 #### 领域层 - 组织管理子领域（用于默认组织）
 
-- [ ] T068 [P] [US2] Create OrganizationNameValueObject in libs/iam/src/domain/subdomains/organization-management/value-objects/organization-name.value-object.ts
-- [ ] T069 [US2] Create Organization entity in libs/iam/src/domain/subdomains/organization-management/entities/organization.entity.ts
-- [ ] T070 [US2] Create Organization aggregate root in libs/iam/src/domain/subdomains/organization-management/aggregates/organization.aggregate.ts
-- [ ] T071 [US2] Create OrganizationRepository interface in libs/iam/src/domain/subdomains/organization-management/repositories/organization.repository.interface.ts
-- [ ] T072 [US2] Create OrganizationCreatedEvent in libs/iam/src/domain/subdomains/organization-management/events/organization-created.event.ts
+- [ ] T068 [P] [US2] Create OrganizationNameValueObject in libs/iam/src/domain/organization/value-objects/organization-name.value-object.ts
+- [ ] T069 [US2] Create Organization entity in libs/iam/src/domain/organization/entities/organization.entity.ts
+- [ ] T070 [US2] Create Organization aggregate root in libs/iam/src/domain/organization/aggregates/organization.aggregate.ts
+- [ ] T071 [US2] Create OrganizationRepository interface in libs/iam/src/domain/organization/repositories/organization.repository.interface.ts
+- [ ] T072 [US2] Create OrganizationCreatedEvent in libs/iam/src/domain/organization/events/organization-created.event.ts
 
 #### 领域层 - 部门管理子领域（用于根部门）
 
-- [ ] T073 [P] [US2] Create DepartmentNameValueObject in libs/iam/src/domain/subdomains/department-management/value-objects/department-name.value-object.ts
-- [ ] T074 [US2] Create Department entity in libs/iam/src/domain/subdomains/department-management/entities/department.entity.ts
-- [ ] T075 [US2] Create Department aggregate root in libs/iam/src/domain/subdomains/department-management/aggregates/department.aggregate.ts
-- [ ] T076 [US2] Create DepartmentRepository interface in libs/iam/src/domain/subdomains/department-management/repositories/department.repository.interface.ts
-- [ ] T077 [US2] Create DepartmentCreatedEvent in libs/iam/src/domain/subdomains/department-management/events/department-created.event.ts
+- [ ] T073 [P] [US2] Create DepartmentNameValueObject in libs/iam/src/domain/department/value-objects/department-name.value-object.ts
+- [ ] T074 [US2] Create Department entity in libs/iam/src/domain/department/entities/department.entity.ts
+- [ ] T075 [US2] Create Department aggregate root in libs/iam/src/domain/department/aggregates/department.aggregate.ts
+- [ ] T076 [US2] Create DepartmentRepository interface in libs/iam/src/domain/department/repositories/department.repository.interface.ts
+- [ ] T077 [US2] Create DepartmentCreatedEvent in libs/iam/src/domain/department/events/department-created.event.ts
 
 #### 应用层 - 租户创建用例
 
@@ -231,11 +231,11 @@
 
 #### 领域层 - 用户分配子领域
 
-- [ ] T095 [US3] Create UserAssignment entity in libs/iam/src/domain/subdomains/user-management/entities/user-assignment.entity.ts
-- [ ] T096 [US3] Create UserTenantAssignment entity in libs/iam/src/domain/subdomains/user-management/entities/user-tenant-assignment.entity.ts
-- [ ] T097 [US3] Create UserOrganizationAssignment entity in libs/iam/src/domain/subdomains/user-management/entities/user-organization-assignment.entity.ts
-- [ ] T098 [US3] Create UserDepartmentAssignment entity in libs/iam/src/domain/subdomains/user-management/entities/user-department-assignment.entity.ts
-- [ ] T099 [US3] Create UserAssignment aggregate root in libs/iam/src/domain/subdomains/user-management/aggregates/user-assignment.aggregate.ts
+- [ ] T095 [US3] Create UserAssignment entity in libs/iam/src/domain/user/entities/user-assignment.entity.ts
+- [ ] T096 [US3] Create UserTenantAssignment entity in libs/iam/src/domain/user/entities/user-tenant-assignment.entity.ts
+- [ ] T097 [US3] Create UserOrganizationAssignment entity in libs/iam/src/domain/user/entities/user-organization-assignment.entity.ts
+- [ ] T098 [US3] Create UserDepartmentAssignment entity in libs/iam/src/domain/user/entities/user-department-assignment.entity.ts
+- [ ] T099 [US3] Create UserAssignment aggregate root in libs/iam/src/domain/user/aggregates/user-assignment.aggregate.ts
 - [ ] T100 [US3] Create Invitation entity with expiration logic
 - [ ] T101 [US3] Create UserAssignmentRepository interface
 
@@ -332,7 +332,7 @@
 
 #### 领域层 - 部门管理子领域增强
 
-- [ ] T127 [US5] Create DepartmentPathValueObject in libs/iam/src/domain/subdomains/department-management/value-objects/department-path.value-object.ts
+- [ ] T127 [US5] Create DepartmentPathValueObject in libs/iam/src/domain/department/value-objects/department-path.value-object.ts
 - [ ] T128 [US5] Enhance Department entity with level and path management
 - [ ] T129 [US5] Implement department hierarchy validation
 
@@ -362,8 +362,8 @@
 
 #### 认证子领域实现
 
-- [ ] T139 Create LoginSession aggregate root in libs/iam/src/domain/subdomains/authentication/aggregates/login-session.aggregate.ts
-- [ ] T140 Create AuthenticationToken aggregate root in libs/iam/src/domain/subdomains/authentication/aggregates/authentication-token.aggregate.ts
+- [ ] T139 Create LoginSession aggregate root in libs/iam/src/domain/authentication/aggregates/login-session.aggregate.ts
+- [ ] T140 Create AuthenticationToken aggregate root in libs/iam/src/domain/authentication/aggregates/authentication-token.aggregate.ts
 - [ ] T141 Create LoginCommand and LoginHandler
 - [ ] T142 Create LogoutCommand and LogoutHandler
 - [ ] T143 Implement JWT token generation
@@ -385,8 +385,8 @@
 
 #### 角色和权限管理子领域
 
-- [ ] T156 Create Role aggregate root in libs/iam/src/domain/subdomains/role-management/aggregates/role.aggregate.ts
-- [ ] T157 Create Permission aggregate root in libs/iam/src/domain/subdomains/permission-management/aggregates/permission.aggregate.ts
+- [ ] T156 Create Role aggregate root in libs/iam/src/domain/role/aggregates/role.aggregate.ts
+- [ ] T157 Create Permission aggregate root in libs/iam/src/domain/permission/aggregates/permission.aggregate.ts
 - [ ] T158 Create PermissionAssignment aggregate root
 - [ ] T159 Create role and permission management commands and handlers
 
