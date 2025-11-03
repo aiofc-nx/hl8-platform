@@ -510,9 +510,6 @@ importers:
       '@hl8/config':
         specifier: workspace:*
         version: link:../../infra/config
-      '@hl8/database':
-        specifier: workspace:*
-        version: link:../../infra/database
       '@hl8/domain-kernel':
         specifier: workspace:*
         version: link:../domain-kernel

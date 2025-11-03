@@ -31,7 +31,6 @@
   "dependencies": {
     "@hl8/application-kernel": "workspace:*",
     "@hl8/config": "workspace:*",
-    "@hl8/database": "workspace:*",
     "@hl8/domain-kernel": "workspace:*",
     "@hl8/logger": "workspace:*",
     "@mikro-orm/core": "^6.4.2",
