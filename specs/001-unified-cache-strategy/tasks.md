@@ -92,9 +92,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T032 [US2] Integrate @hl8/cache into Application Kernel CacheMiddleware in libs/kernel/application-kernel/src/bus/middleware/bus-middleware.ts
-- [ ] T033 [US2] Update Application Kernel to use @hl8/cache ICache instead of internal implementation in libs/kernel/application-kernel/src/cache/
-- [ ] T034 [US2] Migrate Application Kernel cache implementation to @hl8/cache in libs/kernel/application-kernel/src/cache/
+- [X] T032 [US2] Integrate @hl8/cache into Application Kernel CacheMiddleware in libs/kernel/application-kernel/src/bus/middleware/bus-middleware.ts
+- [X] T033 [US2] Update Application Kernel to use @hl8/cache ICache instead of internal implementation in libs/kernel/application-kernel/src/cache/
+- [X] T034 [US2] Migrate Application Kernel cache implementation to @hl8/cache in libs/kernel/application-kernel/src/cache/
 - [X] T035 [US2] Implement query cache key generation (query:{queryType}:{paramsHash}) in libs/infra/cache/src/utils/cache-key-builder.ts
 - [X] T036 [US2] Create cache coordination service for cross-layer cache invalidation in libs/infra/cache/src/services/cache-coordination.service.ts
 - [X] T037 [US2] Implement coordinated cache invalidation (infrastructure + application layers) in libs/infra/cache/src/services/cache-coordination.service.ts
