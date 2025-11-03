@@ -1,0 +1,537 @@
+openapi: 3.0.3
+info:
+  title: IAM API
+  description: IAM（身份与访问管理）业务模块REST API规范
+  version: 1.0.0
+  contact:
+    name: HL8 Platform Team
+
+servers:
+  - url: https://api.hl8 platform.com/v1
+    description: 生产环境
+  - url: https://api-staging.hl8 platform.com/v1
+    description: 测试环境
+
+tags:
+  - name: 用户管理
+    description: 平台用户注册、认证和管理
+  - name: 租户管理
+    description: 租户创建、状态管理和配置
+  - name: 组织管理
+    description: 组织创建和管理（注意：核心实现由组织结构管理模块负责）
+  - name: 部门管理
+    description: 部门创建和管理（注意：核心实现由组织结构管理模块负责）
+  - name: 用户分配
+    description: 用户与租户/组织/部门的分配关系管理
+  - name: 角色管理
+    description: 角色定义和管理
+  - name: 权限管理
+    description: 权限定义、分配和验证（集成CASL）
+
+paths:
+  # 用户管理
+  /users/register:
+    post:
+      tags: [用户管理]
+      summary: 注册平台用户
+      description: 创建新的平台用户账户，发送邮箱和手机验证码
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+      responses:
+        '201':
+          description: 用户注册成功，已发送验证码
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterUserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: 邮箱或手机号已存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/verify-email:
+    post:
+      tags: [用户管理]
+      summary: 验证邮箱
+      description: 通过邮箱验证链接或验证码验证邮箱
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailRequest'
+      responses:
+        '200':
+          description: 邮箱验证成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /users/verify-phone:
+    post:
+      tags: [用户管理]
+      summary: 验证手机号
+      description: 通过短信验证码验证手机号
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyPhoneRequest'
+      responses:
+        '200':
+          description: 手机号验证成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  # 租户管理
+  /tenants:
+    post:
+      tags: [租户管理]
+      summary: 创建租户
+      description: 已验证的平台用户申请创建租户
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantRequest'
+      responses:
+        '201':
+          description: 租户创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: 租户代码或域名已存在
+
+  /tenants/{tenantId}/status:
+    patch:
+      tags: [租户管理]
+      summary: 更新租户状态
+      description: 平台管理员或租户管理员更新租户状态
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTenantStatusRequest'
+      responses:
+        '200':
+          description: 状态更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantResponse'
+
+  # 用户分配
+  /tenants/{tenantId}/invitations:
+    post:
+      tags: [用户分配]
+      summary: 邀请用户加入租户
+      description: 租户管理员邀请平台用户加入租户
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteUserRequest'
+      responses:
+        '201':
+          description: 邀请已发送
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationResponse'
+
+  /tenants/{tenantId}/users/{userId}/assignments:
+    post:
+      tags: [用户分配]
+      summary: 分配用户到组织/部门
+      description: 将用户分配到指定的组织和部门
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserAssignmentRequest'
+      responses:
+        '201':
+          description: 分配成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  # 权限验证
+  /users/me/permissions:
+    get:
+      tags: [权限管理]
+      summary: 获取当前用户权限列表
+      description: 返回当前登录用户的完整权限列表，用于前端菜单权限控制
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 用户权限列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPermissionsResponse'
+        '401':
+          description: 未授权
+
+  /permissions/check:
+    post:
+      tags: [权限管理]
+      summary: 验证权限
+      description: 使用CASL验证用户是否拥有指定权限
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckPermissionRequest'
+      responses:
+        '200':
+          description: 权限验证结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionCheckResponse'
+
+  /permissions/check-batch:
+    post:
+      tags: [权限管理]
+      summary: 批量验证权限
+      description: 批量验证用户是否拥有指定的多个权限，用于前端菜单批量权限检查
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckPermissionsBatchRequest'
+      responses:
+        '200':
+          description: 批量权限验证结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionCheckBatchResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    TenantId:
+      name: tenantId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: 租户ID
+
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: 用户ID
+
+  schemas:
+    RegisterUserRequest:
+      type: object
+      required: [name, email, phoneNumber, password]
+      properties:
+        name:
+          type: string
+          description: 用户姓名
+        email:
+          type: string
+          format: email
+          description: 邮箱地址
+        phoneNumber:
+          type: string
+          description: 手机号
+        password:
+          type: string
+          format: password
+          minLength: 8
+          description: 密码（最少8字符，包含字母和数字）
+
+    RegisterUserResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        message:
+          type: string
+          description: 提示信息（已发送验证码）
+
+    VerifyEmailRequest:
+      type: object
+      required: [email, code]
+      properties:
+        email:
+          type: string
+          format: email
+        code:
+          type: string
+          description: 邮箱验证码或验证链接token
+
+    VerifyPhoneRequest:
+      type: object
+      required: [phoneNumber, code]
+      properties:
+        phoneNumber:
+          type: string
+        code:
+          type: string
+          description: 短信验证码
+
+    CreateTenantRequest:
+      type: object
+      required: [name, code, domain]
+      properties:
+        name:
+          type: string
+          description: 租户名称
+        code:
+          type: string
+          minLength: 3
+          maxLength: 20
+          pattern: '^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$'
+          description: 租户代码（3-20字符，字母数字开头/结尾）
+        domain:
+          type: string
+          format: hostname
+          description: 租户域名
+
+    TenantResponse:
+      type: object
+      properties:
+        tenantId:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        domain:
+          type: string
+        type:
+          type: string
+          enum: [FREE, BASIC, PROFESSIONAL, ENTERPRISE, CUSTOM]
+        status:
+          type: string
+          enum: [TRIAL, ACTIVE, SUSPENDED, EXPIRED, DELETED]
+        createdAt:
+          type: string
+          format: date-time
+
+    UpdateTenantStatusRequest:
+      type: object
+      required: [status, reason]
+      properties:
+        status:
+          type: string
+          enum: [ACTIVE, SUSPENDED, EXPIRED, DELETED]
+        reason:
+          type: string
+          description: 状态变更原因
+
+    InviteUserRequest:
+      type: object
+      required: [userEmail, organizationId, departmentId]
+      properties:
+        userEmail:
+          type: string
+          format: email
+          description: 被邀请用户的邮箱
+        organizationId:
+          type: string
+          format: uuid
+          description: 组织ID
+        departmentId:
+          type: string
+          format: uuid
+          description: 部门ID
+        roleId:
+          type: string
+          format: uuid
+          description: 角色ID（可选）
+
+    InvitationResponse:
+      type: object
+      properties:
+        invitationId:
+          type: string
+          format: uuid
+        expiresAt:
+          type: string
+          format: date-time
+          description: 邀请过期时间（7天后）
+
+    CreateUserAssignmentRequest:
+      type: object
+      required: [organizationId, departmentId]
+      properties:
+        organizationId:
+          type: string
+          format: uuid
+        departmentId:
+          type: string
+          format: uuid
+        roleId:
+          type: string
+          format: uuid
+
+    CheckPermissionRequest:
+      type: object
+      required: [action, subject]
+      properties:
+        action:
+          type: string
+          description: CASL action（如 'manage', 'read', 'create'）
+        subject:
+          type: string
+          description: CASL subject（如 'Tenant', 'User', 'Organization'）
+        conditions:
+          type: object
+          description: 条件（如 { tenantId: 'xxx' }）
+
+    PermissionCheckResponse:
+      type: object
+      properties:
+        allowed:
+          type: boolean
+          description: 是否允许
+        reason:
+          type: string
+          description: 拒绝原因（如果不允许）
+
+    UserPermissionsResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: 用户ID
+        tenantId:
+          type: string
+          format: uuid
+          description: 租户ID
+        organizationId:
+          type: string
+          format: uuid
+          description: 组织ID（可选）
+        departmentId:
+          type: string
+          format: uuid
+          description: 部门ID（可选）
+        permissions:
+          type: array
+          items:
+            type: string
+          description: 权限列表（格式：action:subject，如 "read:User", "manage:Tenant"）
+        roles:
+          type: array
+          items:
+            type: string
+          description: 角色代码列表（可选）
+
+    CheckPermissionsBatchRequest:
+      type: object
+      required: [permissions]
+      properties:
+        permissions:
+          type: array
+          items:
+            type: object
+            properties:
+              action:
+                type: string
+              subject:
+                type: string
+              conditions:
+                type: object
+          description: 要验证的权限列表
+
+    PermissionCheckBatchResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              permission:
+                type: object
+                properties:
+                  action:
+                    type: string
+                  subject:
+                    type: string
+              allowed:
+                type: boolean
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: 错误代码
+        message:
+          type: string
+          description: 错误消息（中文）
+        details:
+          type: object
+          description: 错误详情
+
+  responses:
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+

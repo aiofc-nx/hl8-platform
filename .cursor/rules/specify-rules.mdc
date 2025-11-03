@@ -50,3 +50,10 @@ alwaysApply: true
   - 端到端测试：`test/e2e/`
 - **类型分离**：单元测试与源代码同目录，集成测试按模块组织，端到端测试按功能组织
 - **测试覆盖率要求**：核心业务逻辑 ≥ 80%，关键路径 ≥ 90%，所有公共 API 必须有测试用例
+
+## Active Technologies
+- TypeScript 5.9.3, Node.js >=20 (001-iam)
+- PostgreSQL数据库，支持行级安全（ROW_LEVEL_SECURITY）实现租户数据隔离 (001-iam)
+
+## Recent Changes
+- 001-iam: Added TypeScript 5.9.3, Node.js >=20
