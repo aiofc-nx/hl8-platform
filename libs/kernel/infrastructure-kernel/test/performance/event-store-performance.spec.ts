@@ -3,7 +3,14 @@
  * @description 验证事件存储支持 100,000+ 事件/聚合的性能
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from "@jest/globals";
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+} from "@jest/globals";
 import { MikroORM, EntityManager } from "@mikro-orm/core";
 import { PostgreSqlDriver } from "@mikro-orm/postgresql";
 import { MikroORMEventStore } from "../../src/events/event-store.impl.js";
@@ -136,18 +143,15 @@ describe("事件存储性能测试", () => {
       console.log(
         `保存 ${totalEvents} 个事件总耗时: ${duration}ms (${(duration / 1000).toFixed(2)}秒)`,
       );
-      console.log(
-        `平均每个事件耗时: ${(duration / totalEvents).toFixed(3)}ms`,
-      );
+      console.log(`平均每个事件耗时: ${(duration / totalEvents).toFixed(3)}ms`);
 
       // 验证所有事件都已保存
       const allEvents = await eventStore.getEvents(aggregateId);
       expect(allEvents.length).toBe(totalEvents);
 
       // 验证当前版本
-      const currentVersionResult = await eventStore.getCurrentVersion(
-        aggregateId,
-      );
+      const currentVersionResult =
+        await eventStore.getCurrentVersion(aggregateId);
       expect(currentVersionResult).toBe(totalEvents);
 
       // 性能要求：100,000 个事件应该在 5 分钟内完成（考虑批量操作）
@@ -465,25 +469,22 @@ describe("事件存储性能测试", () => {
           );
         }
 
-        const promise = eventStore!.saveEvents(
-          aggregateId,
-          events,
-          currentVersion,
-        ).then((result) => {
-          if (result.success) {
-            return result.newVersion;
-          }
-          throw new Error("保存失败");
-        });
+        const promise = eventStore!
+          .saveEvents(aggregateId, events, currentVersion)
+          .then((result) => {
+            if (result.success) {
+              return result.newVersion;
+            }
+            throw new Error("保存失败");
+          });
 
         promises.push(promise);
         currentVersion += eventsPerBatch;
       }
 
       // 顺序执行以避免版本冲突（实际场景中可以使用事务或乐观锁）
-      let version = 0;
       for (const promise of promises) {
-        version = await promise;
+        await promise;
       }
 
       const endTime = Date.now();
@@ -502,4 +503,3 @@ describe("事件存储性能测试", () => {
     }, 30000);
   });
 });
-

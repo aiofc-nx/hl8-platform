@@ -17,7 +17,6 @@ import {
 import { MikroORMTenantIsolatedRepository } from "./tenant-isolated-repository.js";
 import { TenantIsolatedPersistenceEntity } from "../../entities/base/tenant-isolated-persistence-entity.js";
 import { Entity, Property } from "@mikro-orm/core";
-import { ExceptionConverter } from "../../exceptions/exception-converter.js";
 
 /**
  * 测试用的租户隔离实体
@@ -114,10 +113,9 @@ describe("MikroORMTenantIsolatedRepository", () => {
 
       expect(result).toBeDefined();
       expect(result.length).toBe(1);
-      expect(mockEm.find).toHaveBeenCalledWith(
-        "TestTenantIsolatedEntity",
-        { tenantId: tenantId.value },
-      );
+      expect(mockEm.find).toHaveBeenCalledWith("TestTenantIsolatedEntity", {
+        tenantId: tenantId.value,
+      });
     });
 
     it("应该在权限不足时抛出异常", async () => {
@@ -128,9 +126,9 @@ describe("MikroORMTenantIsolatedRepository", () => {
         organizationId: orgId,
       });
 
-      await expect(
-        repository.findByTenant(tenantId, context),
-      ).rejects.toThrow(BusinessException);
+      await expect(repository.findByTenant(tenantId, context)).rejects.toThrow(
+        BusinessException,
+      );
     });
   });
 
@@ -401,10 +399,9 @@ describe("MikroORMTenantIsolatedRepository", () => {
       const count = await repository.countByTenant(tenantId, context);
 
       expect(count).toBe(5);
-      expect(mockEm.count).toHaveBeenCalledWith(
-        "TestTenantIsolatedEntity",
-        { tenantId: tenantId.value },
-      );
+      expect(mockEm.count).toHaveBeenCalledWith("TestTenantIsolatedEntity", {
+        tenantId: tenantId.value,
+      });
     });
   });
 
@@ -497,9 +494,7 @@ describe("MikroORMTenantIsolatedRepository", () => {
 
       (mockEm.find as jest.Mock).mockRejectedValue(new Error("Database error"));
 
-      await expect(
-        repository.findAllByContext(context),
-      ).rejects.toBeDefined();
+      await expect(repository.findAllByContext(context)).rejects.toBeDefined();
     });
 
     it("应该能够处理包含部门ID的上下文", async () => {
@@ -616,9 +611,9 @@ describe("MikroORMTenantIsolatedRepository", () => {
         organizationId: orgId,
       });
 
-      await expect(
-        repository.countByTenant(tenantId, context),
-      ).rejects.toThrow(BusinessException);
+      await expect(repository.countByTenant(tenantId, context)).rejects.toThrow(
+        BusinessException,
+      );
     });
 
     it("应该在查询失败时抛出异常", async () => {

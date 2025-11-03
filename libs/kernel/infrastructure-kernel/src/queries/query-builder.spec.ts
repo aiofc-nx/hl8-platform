@@ -15,10 +15,7 @@ import {
   QueryCriteria,
   QueryOperator,
 } from "@hl8/domain-kernel";
-import type { ISpecificationConverter, MikroORMQueryOptions } from "./specification-converter.interface.js";
-
-// 测试用的查询规范实现（实现 IQuerySpecification）
-import { IQuerySpecification, QueryCriteria } from "@hl8/domain-kernel";
+import type { ISpecificationConverter } from "./specification-converter.interface.js";
 
 class TestQuerySpecification<T> implements IQuerySpecification<T> {
   constructor(
@@ -132,7 +129,7 @@ class SimpleSpecification<T> implements ISpecification<T> {
     return this.satisfied;
   }
 
-  and(other: ISpecification<T>): ISpecification<T> {
+  and(_other: ISpecification<T>): ISpecification<T> {
     return new (class extends SimpleSpecification<T> {
       constructor() {
         super("AND");
@@ -140,7 +137,7 @@ class SimpleSpecification<T> implements ISpecification<T> {
     })();
   }
 
-  or(other: ISpecification<T>): ISpecification<T> {
+  or(_other: ISpecification<T>): ISpecification<T> {
     return new (class extends SimpleSpecification<T> {
       constructor() {
         super("OR");
@@ -374,4 +371,3 @@ describe("QueryBuilder", () => {
     });
   });
 });
-

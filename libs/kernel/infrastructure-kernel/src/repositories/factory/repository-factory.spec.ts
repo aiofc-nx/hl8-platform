@@ -104,10 +104,7 @@ describe("RepositoryFactory", () => {
 
     it("应该在实体类未继承 TenantIsolatedPersistenceEntity 时抛出错误", () => {
       expect(() => {
-        factory.createTenantIsolatedRepository(
-          TestEntity as any,
-          "TestEntity",
-        );
+        factory.createTenantIsolatedRepository(TestEntity as any, "TestEntity");
       }).toThrow(
         "实体类 TestEntity 必须继承自 TenantIsolatedPersistenceEntity",
       );
@@ -185,4 +182,3 @@ describe("RepositoryFactory", () => {
     });
   });
 });
-

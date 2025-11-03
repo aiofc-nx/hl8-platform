@@ -11,13 +11,7 @@ import { SpecificationConverter } from "../../src/queries/specification-converte
 import { MikroORMRepository } from "../../src/repositories/base/repository.base.js";
 import { BaseEntity } from "../../src/entities/base/base-entity.js";
 import { Entity, Property } from "@mikro-orm/core";
-import {
-  QueryCriteria,
-  QueryOperator,
-  TenantId,
-  OrganizationId,
-  TenantContext,
-} from "@hl8/domain-kernel";
+import { QueryCriteria, QueryOperator } from "@hl8/domain-kernel";
 
 /**
  * 性能测试用的实体
@@ -32,25 +26,6 @@ class PerformanceTestEntity extends BaseEntity {
 
   @Property({ type: "integer" })
   category!: number;
-}
-
-/**
- * 性能测试查询规范
- */
-class ValueGreaterThanSpec implements any {
-  constructor(private readonly minValue: number) {}
-
-  getQueryCriteria(): QueryCriteria {
-    return {
-      conditions: [
-        {
-          field: "value",
-          operator: QueryOperator.GREATER_THAN,
-          value: this.minValue,
-        },
-      ],
-    };
-  }
 }
 
 describe("查询性能测试", () => {
@@ -150,7 +125,9 @@ describe("查询性能测试", () => {
       const endTime = Date.now();
       const duration = endTime - startTime;
 
-      console.log(`findAll 查询耗时: ${duration}ms, 返回记录数: ${results.length}`);
+      console.log(
+        `findAll 查询耗时: ${duration}ms, 返回记录数: ${results.length}`,
+      );
 
       // 注意：对于 10 万条记录的查询，100ms 可能过于严格
       // 这里我们使用更合理的阈值：500ms（考虑网络和数据库 I/O）
@@ -183,9 +160,13 @@ describe("查询性能测试", () => {
       }
 
       // 先获取一个 ID
-      const firstEntity = await em.findOne(PerformanceTestEntity, {}, {
-        fields: ["id"],
-      });
+      const firstEntity = await em.findOne(
+        PerformanceTestEntity,
+        {},
+        {
+          fields: ["id"],
+        },
+      );
       if (!firstEntity) {
         console.log("跳过测试：没有测试数据");
         return;
@@ -368,4 +349,3 @@ describe("查询性能测试", () => {
     });
   });
 });
-

@@ -4,7 +4,10 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import { createMikroORMConfig, loadMikroORMConfigFromConfig } from "./mikro-orm.config.js";
+import {
+  createMikroORMConfig,
+  loadMikroORMConfigFromConfig,
+} from "./mikro-orm.config.js";
 import type { Logger } from "@hl8/logger";
 
 describe("createMikroORMConfig", () => {
@@ -124,4 +127,3 @@ describe("loadMikroORMConfigFromConfig", () => {
     );
   });
 });
-

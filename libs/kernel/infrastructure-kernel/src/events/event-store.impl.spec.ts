@@ -58,9 +58,9 @@ describe("MikroORMEventStore", () => {
     it("应该在事件列表为空时抛出错误", async () => {
       const aggregateId = EntityId.generate();
 
-      await expect(
-        eventStore.saveEvents(aggregateId, [], 0),
-      ).rejects.toThrow("事件列表不能为空");
+      await expect(eventStore.saveEvents(aggregateId, [], 0)).rejects.toThrow(
+        "事件列表不能为空",
+      );
     });
 
     it("应该在版本冲突时返回失败结果", async () => {
@@ -179,9 +179,7 @@ describe("MikroORMEventStore", () => {
     it("应该在查询失败时抛出错误", async () => {
       const aggregateId = EntityId.generate();
 
-      (mockEm.find as jest.Mock).mockRejectedValue(
-        new Error("查询失败"),
-      );
+      (mockEm.find as jest.Mock).mockRejectedValue(new Error("查询失败"));
 
       await expect(eventStore.getEvents(aggregateId)).rejects.toThrow(
         "获取事件失败",
@@ -245,10 +243,7 @@ describe("MikroORMEventStore", () => {
 
       (mockEm.find as jest.Mock).mockResolvedValue([eventEntity]);
 
-      const events = await eventStore.getAllEvents(
-        fromTimestamp,
-        toTimestamp,
-      );
+      const events = await eventStore.getAllEvents(fromTimestamp, toTimestamp);
 
       expect(events).toBeDefined();
       expect(mockEm.find).toHaveBeenCalledWith(
@@ -414,9 +409,7 @@ describe("MikroORMEventStore", () => {
       );
 
       (mockEm.findOne as jest.Mock).mockResolvedValue(null);
-      (mockEm.flush as jest.Mock).mockRejectedValue(
-        new Error("保存失败"),
-      );
+      (mockEm.flush as jest.Mock).mockRejectedValue(new Error("保存失败"));
 
       const result = await eventStore.saveSnapshot(snapshot);
 

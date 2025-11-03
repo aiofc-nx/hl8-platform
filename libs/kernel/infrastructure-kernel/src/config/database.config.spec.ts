@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import { getDatabaseConfig, DatabaseConfig } from "./database.config.js";
+import { getDatabaseConfig } from "./database.config.js";
 
 describe("getDatabaseConfig", () => {
   it("应该能够从完整配置创建数据库配置", () => {
@@ -140,4 +140,3 @@ describe("getDatabaseConfig", () => {
     expect(result!.pool).toEqual({ min: 5 });
   });
 });
-

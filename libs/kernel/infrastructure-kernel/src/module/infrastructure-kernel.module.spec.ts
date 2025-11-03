@@ -3,17 +3,10 @@
  * @description 验证 InfrastructureKernelModule 的配置和依赖注入
  */
 
-import { describe, it, expect, beforeEach } from "@jest/globals";
-import { Test, TestingModule } from "@nestjs/testing";
+import { describe, it, expect } from "@jest/globals";
 import { InfrastructureKernelModule } from "./infrastructure-kernel.module.js";
-import { RepositoryFactory } from "../repositories/factory/repository-factory.js";
-import { MikroORMTransactionManager } from "../transactions/transaction-manager.js";
-import { EntityManager, MikroORM } from "@mikro-orm/core";
-import { MikroOrmModule } from "@mikro-orm/nestjs";
 
 describe("InfrastructureKernelModule", () => {
-  let module: TestingModule;
-
   describe("forRoot", () => {
     it("应该能够创建模块实例", () => {
       const dynamicModule = InfrastructureKernelModule.forRoot();
@@ -92,4 +85,3 @@ describe("InfrastructureKernelModule", () => {
     });
   });
 });
-
