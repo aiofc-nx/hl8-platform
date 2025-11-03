@@ -9,21 +9,21 @@
 
 ## Phase 2 — Foundational
 - [X] T006 Draft public API surface file libs/kernel/interface-kernel/src/index.ts
-- [ ] T007 Define version policy and release rules in libs/kernel/interface-kernel/CHANGELOG.md
-- [ ] T008 Add CI coverage gate placeholder (docs/scripts) for public API ≥90%
+- [X] T007 Define version policy and release rules in libs/kernel/interface-kernel/CHANGELOG.md
+- [X] T008 Add CI coverage gate placeholder (docs/scripts) for public API ≥90%
 - [X] T009 [P] Add typed error model contracts (DomainException, BusinessException) in libs/kernel/interface-kernel/src/errors/
 
 ## Phase 3 — User Story 1 (P1): 统一接口内核契约
-- [ ] T010 [US1] Add identifier contracts (EntityId, TenantId, OrganizationId, DepartmentId) in libs/kernel/interface-kernel/src/identifiers/
-- [ ] T011 [P] [US1] Add TenantContext type in libs/kernel/interface-kernel/src/context/tenant-context.ts
-- [ ] T012 [US1] Add repository contracts (IRepository, ITenantIsolatedRepository, IQueryRepository) in libs/kernel/interface-kernel/src/repositories/
-- [ ] T013 [P] [US1] Add CQRS base contracts (BaseCommand/BaseQuery types/interfaces) in libs/kernel/interface-kernel/src/cqrs/
-- [ ] T014 [US1] Add event store interface (IEventStore + DomainEvent shape) in libs/kernel/interface-kernel/src/events/
-- [ ] T015 [P] [US1] Add result contracts (CommandResult, QueryResult) in libs/kernel/interface-kernel/src/results/
-- [ ] T016 [US1] Add pagination/sorting/filtering models in libs/kernel/interface-kernel/src/models/
-- [ ] T017 [US1] Export all public contracts from libs/kernel/interface-kernel/src/index.ts
-- [ ] T018 [US1] Add Chinese TSDoc to all public APIs per project rules
-- [ ] T019 [US1] Unit tests for all public contracts (≥90% coverage) in libs/kernel/interface-kernel/__tests__/
+- [X] T010 [US1] Add identifier contracts (EntityId, TenantId, OrganizationId, DepartmentId) in libs/kernel/interface-kernel/src/identifiers/
+- [X] T011 [P] [US1] Add TenantContext type in libs/kernel/interface-kernel/src/context/tenant-context.ts
+- [X] T012 [US1] Add repository contracts (IRepository, ITenantIsolatedRepository, IQueryRepository) in libs/kernel/interface-kernel/src/repositories/
+- [X] T013 [P] [US1] Add CQRS base contracts (BaseCommand/BaseQuery types/interfaces) in libs/kernel/interface-kernel/src/cqrs/
+- [X] T014 [US1] Add event store interface (IEventStore + DomainEvent shape) in libs/kernel/interface-kernel/src/events/
+- [X] T015 [P] [US1] Add result contracts (CommandResult, QueryResult) in libs/kernel/interface-kernel/src/results/
+- [X] T016 [US1] Add pagination/sorting/filtering models in libs/kernel/interface-kernel/src/models/
+- [X] T017 [US1] Export all public contracts from libs/kernel/interface-kernel/src/index.ts
+- [X] T018 [US1] Add Chinese TSDoc to all public APIs per project rules
+- [X] T019 [US1] Unit tests for all public contracts (≥90% coverage) in libs/kernel/interface-kernel/__tests__/
 
 ## Phase 4 — User Story 2 (P2): 稳定一致的接口消费体验
 - [ ] T020 [US2] Create sample consumer demonstrating impl swap without call-site change in examples/interface-consumer/README.md

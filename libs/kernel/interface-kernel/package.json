@@ -24,10 +24,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@hl8/config": "workspace:*",
-    "@hl8/logger": "workspace:*",
-    "@nestjs/common": "^11.1.6",
-    "@nestjs/core": "^11.1.6"
+    "@hl8/domain-kernel": "workspace:*"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

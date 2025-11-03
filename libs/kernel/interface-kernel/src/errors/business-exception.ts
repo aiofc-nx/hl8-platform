@@ -11,10 +11,12 @@ import { DomainException } from "./domain-exception.js";
  * throw new BusinessException("VALIDATION_FAILED", "参数校验失败", { field: "price" });
  */
 export class BusinessException extends DomainException {
-  constructor(code: string, message: string, details?: Record<string, unknown>) {
+  constructor(
+    code: string,
+    message: string,
+    details?: Record<string, unknown>,
+  ) {
     super(code, message, details);
     this.name = "BusinessException";
   }
 }
-
-

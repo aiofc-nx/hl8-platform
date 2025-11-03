@@ -2,6 +2,7 @@ export default {
   displayName: "config",
   preset: "ts-jest/presets/default-esm",
   testEnvironment: "node",
+  coverageProvider: "v8",
   rootDir: ".",
   extensionsToTreatAsEsm: [".ts"],
   moduleNameMapper: {
