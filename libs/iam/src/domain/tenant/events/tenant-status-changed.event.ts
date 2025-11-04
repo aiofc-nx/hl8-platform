@@ -4,22 +4,7 @@
  */
 
 import { DomainEvent, EntityId, TenantId } from "@hl8/domain-kernel";
-
-/**
- * 租户状态枚举
- */
-export enum TenantStatus {
-  /** 试用 */
-  TRIAL = "TRIAL",
-  /** 活跃 */
-  ACTIVE = "ACTIVE",
-  /** 暂停 */
-  SUSPENDED = "SUSPENDED",
-  /** 过期 */
-  EXPIRED = "EXPIRED",
-  /** 已删除 */
-  DELETED = "DELETED",
-}
+import { TenantStatus } from "../value-objects/tenant-status.enum.js";
 
 /**
  * 租户状态变更事件数据

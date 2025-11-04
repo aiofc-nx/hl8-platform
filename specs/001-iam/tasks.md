@@ -164,29 +164,29 @@
 
 #### 领域层 - 租户管理子领域
 
-- [ ] T061 [P] [US2] Create TenantType enum in libs/iam/src/domain/tenant/value-objects/tenant-type.enum.ts
-- [ ] T062 [P] [US2] Create TenantStatus enum in libs/iam/src/domain/tenant/value-objects/tenant-status.enum.ts
-- [ ] T063 [US2] Create Tenant entity in libs/iam/src/domain/tenant/entities/tenant.entity.ts
-- [ ] T064 [US2] Create TenantConfiguration entity in libs/iam/src/domain/tenant/entities/tenant-configuration.entity.ts
-- [ ] T065 [US2] Create Tenant aggregate root in libs/iam/src/domain/tenant/aggregates/tenant.aggregate.ts
-- [ ] T066 [US2] Create TenantRepository interface in libs/iam/src/domain/tenant/repositories/tenant.repository.interface.ts
-- [ ] T067 [US2] Create TenantCreatedEvent implementation
+- [X] T061 [P] [US2] Create TenantType enum in libs/iam/src/domain/tenant/value-objects/tenant-type.enum.ts
+- [X] T062 [P] [US2] Create TenantStatus enum in libs/iam/src/domain/tenant/value-objects/tenant-status.enum.ts
+- [X] T063 [US2] Create Tenant entity in libs/iam/src/domain/tenant/entities/tenant.entity.ts (Tenant是聚合根，已创建TenantConfiguration entity)
+- [X] T064 [US2] Create TenantConfiguration entity in libs/iam/src/domain/tenant/entities/tenant-configuration.entity.ts
+- [X] T065 [US2] Create Tenant aggregate root in libs/iam/src/domain/tenant/aggregates/tenant.aggregate.ts
+- [X] T066 [US2] Create TenantRepository interface in libs/iam/src/domain/tenant/repositories/tenant.repository.interface.ts
+- [X] T067 [US2] Create TenantCreatedEvent implementation
 
 #### 领域层 - 组织管理子领域（用于默认组织）
 
-- [ ] T068 [P] [US2] Create OrganizationNameValueObject in libs/iam/src/domain/organization/value-objects/organization-name.value-object.ts
-- [ ] T069 [US2] Create Organization entity in libs/iam/src/domain/organization/entities/organization.entity.ts
-- [ ] T070 [US2] Create Organization aggregate root in libs/iam/src/domain/organization/aggregates/organization.aggregate.ts
-- [ ] T071 [US2] Create OrganizationRepository interface in libs/iam/src/domain/organization/repositories/organization.repository.interface.ts
-- [ ] T072 [US2] Create OrganizationCreatedEvent in libs/iam/src/domain/organization/events/organization-created.event.ts
+- [X] T068 [P] [US2] Create OrganizationNameValueObject in libs/iam/src/domain/organization/value-objects/organization-name.value-object.ts
+- [X] T069 [US2] Create Organization entity in libs/iam/src/domain/organization/entities/organization.entity.ts (Organization是聚合根，无需单独实体)
+- [X] T070 [US2] Create Organization aggregate root in libs/iam/src/domain/organization/aggregates/organization.aggregate.ts
+- [X] T071 [US2] Create OrganizationRepository interface in libs/iam/src/domain/organization/repositories/organization.repository.interface.ts
+- [X] T072 [US2] Create OrganizationCreatedEvent in libs/iam/src/domain/organization/events/organization-created.event.ts
 
 #### 领域层 - 部门管理子领域（用于根部门）
 
-- [ ] T073 [P] [US2] Create DepartmentNameValueObject in libs/iam/src/domain/department/value-objects/department-name.value-object.ts
-- [ ] T074 [US2] Create Department entity in libs/iam/src/domain/department/entities/department.entity.ts
-- [ ] T075 [US2] Create Department aggregate root in libs/iam/src/domain/department/aggregates/department.aggregate.ts
-- [ ] T076 [US2] Create DepartmentRepository interface in libs/iam/src/domain/department/repositories/department.repository.interface.ts
-- [ ] T077 [US2] Create DepartmentCreatedEvent in libs/iam/src/domain/department/events/department-created.event.ts
+- [X] T073 [P] [US2] Create DepartmentNameValueObject in libs/iam/src/domain/department/value-objects/department-name.value-object.ts
+- [X] T074 [US2] Create Department entity in libs/iam/src/domain/department/entities/department.entity.ts (Department是聚合根，无需单独实体)
+- [X] T075 [US2] Create Department aggregate root in libs/iam/src/domain/department/aggregates/department.aggregate.ts
+- [X] T076 [US2] Create DepartmentRepository interface in libs/iam/src/domain/department/repositories/department.repository.interface.ts
+- [X] T077 [US2] Create DepartmentCreatedEvent in libs/iam/src/domain/department/events/department-created.event.ts
 
 #### 应用层 - 租户创建用例
 

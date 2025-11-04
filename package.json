@@ -17,6 +17,11 @@
       "path": "cz-conventional-changelog"
     }
   },
+  "lint-staged": {
+    "*.ts": [
+      "eslint \"libs/**/*.ts\" \"packages/**/*.ts\" \"apps/**/*.ts\" --fix"
+    ]
+  },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
     "@commitlint/cli": "^20.1.0",
