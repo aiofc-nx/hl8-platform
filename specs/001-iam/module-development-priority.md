@@ -10,32 +10,32 @@
 
 #### IAM → 其他模块（查询接口调用）
 
-| IAM需要查询的接口 | 模块 | 用途 | 是否阻塞 |
-|------------------|------|------|---------|
-| `getTenantQuota(tenantId)` | 订阅管理模块 | 检查用户数/组织数配额 | **是，阻塞用户邀请** |
-| `checkUserQuota(tenantId)` | 订阅管理模块 | 验证是否可以添加用户 | **是，阻塞用户邀请** |
-| `validateOrganizationExists(orgId)` | 组织结构模块 | 验证组织存在性 | **是，阻塞用户分配** |
-| `validateDepartmentExists(deptId)` | 组织结构模块 | 验证部门存在性 | **是，阻塞用户分配** |
+| IAM需要查询的接口                   | 模块         | 用途                  | 是否阻塞             |
+| ----------------------------------- | ------------ | --------------------- | -------------------- |
+| `getTenantQuota(tenantId)`          | 订阅管理模块 | 检查用户数/组织数配额 | **是，阻塞用户邀请** |
+| `checkUserQuota(tenantId)`          | 订阅管理模块 | 验证是否可以添加用户  | **是，阻塞用户邀请** |
+| `validateOrganizationExists(orgId)` | 组织结构模块 | 验证组织存在性        | **是，阻塞用户分配** |
+| `validateDepartmentExists(deptId)`  | 组织结构模块 | 验证部门存在性        | **是，阻塞用户分配** |
 
 #### IAM → 其他模块（订阅事件）
 
-| IAM订阅的事件 | 模块 | 用途 | 是否阻塞 |
-|--------------|------|------|---------|
-| `QuotaExceeded` | 订阅管理模块 | 阻止超出配额的操作 | 否（同步接口已覆盖） |
-| `TenantNameApproved` | 内容审核模块 | 更新租户名称 | 否（可异步） |
-| `NotificationSent` | 通知模块 | 确认通知发送 | 否（可忽略） |
+| IAM订阅的事件        | 模块         | 用途               | 是否阻塞             |
+| -------------------- | ------------ | ------------------ | -------------------- |
+| `QuotaExceeded`      | 订阅管理模块 | 阻止超出配额的操作 | 否（同步接口已覆盖） |
+| `TenantNameApproved` | 内容审核模块 | 更新租户名称       | 否（可异步）         |
+| `NotificationSent`   | 通知模块     | 确认通知发送       | 否（可忽略）         |
 
 ---
 
 ### 其他模块 → IAM（订阅事件）
 
-| 其他模块订阅的事件 | IAM发布 | 用途 | 是否阻塞 |
-|------------------|---------|------|---------|
-| `TenantCreated` | IAM | 初始化订阅计划 | **是，阻塞租户创建后的初始化** |
-| `TenantCreated` | IAM | 创建默认组织和部门 | **是，阻塞租户初始化** |
-| `UserInvited` | IAM | 检查用户配额 | **是，阻塞用户邀请流程** |
-| `UserInvited` | IAM | 发送邀请通知 | 否（可异步） |
-| `VerificationCodeRequested` | IAM | 发送验证码 | 否（IAM可先实现基础通知） |
+| 其他模块订阅的事件          | IAM发布 | 用途               | 是否阻塞                       |
+| --------------------------- | ------- | ------------------ | ------------------------------ |
+| `TenantCreated`             | IAM     | 初始化订阅计划     | **是，阻塞租户创建后的初始化** |
+| `TenantCreated`             | IAM     | 创建默认组织和部门 | **是，阻塞租户初始化**         |
+| `UserInvited`               | IAM     | 检查用户配额       | **是，阻塞用户邀请流程**       |
+| `UserInvited`               | IAM     | 发送邀请通知       | 否（可异步）                   |
+| `VerificationCodeRequested` | IAM     | 发送验证码         | 否（IAM可先实现基础通知）      |
 
 ---
 
@@ -44,6 +44,7 @@
 ### 理由1：IAM是基础模块，提供核心能力
 
 **IAM的核心功能（独立于其他模块）**：
+
 - 用户注册和认证（FR-001~FR-011）
 - 租户创建的基础部分（FR-012~FR-016, FR-023）
 - 租户状态管理（FR-024~FR-030）
@@ -87,6 +88,7 @@ class SubscriptionService implements ISubscriptionService {
 ```
 
 **优势**：
+
 - IAM可以独立开发和测试
 - 接口契约已定义，其他模块可以并行开发
 - 后续集成时只需替换Mock实现
@@ -123,6 +125,7 @@ class SubscriptionInitializationHandler {
 ```
 
 **优势**：
+
 - IAM可以独立开发，事件发布不影响功能
 - 其他模块可以后续实现事件处理器
 - 支持事件重放和最终一致性
@@ -136,6 +139,7 @@ class SubscriptionInitializationHandler {
 **目标**：实现IAM的核心功能，建立基础能力
 
 **开发内容**：
+
 1. ✅ 用户注册和认证（FR-001~FR-011）
 2. ✅ 租户创建的基础部分（FR-012~FR-016, FR-023）
 3. ✅ 租户状态管理的基础部分（FR-024~FR-025, FR-027~FR-030）
@@ -144,13 +148,16 @@ class SubscriptionInitializationHandler {
 6. ✅ 数据隔离和安全（FR-073~FR-077）
 
 **Mock实现**：
+
 - `MockSubscriptionService`：返回无限制配额
 - `MockOrganizationStructureService`：总是返回true（验证通过）
 
 **事件发布**：
+
 - 发布所有领域事件（即使没有订阅者）
 
 **独立测试**：
+
 - IAM功能可以完全独立测试
 - 不依赖其他业务模块
 
@@ -159,6 +166,7 @@ class SubscriptionInitializationHandler {
 ### 阶段2：基础设施模块（P0，可与IAM并行）
 
 **通知基础设施模块**：
+
 - 实现通知发送、重试、降级
 - 订阅IAM的通知事件
 - 替换IAM中的基础通知实现
@@ -170,11 +178,13 @@ class SubscriptionInitializationHandler {
 ### 阶段3：订阅管理模块（P1，IAM开发后）
 
 **开发内容**：
+
 - 订阅计划和租户类型管理
 - 试用期管理
 - 资源配额管理和监控
 
 **集成点**：
+
 - 订阅 `TenantCreated` 事件
 - 实现 `ISubscriptionService` 接口
 - 替换IAM中的Mock实现
@@ -188,10 +198,12 @@ class SubscriptionInitializationHandler {
 ### 阶段4：组织结构管理模块（P2）
 
 **开发内容**：
+
 - 组织和部门的CRUD管理
 - 层级结构管理
 
 **集成点**：
+
 - 订阅 `TenantCreated` 事件
 - 实现 `IOrganizationStructureService` 接口
 - 替换IAM中的Mock实现
@@ -203,9 +215,11 @@ class SubscriptionInitializationHandler {
 ### 阶段5：内容审核模块（P3）
 
 **开发内容**：
+
 - 租户名称审核工作流
 
 **集成点**：
+
 - 订阅 `TenantNameChangeRequested` 事件
 - 发布审核结果事件
 
@@ -266,6 +280,7 @@ class SubscriptionInitializationHandler {
 ### 如果延后IAM开发会怎样？
 
 **问题**：
+
 1. 其他模块需要IAM的事件和接口才能完整开发
 2. 没有身份认证和租户隔离，其他模块无法独立运行
 3. 整体交付时间不会提前，反而可能延后
@@ -273,6 +288,7 @@ class SubscriptionInitializationHandler {
 ### 如果IAM先行开发会怎样？
 
 **优势**：
+
 1. 建立平台的核心能力（身份认证、租户隔离）
 2. 其他模块可以基于稳定的接口开发
 3. 支持增量集成，降低风险
@@ -280,4 +296,3 @@ class SubscriptionInitializationHandler {
 ---
 
 **结论**：**IAM应该优先开发，其他模块可以并行设计接口和事件契约，后续实现并集成**。
-

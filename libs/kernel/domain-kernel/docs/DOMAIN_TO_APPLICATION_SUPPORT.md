@@ -48,11 +48,13 @@
 ### 依赖关系
 
 **领域层 (Domain Layer)**:
+
 - ✅ **独立性强**：不依赖任何外部框架或基础设施
 - ✅ **业务聚焦**：专注于业务规则和业务逻辑
 - ✅ **接口定义**：定义核心抽象和接口
 
 **应用层 (Application Layer)**:
+
 - ✅ **依赖领域层**：通过 `@hl8/domain-kernel` 获取核心能力
 - ✅ **用例编排**：编排业务用例，协调领域对象
 - ✅ **框架集成**：基于 NestJS、CQRS 等框架
@@ -127,6 +129,7 @@ export abstract class BaseCommand<TResult = unknown> {
 ```
 
 **支持作用**:
+
 - ✅ **统一标识符格式**：确保整个系统使用一致的标识符格式（UUID v4）
 - ✅ **类型安全**：提供强类型的标识符，避免字符串误用
 - ✅ **验证能力**：提供标识符有效性验证
@@ -147,7 +150,7 @@ export class TenantContext {
   public readonly tenantId: TenantId;
   public readonly organizationId?: OrganizationId;
   public readonly departmentId?: DepartmentId;
-  
+
   public validate(): boolean;
   public toJSON(): Record<string, unknown>;
 }
@@ -157,12 +160,7 @@ export class TenantContext {
 
 ```typescript
 // @hl8/application-kernel - 查询基类
-import { 
-  EntityId, 
-  TenantContext, 
-  TenantId, 
-  OrganizationId 
-} from "@hl8/domain-kernel";
+import { EntityId, TenantContext, TenantId, OrganizationId } from "@hl8/domain-kernel";
 
 export abstract class BaseQuery<TResult = unknown> {
   public readonly tenantContext?: TenantContext;
@@ -178,6 +176,7 @@ export abstract class BaseQuery<TResult = unknown> {
 ```
 
 **支持作用**:
+
 - ✅ **多层级隔离**：支持租户、组织、部门三级数据隔离
 - ✅ **上下文传递**：在应用层中自动传递租户上下文
 - ✅ **权限控制**：为应用层的权限验证提供基础
@@ -202,7 +201,7 @@ export class DomainEvent {
   public readonly metadata: Record<string, unknown>;
   public readonly timestamp: Date;
   public readonly version: number;
-  
+
   public toJSON(): Record<string, unknown>;
   public clone(): DomainEvent;
 }
@@ -215,18 +214,10 @@ export class DomainEvent {
 import { DomainEvent as BaseDomainEvent, EntityId } from "@hl8/domain-kernel";
 
 export class DomainEvent extends BaseDomainEvent {
-  constructor(
-    aggregateRootId: EntityId,
-    eventType: string,
-    data: unknown,
-    metadata: Record<string, unknown> = {},
-    eventId?: EntityId,
-    timestamp?: Date,
-    version: number = 1,
-  ) {
+  constructor(aggregateRootId: EntityId, eventType: string, data: unknown, metadata: Record<string, unknown> = {}, eventId?: EntityId, timestamp?: Date, version: number = 1) {
     super(aggregateRootId, eventType, data, metadata, eventId, timestamp, version);
   }
-  
+
   public toJSON(): Record<string, unknown>;
   public clone(): DomainEvent;
 }
@@ -239,17 +230,14 @@ export class DomainEvent extends BaseDomainEvent {
 import { EntityId, DomainEvent as DomainEventBase } from "@hl8/domain-kernel";
 
 export class EventStore {
-  async saveEvents(
-    aggregateId: EntityId,
-    events: DomainEventBase[],
-    expectedVersion: number
-  ): Promise<void>;
-  
+  async saveEvents(aggregateId: EntityId, events: DomainEventBase[], expectedVersion: number): Promise<void>;
+
   async getEvents(aggregateId: EntityId): Promise<DomainEventBase[]>;
 }
 ```
 
 **支持作用**:
+
 - ✅ **事件标准化**：提供统一的事件格式和结构
 - ✅ **事件溯源支持**：为事件溯源提供基础数据结构
 - ✅ **事件版本管理**：支持事件版本控制和演化
@@ -272,12 +260,12 @@ export abstract class AggregateRoot {
   protected readonly _lifecycle: EntityLifecycle;
   protected readonly _version: number;
   private _domainEvents: DomainEvent[] = [];
-  
+
   // 领域事件管理
   protected addDomainEvent(event: DomainEvent): void;
   public getDomainEvents(): DomainEvent[];
   public clearDomainEvents(): void;
-  
+
   // 业务操作协调（实体-聚合分离原则）
   protected abstract performCoordination(operation: string, params: unknown): unknown;
   protected abstract performBusinessInvariantValidation(): boolean;
@@ -293,7 +281,7 @@ import { AggregateRoot, EntityId, IRepository } from "@hl8/domain-kernel";
 export class CreateUserUseCase {
   constructor(
     private readonly userRepository: IRepository<User>,
-    private readonly userFactory: IFactory<User>
+    private readonly userFactory: IFactory<User>,
   ) {}
 
   async execute(input: CreateUserInput): Promise<CreateUserOutput> {
@@ -322,6 +310,7 @@ export class CreateUserUseCase {
 ```
 
 **支持作用**:
+
 - ✅ **业务逻辑封装**：聚合根封装核心业务逻辑
 - ✅ **事件管理**：自动管理领域事件的产生和发布
 - ✅ **不变性验证**：确保业务不变量的满足
@@ -344,8 +333,7 @@ export interface IRepository<T extends AggregateRoot> {
   delete(id: EntityId): Promise<void>;
 }
 
-export interface ITenantIsolatedRepository<T extends TenantIsolatedAggregateRoot> 
-  extends IRepository<T> {
+export interface ITenantIsolatedRepository<T extends TenantIsolatedAggregateRoot> extends IRepository<T> {
   findByIdWithContext(id: EntityId, context: TenantContext): Promise<T | null>;
   findAllByContext(context: TenantContext): Promise<T[]>;
   belongsToTenant(id: EntityId, tenantId: TenantId): Promise<boolean>;
@@ -356,26 +344,17 @@ export interface ITenantIsolatedRepository<T extends TenantIsolatedAggregateRoot
 
 ```typescript
 // @hl8/application-kernel - 用例中使用仓储
-import { 
-  IRepository, 
-  ITenantIsolatedRepository,
-  TenantContext 
-} from "@hl8/domain-kernel";
+import { IRepository, ITenantIsolatedRepository, TenantContext } from "@hl8/domain-kernel";
 
 export class UpdateProductUseCase {
-  constructor(
-    private readonly productRepository: ITenantIsolatedRepository<Product>
-  ) {}
+  constructor(private readonly productRepository: ITenantIsolatedRepository<Product>) {}
 
   async execute(input: UpdateProductInput): Promise<UpdateProductOutput> {
     // 从命令中提取租户上下文
     const tenantContext = input.tenantContext;
-    
+
     // 使用租户隔离仓储查找聚合根
-    const product = await this.productRepository.findByIdWithContext(
-      EntityId.fromString(input.productId),
-      tenantContext
-    );
+    const product = await this.productRepository.findByIdWithContext(EntityId.fromString(input.productId), tenantContext);
 
     if (!product) {
       throw new EntityNotFoundException(/* ... */);
@@ -393,6 +372,7 @@ export class UpdateProductUseCase {
 ```
 
 **支持作用**:
+
 - ✅ **持久化抽象**：应用层不关心具体的持久化实现
 - ✅ **租户隔离**：自动处理多层级数据隔离
 - ✅ **接口契约**：定义清晰的仓储契约
@@ -418,10 +398,7 @@ export interface BusinessRule<T> {
 
 export class BusinessRuleManager<T> {
   registerRule(rule: BusinessRule<T>): void;
-  validateEntity(
-    entity: T, 
-    context: BusinessRuleValidationContext
-  ): BusinessRuleValidationResult;
+  validateEntity(entity: T, context: BusinessRuleValidationContext): BusinessRuleValidationResult;
 }
 ```
 
@@ -429,15 +406,12 @@ export class BusinessRuleManager<T> {
 
 ```typescript
 // @hl8/application-kernel - 用例中验证业务规则
-import { 
-  BusinessRuleManager, 
-  BusinessRuleValidationContext 
-} from "@hl8/domain-kernel";
+import { BusinessRuleManager, BusinessRuleValidationContext } from "@hl8/domain-kernel";
 
 export class CreateOrderUseCase {
   constructor(
     private readonly orderRepository: IRepository<Order>,
-    private readonly ruleManager: BusinessRuleManager<Order>
+    private readonly ruleManager: BusinessRuleManager<Order>,
   ) {}
 
   async execute(input: CreateOrderInput): Promise<CreateOrderOutput> {
@@ -453,10 +427,8 @@ export class CreateOrderUseCase {
     });
 
     if (!validationResult.isValid) {
-      const errors = validationResult.violations
-        .map(v => v.message)
-        .join(", ");
-      throw new UseCaseValidationException(errors, /* ... */);
+      const errors = validationResult.violations.map((v) => v.message).join(", ");
+      throw new UseCaseValidationException(errors /* ... */);
     }
 
     await this.orderRepository.save(order);
@@ -466,6 +438,7 @@ export class CreateOrderUseCase {
 ```
 
 **支持作用**:
+
 - ✅ **规则集中管理**：业务规则统一管理和执行
 - ✅ **规则组合**：支持复杂的规则组合和优先级
 - ✅ **可扩展性**：易于添加新的业务规则
@@ -497,7 +470,7 @@ import { IFactory } from "@hl8/domain-kernel";
 export class RegisterUserUseCase {
   constructor(
     private readonly userFactory: IFactory<User, UserFactoryConfig>,
-    private readonly userRepository: IRepository<User>
+    private readonly userRepository: IRepository<User>,
   ) {}
 
   async execute(input: RegisterUserInput): Promise<RegisterUserOutput> {
@@ -514,6 +487,7 @@ export class RegisterUserUseCase {
 ```
 
 **支持作用**:
+
 - ✅ **复杂对象创建**：封装复杂的对象创建逻辑
 - ✅ **配置验证**：在创建前验证配置的有效性
 - ✅ **创建逻辑集中**：将创建逻辑集中在领域层
@@ -545,27 +519,26 @@ export interface ISpecification<T> {
 import { ISpecification } from "@hl8/domain-kernel";
 
 export class FindActiveUsersQuery {
-  constructor(
-    private readonly userRepository: IRepository<User>
-  ) {}
+  constructor(private readonly userRepository: IRepository<User>) {}
 
   async execute(input: FindActiveUsersInput): Promise<FindActiveUsersOutput> {
     // 使用领域层规约模式查询
     const activeUserSpec = new ActiveUserSpecification();
     const verifiedEmailSpec = new VerifiedEmailSpecification();
-    
+
     // 组合规约
     const combinedSpec = activeUserSpec.and(verifiedEmailSpec);
 
     // 在仓储中应用规约（仓储实现会处理）
     const users = await this.userRepository.findBySpecification(combinedSpec);
 
-    return new FindActiveUsersOutput(users.map(u => u.id.value));
+    return new FindActiveUsersOutput(users.map((u) => u.id.value));
   }
 }
 ```
 
 **支持作用**:
+
 - ✅ **业务规则查询**：提供声明式的业务规则查询
 - ✅ **规约组合**：支持 AND、OR、NOT 等组合操作
 - ✅ **可复用性**：规约可以在多处复用
@@ -583,15 +556,9 @@ export class FindActiveUsersQuery {
 ```typescript
 // @hl8/domain-kernel
 export class CoordinationManager {
-  createContext(
-    operationName: string,
-    operationData: unknown,
-    requiredServices: string[]
-  ): ICoordinationContextBuilder;
-  
-  async executeCoordination(
-    context: ICoordinationContext
-  ): Promise<ICoordinationResult[]>;
+  createContext(operationName: string, operationData: unknown, requiredServices: string[]): ICoordinationContextBuilder;
+
+  async executeCoordination(context: ICoordinationContext): Promise<ICoordinationResult[]>;
 }
 ```
 
@@ -604,27 +571,19 @@ import { CoordinationManager } from "@hl8/domain-kernel";
 export class ProcessOrderUseCase {
   constructor(
     private readonly coordinationManager: CoordinationManager,
-    private readonly orderRepository: IRepository<Order>
+    private readonly orderRepository: IRepository<Order>,
   ) {}
 
   async execute(input: ProcessOrderInput): Promise<ProcessOrderOutput> {
-    const order = await this.orderRepository.findById(
-      EntityId.fromString(input.orderId)
-    );
+    const order = await this.orderRepository.findById(EntityId.fromString(input.orderId));
 
     // 使用领域层协调管理器协调多个服务
-    const context = this.coordinationManager
-      .createContext("processOrder", { orderId: order.id.value }, [
-        "PaymentService",
-        "InventoryService",
-        "NotificationService"
-      ])
-      .build();
+    const context = this.coordinationManager.createContext("processOrder", { orderId: order.id.value }, ["PaymentService", "InventoryService", "NotificationService"]).build();
 
     const results = await this.coordinationManager.executeCoordination(context);
 
-    if (!results.every(r => r.success)) {
-      throw new UseCaseException("服务协调失败", /* ... */);
+    if (!results.every((r) => r.success)) {
+      throw new UseCaseException("服务协调失败" /* ... */);
     }
 
     return new ProcessOrderOutput(order.id.value);
@@ -633,6 +592,7 @@ export class ProcessOrderUseCase {
 ```
 
 **支持作用**:
+
 - ✅ **服务编排**：协调多个领域服务的执行
 - ✅ **依赖管理**：自动处理服务依赖关系
 - ✅ **错误处理**：统一的错误处理和回滚机制
@@ -658,12 +618,7 @@ export interface IBusinessOperation<T extends AggregateRoot> {
 
 export class OperationManager {
   registerOperation(operation: IBusinessOperation<AggregateRoot>): void;
-  async executeOperation(
-    operationId: string,
-    aggregate: AggregateRoot,
-    parameters: OperationParameters,
-    context: OperationContext
-  ): Promise<OperationResult>;
+  async executeOperation(operationId: string, aggregate: AggregateRoot, parameters: OperationParameters, context: OperationContext): Promise<OperationResult>;
 }
 ```
 
@@ -679,12 +634,7 @@ export class User extends AggregateRoot {
     const parameters = { userId: this.id.value };
 
     // 使用领域层操作管理器执行操作
-    const result = await operationManager.executeOperation(
-      "activateUser",
-      this,
-      parameters,
-      context
-    );
+    const result = await operationManager.executeOperation("activateUser", this, parameters, context);
 
     if (result.success) {
       this._isActive = true;
@@ -697,6 +647,7 @@ export class User extends AggregateRoot {
 ```
 
 **支持作用**:
+
 - ✅ **操作标准化**：统一业务操作的执行流程
 - ✅ **验证管理**：自动执行参数验证和前置条件检查
 - ✅ **监控能力**：提供操作的监控和追踪
@@ -732,32 +683,19 @@ export class ValueObjectValidationFailedException extends DomainException;
 
 ```typescript
 // @hl8/application-kernel - 用例中使用领域异常
-import { 
-  EntityNotFoundException,
-  BusinessException 
-} from "@hl8/domain-kernel";
+import { EntityNotFoundException, BusinessException } from "@hl8/domain-kernel";
 
 export class UpdateUserUseCase {
   async execute(input: UpdateUserInput): Promise<UpdateUserOutput> {
-    const user = await this.userRepository.findById(
-      EntityId.fromString(input.userId)
-    );
+    const user = await this.userRepository.findById(EntityId.fromString(input.userId));
 
     // 使用领域层异常
     if (!user) {
-      throw new EntityNotFoundException(
-        "用户不存在",
-        "USER_NOT_FOUND",
-        { userId: input.userId }
-      );
+      throw new EntityNotFoundException("用户不存在", "USER_NOT_FOUND", { userId: input.userId });
     }
 
     if (!user.isActive) {
-      throw new BusinessException(
-        "用户未激活",
-        "USER_NOT_ACTIVE",
-        { userId: input.userId }
-      );
+      throw new BusinessException("用户未激活", "USER_NOT_ACTIVE", { userId: input.userId });
     }
 
     // ...
@@ -766,6 +704,7 @@ export class UpdateUserUseCase {
 ```
 
 **支持作用**:
+
 - ✅ **异常标准化**：统一的异常类型和结构
 - ✅ **上下文信息**：异常包含丰富的上下文信息
 - ✅ **错误分类**：区分业务异常和系统异常
@@ -785,13 +724,9 @@ export class CreateUserCommand extends BaseCommand {
   constructor(
     public readonly email: string,
     public readonly password: string,
-    tenantContext?: TenantContext
+    tenantContext?: TenantContext,
   ) {
-    super(
-      EntityId.generate().toString(),
-      "CreateUser",
-      { tenantContext }
-    );
+    super(EntityId.generate().toString(), "CreateUser", { tenantContext });
   }
 }
 
@@ -803,7 +738,7 @@ import { CommandHandler } from "@nestjs/cqrs";
 export class CreateUserHandler {
   constructor(
     private readonly userRepository: IRepository<User>,
-    private readonly userFactory: IFactory<User>
+    private readonly userFactory: IFactory<User>,
   ) {}
 
   async execute(command: CreateUserCommand): Promise<void> {
@@ -813,7 +748,7 @@ export class CreateUserHandler {
     });
 
     await this.userRepository.save(user);
-    
+
     const events = user.getDomainEvents();
     await this.eventBus.publishAll(events);
   }
@@ -821,6 +756,7 @@ export class CreateUserHandler {
 ```
 
 **领域层支持**:
+
 - ✅ `EntityId`: 生成命令和聚合根标识符
 - ✅ `TenantContext`: 传递租户上下文
 - ✅ `IRepository`: 持久化聚合根
@@ -839,7 +775,7 @@ import { BaseQuery } from "@hl8/application-kernel";
 export class GetUserQuery extends BaseQuery<UserDto> {
   constructor(
     public readonly userId: string,
-    tenantContext?: TenantContext
+    tenantContext?: TenantContext,
   ) {
     super({ tenantContext });
   }
@@ -851,15 +787,10 @@ import { QueryHandler } from "@nestjs/cqrs";
 
 @QueryHandler(GetUserQuery)
 export class GetUserHandler {
-  constructor(
-    private readonly userRepository: ITenantIsolatedRepository<User>
-  ) {}
+  constructor(private readonly userRepository: ITenantIsolatedRepository<User>) {}
 
   async execute(query: GetUserQuery): Promise<UserDto> {
-    const user = await this.userRepository.findByIdWithContext(
-      EntityId.fromString(query.userId),
-      query.tenantContext!
-    );
+    const user = await this.userRepository.findByIdWithContext(EntityId.fromString(query.userId), query.tenantContext!);
 
     if (!user) {
       throw new EntityNotFoundException(/* ... */);
@@ -871,6 +802,7 @@ export class GetUserHandler {
 ```
 
 **领域层支持**:
+
 - ✅ `EntityId`: 标识符解析
 - ✅ `TenantContext`: 租户隔离查询
 - ✅ `ITenantIsolatedRepository`: 租户隔离仓储接口
@@ -881,33 +813,22 @@ export class GetUserHandler {
 
 ```typescript
 // 应用层：用例实现
-import { 
-  IRepository, 
-  BusinessRuleManager,
-  CoordinationManager 
-} from "@hl8/domain-kernel";
+import { IRepository, BusinessRuleManager, CoordinationManager } from "@hl8/domain-kernel";
 import { UseCase } from "@hl8/application-kernel";
 
-export class ProcessOrderUseCase extends UseCase<
-  ProcessOrderInput,
-  ProcessOrderOutput
-> {
+export class ProcessOrderUseCase extends UseCase<ProcessOrderInput, ProcessOrderOutput> {
   constructor(
     logger: Logger,
     private readonly orderRepository: IRepository<Order>,
     private readonly ruleManager: BusinessRuleManager<Order>,
-    private readonly coordinationManager: CoordinationManager
+    private readonly coordinationManager: CoordinationManager,
   ) {
     super(logger);
   }
 
-  async executeBusinessLogic(
-    input: ProcessOrderInput
-  ): Promise<ProcessOrderOutput> {
+  async executeBusinessLogic(input: ProcessOrderInput): Promise<ProcessOrderOutput> {
     // 1. 查找聚合根
-    const order = await this.orderRepository.findById(
-      EntityId.fromString(input.orderId)
-    );
+    const order = await this.orderRepository.findById(EntityId.fromString(input.orderId));
 
     // 2. 业务规则验证
     const validationResult = this.ruleManager.validateEntity(order, {
@@ -920,12 +841,7 @@ export class ProcessOrderUseCase extends UseCase<
     }
 
     // 3. 服务协调
-    const context = this.coordinationManager
-      .createContext("processOrder", { orderId: order.id.value }, [
-        "PaymentService",
-        "InventoryService"
-      ])
-      .build();
+    const context = this.coordinationManager.createContext("processOrder", { orderId: order.id.value }, ["PaymentService", "InventoryService"]).build();
 
     const results = await this.coordinationManager.executeCoordination(context);
 
@@ -942,6 +858,7 @@ export class ProcessOrderUseCase extends UseCase<
 ```
 
 **领域层支持**:
+
 - ✅ `IRepository`: 聚合根持久化
 - ✅ `BusinessRuleManager`: 业务规则验证
 - ✅ `CoordinationManager`: 服务协调
@@ -960,7 +877,7 @@ import { EventsHandler } from "@nestjs/cqrs";
 export class UserCreatedHandler {
   async handle(event: DomainEvent): Promise<void> {
     const userData = event.data as { email: string; userId: string };
-    
+
     // 使用领域事件中的数据
     await this.sendWelcomeEmail(userData.email);
     await this.createUserProfile(userData.userId);
@@ -969,6 +886,7 @@ export class UserCreatedHandler {
 ```
 
 **领域层支持**:
+
 - ✅ `DomainEvent`: 统一的事件结构
 - ✅ `EntityId`: 事件中的标识符
 
@@ -991,7 +909,7 @@ export class User extends AggregateRoot {
     super(id);
     this._email = email;
     this._password = password;
-    
+
     // 发布领域事件
     this.addDomainEvent({
       type: "UserCreated",
@@ -1022,30 +940,21 @@ export class User extends AggregateRoot {
 }
 
 // 应用层：注册用例
-import { 
-  IRepository, 
-  IFactory, 
-  BusinessRuleManager 
-} from "@hl8/domain-kernel";
+import { IRepository, IFactory, BusinessRuleManager } from "@hl8/domain-kernel";
 import { UseCase } from "@hl8/application-kernel";
 
-export class RegisterUserUseCase extends UseCase<
-  RegisterUserInput,
-  RegisterUserOutput
-> {
+export class RegisterUserUseCase extends UseCase<RegisterUserInput, RegisterUserOutput> {
   constructor(
     logger: Logger,
     private readonly userRepository: IRepository<User>,
     private readonly userFactory: IFactory<User>,
     private readonly ruleManager: BusinessRuleManager<User>,
-    private readonly eventBus: EventBus
+    private readonly eventBus: EventBus,
   ) {
     super(logger);
   }
 
-  async executeBusinessLogic(
-    input: RegisterUserInput
-  ): Promise<RegisterUserOutput> {
+  async executeBusinessLogic(input: RegisterUserInput): Promise<RegisterUserOutput> {
     // 1. 使用工厂创建聚合根
     const user = this.userFactory.create({
       email: input.email,
@@ -1059,9 +968,7 @@ export class RegisterUserUseCase extends UseCase<
     });
 
     if (!validationResult.isValid) {
-      throw new UseCaseValidationException(
-        validationResult.violations.map(v => v.message).join(", ")
-      );
+      throw new UseCaseValidationException(validationResult.violations.map((v) => v.message).join(", "));
     }
 
     // 3. 保存聚合根
@@ -1077,6 +984,7 @@ export class RegisterUserUseCase extends UseCase<
 ```
 
 **领域层支持点**:
+
 1. ✅ `AggregateRoot`: 提供聚合根基类
 2. ✅ `EntityId`: 生成用户标识符
 3. ✅ `IFactory`: 创建用户聚合根
@@ -1090,52 +998,35 @@ export class RegisterUserUseCase extends UseCase<
 
 ```typescript
 // 应用层：查询处理器（支持租户隔离）
-import { 
-  ITenantIsolatedRepository,
-  EntityId,
-  TenantContext 
-} from "@hl8/domain-kernel";
+import { ITenantIsolatedRepository, EntityId, TenantContext } from "@hl8/domain-kernel";
 import { QueryHandler } from "@nestjs/cqrs";
 
 @QueryHandler(GetProductQuery)
 export class GetProductHandler {
-  constructor(
-    private readonly productRepository: ITenantIsolatedRepository<Product>
-  ) {}
+  constructor(private readonly productRepository: ITenantIsolatedRepository<Product>) {}
 
   async execute(query: GetProductQuery): Promise<ProductDto> {
     // 从查询中获取租户上下文
     const tenantContext = query.tenantContext;
-    
+
     if (!tenantContext) {
       throw new BusinessException("租户上下文缺失");
     }
 
     // 使用租户隔离仓储查询（自动应用隔离过滤）
-    const product = await this.productRepository.findByIdWithContext(
-      EntityId.fromString(query.productId),
-      tenantContext
-    );
+    const product = await this.productRepository.findByIdWithContext(EntityId.fromString(query.productId), tenantContext);
 
     if (!product) {
-      throw new EntityNotFoundException(
-        "产品不存在或不属于当前租户",
-        "PRODUCT_NOT_FOUND",
-        { 
-          productId: query.productId,
-          tenantId: tenantContext.tenantId.value 
-        }
-      );
+      throw new EntityNotFoundException("产品不存在或不属于当前租户", "PRODUCT_NOT_FOUND", {
+        productId: query.productId,
+        tenantId: tenantContext.tenantId.value,
+      });
     }
 
     // 验证产品是否属于当前组织（如果需要）
     if (tenantContext.organizationId) {
-      const belongsToOrg = await this.productRepository
-        .belongsToOrganization(
-          product.id,
-          tenantContext.organizationId
-        );
-      
+      const belongsToOrg = await this.productRepository.belongsToOrganization(product.id, tenantContext.organizationId);
+
       if (!belongsToOrg) {
         throw new BusinessException("无权访问此产品");
       }
@@ -1147,6 +1038,7 @@ export class GetProductHandler {
 ```
 
 **领域层支持点**:
+
 1. ✅ `ITenantIsolatedRepository`: 租户隔离仓储接口
 2. ✅ `TenantContext`: 租户上下文管理
 3. ✅ `EntityId`: 标识符处理
@@ -1159,12 +1051,14 @@ export class GetProductHandler {
 ### 1. 依赖方向
 
 **✅ 正确做法**:
+
 ```typescript
 // 应用层依赖领域层
 import { EntityId, IRepository } from "@hl8/domain-kernel";
 ```
 
 **❌ 错误做法**:
+
 ```typescript
 // 领域层不应该依赖应用层
 // 不要这样做！
@@ -1174,6 +1068,7 @@ import { UseCase } from "@hl8/application-kernel"; // ❌
 ### 2. 标识符使用
 
 **✅ 正确做法**:
+
 ```typescript
 // 使用领域层的 EntityId
 import { EntityId } from "@hl8/domain-kernel";
@@ -1183,6 +1078,7 @@ const user = await repository.findById(EntityId.fromString(input.userId));
 ```
 
 **❌ 错误做法**:
+
 ```typescript
 // 不要直接使用字符串
 const userId = "user-123"; // ❌
@@ -1192,18 +1088,20 @@ const user = await repository.findById(input.userId); // ❌
 ### 3. 异常处理
 
 **✅ 正确做法**:
+
 ```typescript
 // 使用领域层的异常类型
 import { EntityNotFoundException, BusinessException } from "@hl8/domain-kernel";
 
 if (!user) {
   throw new EntityNotFoundException("用户不存在", "USER_NOT_FOUND", {
-    userId: input.userId
+    userId: input.userId,
   });
 }
 ```
 
 **❌ 错误做法**:
+
 ```typescript
 // 不要使用通用异常
 if (!user) {
@@ -1214,6 +1112,7 @@ if (!user) {
 ### 4. 领域事件
 
 **✅ 正确做法**:
+
 ```typescript
 // 从聚合根获取领域事件
 const events = aggregate.getDomainEvents();
@@ -1222,6 +1121,7 @@ aggregate.clearDomainEvents();
 ```
 
 **❌ 错误做法**:
+
 ```typescript
 // 不要在应用层直接创建领域事件
 const event = new DomainEvent(/* ... */); // ❌ 应该在聚合根内创建
@@ -1230,6 +1130,7 @@ const event = new DomainEvent(/* ... */); // ❌ 应该在聚合根内创建
 ### 5. 业务规则验证
 
 **✅ 正确做法**:
+
 ```typescript
 // 使用业务规则管理器
 const validationResult = ruleManager.validateEntity(aggregate, context);
@@ -1239,9 +1140,11 @@ if (!validationResult.isValid) {
 ```
 
 **❌ 错误做法**:
+
 ```typescript
 // 不要在应用层直接验证业务规则
-if (aggregate.email.includes("@")) { // ❌ 应该在领域层验证
+if (aggregate.email.includes("@")) {
+  // ❌ 应该在领域层验证
   // ...
 }
 ```
@@ -1252,19 +1155,19 @@ if (aggregate.email.includes("@")) { // ❌ 应该在领域层验证
 
 ### 核心支持作用总结
 
-| 领域层组件 | 应用层使用场景 | 关键支持作用 |
-|-----------|--------------|-------------|
-| **EntityId** | 命令、查询、事件中的标识符 | 统一标识符格式，类型安全 |
-| **DomainEvent** | 事件溯源、事件总线 | 统一事件结构，版本管理 |
-| **AggregateRoot** | 用例中的业务对象 | 业务逻辑封装，事件管理 |
-| **IRepository** | 用例中的持久化 | 持久化抽象，租户隔离 |
-| **IFactory** | 用例中的对象创建 | 复杂对象创建，配置验证 |
-| **BusinessRuleManager** | 用例中的业务规则验证 | 规则集中管理，可组合 |
-| **ISpecification** | 查询中的业务规则查询 | 声明式查询，可复用 |
-| **CoordinationManager** | 用例中的服务编排 | 多服务协调，依赖管理 |
-| **OperationManager** | 聚合根中的操作执行 | 操作标准化，验证管理 |
-| **异常体系** | 用例中的异常处理 | 异常标准化，上下文信息 |
-| **TenantContext** | 命令、查询中的租户隔离 | 多层级隔离，权限控制 |
+| 领域层组件              | 应用层使用场景             | 关键支持作用             |
+| ----------------------- | -------------------------- | ------------------------ |
+| **EntityId**            | 命令、查询、事件中的标识符 | 统一标识符格式，类型安全 |
+| **DomainEvent**         | 事件溯源、事件总线         | 统一事件结构，版本管理   |
+| **AggregateRoot**       | 用例中的业务对象           | 业务逻辑封装，事件管理   |
+| **IRepository**         | 用例中的持久化             | 持久化抽象，租户隔离     |
+| **IFactory**            | 用例中的对象创建           | 复杂对象创建，配置验证   |
+| **BusinessRuleManager** | 用例中的业务规则验证       | 规则集中管理，可组合     |
+| **ISpecification**      | 查询中的业务规则查询       | 声明式查询，可复用       |
+| **CoordinationManager** | 用例中的服务编排           | 多服务协调，依赖管理     |
+| **OperationManager**    | 聚合根中的操作执行         | 操作标准化，验证管理     |
+| **异常体系**            | 用例中的异常处理           | 异常标准化，上下文信息   |
+| **TenantContext**       | 命令、查询中的租户隔离     | 多层级隔离，权限控制     |
 
 ### 设计原则体现
 
@@ -1321,4 +1224,3 @@ if (aggregate.email.includes("@")) { // ❌ 应该在领域层验证
    - 体验领域层对应用层的支持作用
 
 **祝你开发顺利！** 🚀
-

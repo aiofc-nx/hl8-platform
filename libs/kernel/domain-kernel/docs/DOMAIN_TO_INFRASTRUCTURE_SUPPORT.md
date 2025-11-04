@@ -51,12 +51,14 @@
 ### 依赖关系
 
 **领域层 (Domain Layer)**:
+
 - ✅ **定义接口**：定义仓储、工厂等核心接口
 - ✅ **类型抽象**：提供实体、值对象等类型抽象
 - ✅ **异常体系**：定义统一的异常类型体系
 - ✅ **业务语义**：保持业务概念的完整性
 
 **基础设施层 (Infrastructure Layer)**:
+
 - ✅ **实现接口**：实现领域层定义的接口（如 `IRepository`）
 - ✅ **技术适配**：将技术实现（MikroORM）适配到领域层接口
 - ✅ **异常转换**：将技术异常转换为领域层异常
@@ -127,28 +129,21 @@ import { IRepository, EntityId } from "@hl8/domain-kernel";
 import { EntityManager } from "@mikro-orm/core";
 import { BaseEntity } from "../entities/base/base-entity.js";
 
-export class MikroORMRepository<T extends BaseEntity>
-  implements IRepository<T>
-{
+export class MikroORMRepository<T extends BaseEntity> implements IRepository<T> {
   constructor(
     protected readonly em: EntityManager,
-    protected readonly entityName: string
+    protected readonly entityName: string,
   ) {}
 
   async findById(id: EntityId): Promise<T | null> {
     try {
-      const entity = await this.em.findOne(this.entityName, { 
-        id: id.value 
+      const entity = await this.em.findOne(this.entityName, {
+        id: id.value,
       });
       return entity as T | null;
     } catch (error) {
       // 转换为领域层异常
-      throw this.exceptionConverter.convertToDomainException(
-        error,
-        "findById",
-        this.entityName,
-        id.value
-      );
+      throw this.exceptionConverter.convertToDomainException(error, "findById", this.entityName, id.value);
     }
   }
 
@@ -157,12 +152,7 @@ export class MikroORMRepository<T extends BaseEntity>
       this.em.persist(entity);
       await this.em.flush();
     } catch (error) {
-      throw this.exceptionConverter.convertToDomainException(
-        error,
-        "save",
-        this.entityName,
-        entity.id?.value
-      );
+      throw this.exceptionConverter.convertToDomainException(error, "save", this.entityName, entity.id?.value);
     }
   }
 
@@ -171,6 +161,7 @@ export class MikroORMRepository<T extends BaseEntity>
 ```
 
 **支持作用**:
+
 - ✅ **接口契约**：定义清晰的仓储契约，基础设施层必须遵守
 - ✅ **类型安全**：通过 TypeScript 泛型确保类型安全
 - ✅ **抽象封装**：隐藏 MikroORM 等具体技术细节
@@ -185,27 +176,16 @@ export class MikroORMRepository<T extends BaseEntity>
 
 ```typescript
 // @hl8/domain-kernel
-export interface ITenantIsolatedRepository<
-  T extends TenantIsolatedAggregateRoot
-> extends IRepository<T> {
-  findByIdWithContext(
-    id: EntityId,
-    context: TenantContext
-  ): Promise<T | null>;
-  
+export interface ITenantIsolatedRepository<T extends TenantIsolatedAggregateRoot> extends IRepository<T> {
+  findByIdWithContext(id: EntityId, context: TenantContext): Promise<T | null>;
+
   findAllByContext(context: TenantContext): Promise<T[]>;
-  
-  findByTenant(
-    tenantId: TenantId,
-    context: TenantContext
-  ): Promise<T[]>;
-  
+
+  findByTenant(tenantId: TenantId, context: TenantContext): Promise<T[]>;
+
   belongsToTenant(id: EntityId, tenantId: TenantId): Promise<boolean>;
-  
-  belongsToOrganization(
-    id: EntityId,
-    organizationId: OrganizationId
-  ): Promise<boolean>;
+
+  belongsToOrganization(id: EntityId, organizationId: OrganizationId): Promise<boolean>;
 }
 ```
 
@@ -213,32 +193,19 @@ export interface ITenantIsolatedRepository<
 
 ```typescript
 // @hl8/infrastructure-kernel - 租户隔离仓储实现
-import {
-  ITenantIsolatedRepository,
-  TenantContext,
-  TenantId,
-  OrganizationId,
-  EntityId,
-  BusinessException,
-} from "@hl8/domain-kernel";
+import { ITenantIsolatedRepository, TenantContext, TenantId, OrganizationId, EntityId, BusinessException } from "@hl8/domain-kernel";
 import { MikroORMRepository } from "../base/repository.base.js";
 
-export class MikroORMTenantIsolatedRepository<T extends TenantIsolatedPersistenceEntity>
-  extends MikroORMRepository<T>
-  implements ITenantIsolatedRepository<T>
-{
-  async findByIdWithContext(
-    id: EntityId,
-    context: TenantContext
-  ): Promise<T | null> {
+export class MikroORMTenantIsolatedRepository<T extends TenantIsolatedPersistenceEntity> extends MikroORMRepository<T> implements ITenantIsolatedRepository<T> {
+  async findByIdWithContext(id: EntityId, context: TenantContext): Promise<T | null> {
     const entity = await super.findById(id);
     if (!entity) {
       return null;
     }
-    
+
     // 验证租户访问权限（使用领域层提供的验证逻辑）
     this.validateTenantAccess(entity, context);
-    
+
     return entity;
   }
 
@@ -247,41 +214,31 @@ export class MikroORMTenantIsolatedRepository<T extends TenantIsolatedPersistenc
     const where: Record<string, unknown> = {
       tenantId: context.tenantId.value,
     };
-    
+
     if (context.organizationId) {
       where.organizationId = context.organizationId.value;
     }
-    
+
     if (context.departmentId) {
       where.departmentId = context.departmentId.value;
     }
-    
+
     return await this.em.find(this.entityName, where);
   }
 
-  protected validateTenantAccess(
-    entity: T,
-    context: TenantContext
-  ): void {
+  protected validateTenantAccess(entity: T, context: TenantContext): void {
     // 使用领域层的租户上下文验证
     if (entity.tenantId.value !== context.tenantId.value) {
-      throw new BusinessException(
-        "跨租户访问被拒绝",
-        "CROSS_TENANT_ACCESS_DENIED",
-        {
-          entityTenantId: entity.tenantId.value,
-          contextTenantId: context.tenantId.value,
-        }
-      );
+      throw new BusinessException("跨租户访问被拒绝", "CROSS_TENANT_ACCESS_DENIED", {
+        entityTenantId: entity.tenantId.value,
+        contextTenantId: context.tenantId.value,
+      });
     }
-    
+
     // 验证组织和部门层级（如果指定）
     if (context.organizationId && entity.organizationId) {
       if (entity.organizationId.value !== context.organizationId.value) {
-        throw new BusinessException(
-          "跨组织访问被拒绝",
-          "CROSS_ORGANIZATION_ACCESS_DENIED"
-        );
+        throw new BusinessException("跨组织访问被拒绝", "CROSS_ORGANIZATION_ACCESS_DENIED");
       }
     }
   }
@@ -289,6 +246,7 @@ export class MikroORMTenantIsolatedRepository<T extends TenantIsolatedPersistenc
 ```
 
 **支持作用**:
+
 - ✅ **隔离抽象**：定义租户、组织、部门三级隔离的抽象接口
 - ✅ **安全保证**：通过接口强制实现访问控制
 - ✅ **业务语义**：保持租户隔离的业务语义
@@ -334,7 +292,7 @@ export class MikroORMRepository<T extends BaseEntity> {
     if (!id.isValid()) {
       throw new Error("无效的实体标识符");
     }
-    
+
     const entity = await this.findById(id);
     if (entity) {
       await this.em.removeAndFlush(entity);
@@ -356,7 +314,7 @@ export class EntityMapper<TDomain extends Entity, TPersistence extends BaseEntit
       id: EntityId.fromString(persistence.id), // 使用领域层类型
       // ... 其他字段映射
     };
-    
+
     return this.createDomainEntity(domainData);
   }
 
@@ -366,13 +324,14 @@ export class EntityMapper<TDomain extends Entity, TPersistence extends BaseEntit
       id: domain.id.value, // 使用 EntityId 的 value 属性
       // ... 其他字段映射
     };
-    
+
     return this.createPersistenceEntity(persistenceData);
   }
 }
 ```
 
 **支持作用**:
+
 - ✅ **类型安全**：避免字符串 ID 的类型混淆
 - ✅ **格式统一**：确保整个系统使用一致的标识符格式
 - ✅ **验证能力**：提供标识符有效性验证
@@ -395,7 +354,7 @@ export class TenantContext {
   public readonly tenantId: TenantId;
   public readonly organizationId?: OrganizationId;
   public readonly departmentId?: DepartmentId;
-  
+
   public validate(): boolean;
   public toJSON(): Record<string, unknown>;
 }
@@ -405,11 +364,7 @@ export class TenantContext {
 
 ```typescript
 // @hl8/infrastructure-kernel - 租户隔离实体
-import {
-  TenantId,
-  OrganizationId,
-  DepartmentId,
-} from "@hl8/domain-kernel";
+import { TenantId, OrganizationId, DepartmentId } from "@hl8/domain-kernel";
 
 export class TenantIsolatedPersistenceEntity extends BaseEntity {
   // 使用领域层的租户标识符类型
@@ -422,7 +377,7 @@ export class TenantIsolatedPersistenceEntity extends BaseEntity {
   get tenantIdValue(): string {
     return this.tenantId.value;
   }
-  
+
   set tenantIdValue(value: string) {
     this.tenantId = TenantId.fromString(value);
   }
@@ -430,6 +385,7 @@ export class TenantIsolatedPersistenceEntity extends BaseEntity {
 ```
 
 **支持作用**:
+
 - ✅ **多层级隔离**：支持租户、组织、部门三级隔离
 - ✅ **类型安全**：通过类型系统确保隔离字段的类型正确
 - ✅ **业务语义**：保持租户隔离的业务语义
@@ -451,7 +407,7 @@ export abstract class Entity {
   protected readonly _auditInfo: AuditInfo;
   protected readonly _lifecycle: EntityLifecycle;
   protected readonly _version: number;
-  
+
   public get id(): EntityId;
   public get version(): number;
   public clone(): Entity;
@@ -459,7 +415,7 @@ export abstract class Entity {
 
 export abstract class AggregateRoot extends Entity {
   protected _domainEvents: DomainEvent[] = [];
-  
+
   public getDomainEvents(): DomainEvent[];
   public clearDomainEvents(): void;
 }
@@ -469,13 +425,7 @@ export abstract class AggregateRoot extends Entity {
 
 ```typescript
 // @hl8/infrastructure-kernel - 实体映射器
-import {
-  Entity,
-  AggregateRoot,
-  EntityId,
-  AuditInfo,
-  EntityLifecycle,
-} from "@hl8/domain-kernel";
+import { Entity, AggregateRoot, EntityId, AuditInfo, EntityLifecycle } from "@hl8/domain-kernel";
 
 export class EntityMapper<TDomain extends Entity, TPersistence extends BaseEntity> {
   toDomain(persistence: TPersistence): TDomain {
@@ -514,13 +464,7 @@ export class EntityMapper<TDomain extends Entity, TPersistence extends BaseEntit
 
   protected mapAuditInfo(persistence: TPersistence): AuditInfo {
     // 使用领域层的 AuditInfo 构造
-    return new AuditInfo(
-      persistence.createdAt,
-      persistence.updatedAt,
-      persistence.createdBy,
-      persistence.updatedBy,
-      persistence.version
-    );
+    return new AuditInfo(persistence.createdAt, persistence.updatedAt, persistence.createdBy, persistence.updatedBy, persistence.version);
   }
 
   protected mapLifecycle(persistence: TPersistence): EntityLifecycle {
@@ -534,6 +478,7 @@ export class EntityMapper<TDomain extends Entity, TPersistence extends BaseEntit
 ```
 
 **支持作用**:
+
 - ✅ **类型保证**：确保映射后的实体符合领域层类型定义
 - ✅ **业务完整性**：保持领域实体的业务逻辑完整性
 - ✅ **生命周期管理**：正确映射实体的生命周期状态
@@ -590,21 +535,10 @@ export interface IQuerySpecification<T> extends ISpecification<T> {
 
 ```typescript
 // @hl8/infrastructure-kernel - 规范转换器
-import {
-  ISpecification,
-  IQuerySpecification,
-  QueryCriteria,
-  QueryOperator,
-  AndSpecification,
-  OrSpecification,
-  NotSpecification,
-} from "@hl8/domain-kernel";
+import { ISpecification, IQuerySpecification, QueryCriteria, QueryOperator, AndSpecification, OrSpecification, NotSpecification } from "@hl8/domain-kernel";
 
 export class SpecificationConverter implements ISpecificationConverter {
-  convertToQuery<T>(
-    spec: ISpecification<T>,
-    entityName: string
-  ): MikroORMQueryOptions {
+  convertToQuery<T>(spec: ISpecification<T>, entityName: string): MikroORMQueryOptions {
     // 如果规范实现了 IQuerySpecification，使用其查询条件
     if (this.isQuerySpecification(spec)) {
       return this.convertCriteriaToQuery(spec.getQueryCriteria());
@@ -638,9 +572,7 @@ export class SpecificationConverter implements ISpecificationConverter {
     return options;
   }
 
-  protected convertConditionsToWhere(
-    conditions: QueryCondition[]
-  ): Record<string, unknown> {
+  protected convertConditionsToWhere(conditions: QueryCondition[]): Record<string, unknown> {
     const where: Record<string, unknown> = {};
 
     for (const condition of conditions) {
@@ -671,20 +603,11 @@ export class SpecificationConverter implements ISpecificationConverter {
     return where;
   }
 
-  protected convertSpecificationToQuery(
-    spec: ISpecification<unknown>,
-    depth: number
-  ): MikroORMQueryOptions {
+  protected convertSpecificationToQuery(spec: ISpecification<unknown>, depth: number): MikroORMQueryOptions {
     // 处理组合规范（使用领域层的组合规范类）
     if (spec instanceof AndSpecification) {
-      const leftQuery = this.convertSpecificationToQuery(
-        spec.left,
-        depth + 1
-      );
-      const rightQuery = this.convertSpecificationToQuery(
-        spec.right,
-        depth + 1
-      );
+      const leftQuery = this.convertSpecificationToQuery(spec.left, depth + 1);
+      const rightQuery = this.convertSpecificationToQuery(spec.right, depth + 1);
       return {
         ...leftQuery,
         where: { ...leftQuery.where, ...rightQuery.where },
@@ -695,20 +618,14 @@ export class SpecificationConverter implements ISpecificationConverter {
       // OR 查询需要特殊处理（使用 $or 操作符）
       return {
         where: {
-          $or: [
-            this.convertSpecificationToQuery(spec.left, depth + 1).where,
-            this.convertSpecificationToQuery(spec.right, depth + 1).where,
-          ],
+          $or: [this.convertSpecificationToQuery(spec.left, depth + 1).where, this.convertSpecificationToQuery(spec.right, depth + 1).where],
         },
       };
     }
 
     if (spec instanceof NotSpecification) {
       // NOT 查询需要特殊处理
-      const innerQuery = this.convertSpecificationToQuery(
-        spec.spec,
-        depth + 1
-      );
+      const innerQuery = this.convertSpecificationToQuery(spec.spec, depth + 1);
       return {
         where: {
           $not: innerQuery.where,
@@ -723,6 +640,7 @@ export class SpecificationConverter implements ISpecificationConverter {
 ```
 
 **支持作用**:
+
 - ✅ **查询抽象**：提供与技术无关的查询抽象
 - ✅ **规范组合**：支持复杂的业务规则查询组合
 - ✅ **类型安全**：通过接口确保查询的类型安全
@@ -771,26 +689,12 @@ export class EntityNotFoundException extends DomainException;
 
 ```typescript
 // @hl8/infrastructure-kernel - 异常转换器
-import {
-  DomainException,
-  RepositoryOperationFailedException,
-  RepositoryConnectionException,
-  RepositoryQueryException,
-  RepositoryTransactionException,
-  AggregateVersionConflictException,
-  EntityNotFoundException,
-} from "@hl8/domain-kernel";
+import { DomainException, RepositoryOperationFailedException, RepositoryConnectionException, RepositoryQueryException, RepositoryTransactionException, AggregateVersionConflictException, EntityNotFoundException } from "@hl8/domain-kernel";
 import { OptimisticLockError } from "@mikro-orm/core";
 
 export class ExceptionConverter implements IExceptionConverter {
-  convertToDomainException(
-    error: unknown,
-    operation: string,
-    entityType: string,
-    entityId?: string
-  ): DomainException {
-    const originalError =
-      error instanceof Error ? error : new Error(String(error));
+  convertToDomainException(error: unknown, operation: string, entityType: string, entityId?: string): DomainException {
+    const originalError = error instanceof Error ? error : new Error(String(error));
 
     // 1. 检查乐观锁冲突（转换为领域层的版本冲突异常）
     if (this.isOptimisticLockException(error)) {
@@ -803,13 +707,7 @@ export class ExceptionConverter implements IExceptionConverter {
         actualVersion = 0; // 需要从上下文获取
       }
 
-      return new AggregateVersionConflictException(
-        entityType,
-        entityId || "unknown",
-        expectedVersion,
-        actualVersion,
-        originalError
-      );
+      return new AggregateVersionConflictException(entityType, entityId || "unknown", expectedVersion, actualVersion, originalError);
     }
 
     // 2. 检查数据库连接失败
@@ -819,28 +717,16 @@ export class ExceptionConverter implements IExceptionConverter {
 
     // 3. 检查查询错误
     if (this.isQueryException(error)) {
-      return new RepositoryQueryException(
-        originalError.message || operation,
-        entityType,
-        originalError
-      );
+      return new RepositoryQueryException(originalError.message || operation, entityType, originalError);
     }
 
     // 4. 检查事务错误
     if (this.isTransactionException(error)) {
-      return new RepositoryTransactionException(
-        entityType,
-        originalError
-      );
+      return new RepositoryTransactionException(entityType, originalError);
     }
 
     // 5. 默认转换为通用仓储异常
-    return new RepositoryOperationFailedException(
-      `操作 ${operation} 失败`,
-      operation,
-      { entityType, entityId },
-      originalError
-    );
+    return new RepositoryOperationFailedException(`操作 ${operation} 失败`, operation, { entityType, entityId }, originalError);
   }
 
   protected isOptimisticLockException(error: unknown): boolean {
@@ -849,36 +735,23 @@ export class ExceptionConverter implements IExceptionConverter {
 
   protected isConnectionException(error: unknown): boolean {
     const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-    return (
-      errorMessage.includes("connection") ||
-      errorMessage.includes("network") ||
-      errorMessage.includes("timeout") ||
-      errorMessage.includes("econnrefused")
-    );
+    return errorMessage.includes("connection") || errorMessage.includes("network") || errorMessage.includes("timeout") || errorMessage.includes("econnrefused");
   }
 
   protected isQueryException(error: unknown): boolean {
     const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-    return (
-      errorMessage.includes("syntax error") ||
-      errorMessage.includes("invalid query") ||
-      errorMessage.includes("column") ||
-      errorMessage.includes("table")
-    );
+    return errorMessage.includes("syntax error") || errorMessage.includes("invalid query") || errorMessage.includes("column") || errorMessage.includes("table");
   }
 
   protected isTransactionException(error: unknown): boolean {
     const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-    return (
-      errorMessage.includes("transaction") ||
-      errorMessage.includes("rollback") ||
-      errorMessage.includes("deadlock")
-    );
+    return errorMessage.includes("transaction") || errorMessage.includes("rollback") || errorMessage.includes("deadlock");
   }
 }
 ```
 
 **支持作用**:
+
 - ✅ **异常标准化**：统一异常类型和结构
 - ✅ **业务语义**：技术异常转换为业务语义的异常
 - ✅ **上下文信息**：异常包含丰富的上下文信息
@@ -903,7 +776,7 @@ export class DomainEvent {
   public readonly metadata: Record<string, unknown>;
   public readonly timestamp: Date;
   public readonly version: number;
-  
+
   public toJSON(): Record<string, unknown>;
   public clone(): DomainEvent;
 }
@@ -917,21 +790,12 @@ import { EntityId, DomainEvent as DomainEventBase } from "@hl8/domain-kernel";
 import { IEventStore, DomainEvent as ApplicationDomainEvent } from "@hl8/application-kernel";
 
 export class MikroORMEventStore implements IEventStore {
-  async saveEvents(
-    aggregateId: EntityId,
-    events: ApplicationDomainEvent[],
-    expectedVersion: number
-  ): Promise<EventStoreResult> {
+  async saveEvents(aggregateId: EntityId, events: ApplicationDomainEvent[], expectedVersion: number): Promise<EventStoreResult> {
     try {
       // 验证版本号（使用领域层的 EntityId）
       const currentVersion = await this.getCurrentVersion(aggregateId);
       if (currentVersion !== expectedVersion) {
-        throw new AggregateVersionConflictException(
-          "EventStore",
-          aggregateId.value,
-          expectedVersion,
-          currentVersion
-        );
+        throw new AggregateVersionConflictException("EventStore", aggregateId.value, expectedVersion, currentVersion);
       }
 
       // 创建事件实体并保存（使用领域层的事件结构）
@@ -948,7 +812,7 @@ export class MikroORMEventStore implements IEventStore {
         eventEntity.data = this.serializeEventData(event.data);
         eventEntity.metadata = event.metadata;
         eventEntity.timestamp = event.timestamp;
-        
+
         eventEntities.push(eventEntity);
         this.em.persist(eventEntity);
       }
@@ -963,12 +827,7 @@ export class MikroORMEventStore implements IEventStore {
       };
     } catch (error) {
       // 转换为领域层异常
-      throw this.exceptionConverter.convertToDomainException(
-        error,
-        "saveEvents",
-        "EventStore",
-        aggregateId.value
-      );
+      throw this.exceptionConverter.convertToDomainException(error, "saveEvents", "EventStore", aggregateId.value);
     }
   }
 
@@ -979,35 +838,21 @@ export class MikroORMEventStore implements IEventStore {
       });
 
       // 将数据库实体转换为领域层的 DomainEvent
-      return eventEntities.map(entity => 
-        this.convertToDomainEvent(entity)
-      );
+      return eventEntities.map((entity) => this.convertToDomainEvent(entity));
     } catch (error) {
-      throw this.exceptionConverter.convertToDomainException(
-        error,
-        "getEvents",
-        "EventStore",
-        aggregateId.value
-      );
+      throw this.exceptionConverter.convertToDomainException(error, "getEvents", "EventStore", aggregateId.value);
     }
   }
 
   protected convertToDomainEvent(entity: EventEntity): DomainEventBase {
     // 使用领域层的 DomainEvent 构造
-    return new DomainEventBase(
-      EntityId.fromString(entity.aggregateId),
-      entity.eventType,
-      this.deserializeEventData(entity.data),
-      entity.metadata || {},
-      EntityId.fromString(entity.eventId),
-      entity.timestamp,
-      entity.eventVersion
-    );
+    return new DomainEventBase(EntityId.fromString(entity.aggregateId), entity.eventType, this.deserializeEventData(entity.data), entity.metadata || {}, EntityId.fromString(entity.eventId), entity.timestamp, entity.eventVersion);
   }
 }
 ```
 
 **支持作用**:
+
 - ✅ **事件结构**：提供统一的事件数据结构
 - ✅ **版本管理**：支持事件版本和乐观并发控制
 - ✅ **类型安全**：使用领域层的类型确保事件数据的正确性
@@ -1020,22 +865,15 @@ export class MikroORMEventStore implements IEventStore {
 
 ```typescript
 // 基础设施层：实现领域层定义的仓储接口
-import {
-  IRepository,
-  ITenantIsolatedRepository,
-  EntityId,
-  TenantContext,
-} from "@hl8/domain-kernel";
+import { IRepository, ITenantIsolatedRepository, EntityId, TenantContext } from "@hl8/domain-kernel";
 import { EntityManager } from "@mikro-orm/core";
 
 // 基础仓储实现
-export class MikroORMRepository<T extends BaseEntity>
-  implements IRepository<T>
-{
+export class MikroORMRepository<T extends BaseEntity> implements IRepository<T> {
   constructor(
     protected readonly em: EntityManager,
     protected readonly entityName: string,
-    protected readonly exceptionConverter: ExceptionConverter
+    protected readonly exceptionConverter: ExceptionConverter,
   ) {}
 
   async findById(id: EntityId): Promise<T | null> {
@@ -1043,17 +881,12 @@ export class MikroORMRepository<T extends BaseEntity>
     const entity = await this.em.findOne(this.entityName, {
       id: id.value,
     });
-    
+
     // 异常转换
     if (error) {
-      throw this.exceptionConverter.convertToDomainException(
-        error,
-        "findById",
-        this.entityName,
-        id.value
-      );
+      throw this.exceptionConverter.convertToDomainException(error, "findById", this.entityName, id.value);
     }
-    
+
     return entity as T | null;
   }
 
@@ -1061,30 +894,25 @@ export class MikroORMRepository<T extends BaseEntity>
 }
 
 // 租户隔离仓储实现
-export class MikroORMTenantIsolatedRepository<T extends TenantIsolatedPersistenceEntity>
-  extends MikroORMRepository<T>
-  implements ITenantIsolatedRepository<T>
-{
-  async findByIdWithContext(
-    id: EntityId,
-    context: TenantContext
-  ): Promise<T | null> {
+export class MikroORMTenantIsolatedRepository<T extends TenantIsolatedPersistenceEntity> extends MikroORMRepository<T> implements ITenantIsolatedRepository<T> {
+  async findByIdWithContext(id: EntityId, context: TenantContext): Promise<T | null> {
     const entity = await super.findById(id);
     if (!entity) {
       return null;
     }
-    
+
     // 使用领域层的租户上下文验证访问权限
     this.validateTenantAccess(entity, context);
-    
+
     return entity;
   }
-  
+
   // ... 实现其他租户隔离方法
 }
 ```
 
 **领域层支持点**:
+
 1. ✅ `IRepository` 接口：定义仓储契约
 2. ✅ `ITenantIsolatedRepository` 接口：定义租户隔离契约
 3. ✅ `EntityId` 类型：统一标识符类型
@@ -1096,38 +924,20 @@ export class MikroORMTenantIsolatedRepository<T extends TenantIsolatedPersistenc
 
 ```typescript
 // 基础设施层：领域实体和持久化实体的双向映射
-import {
-  Entity,
-  AggregateRoot,
-  EntityId,
-  AuditInfo,
-  TenantIsolatedEntity,
-} from "@hl8/domain-kernel";
+import { Entity, AggregateRoot, EntityId, AuditInfo, TenantIsolatedEntity } from "@hl8/domain-kernel";
 
-export class EntityMapper<
-  TDomain extends Entity,
-  TPersistence extends BaseEntity
-> implements IEntityMapper<TDomain, TPersistence>
-{
+export class EntityMapper<TDomain extends Entity, TPersistence extends BaseEntity> implements IEntityMapper<TDomain, TPersistence> {
   toDomain(persistence: TPersistence): TDomain {
     // 1. 基础字段映射（使用领域层类型）
     const domainData: Partial<TDomain> = {
       id: EntityId.fromString(persistence.id),
       version: persistence.version,
-      auditInfo: new AuditInfo(
-        persistence.createdAt,
-        persistence.updatedAt,
-        persistence.createdBy,
-        persistence.updatedBy,
-        persistence.version
-      ),
+      auditInfo: new AuditInfo(persistence.createdAt, persistence.updatedAt, persistence.createdBy, persistence.updatedBy, persistence.version),
     };
 
     // 2. 租户隔离字段映射（如果适用）
     if (this.isTenantIsolated(persistence)) {
-      domainData.tenantId = TenantId.fromString(
-        persistence.tenantId
-      );
+      domainData.tenantId = TenantId.fromString(persistence.tenantId);
       // ... 其他租户字段
     }
 
@@ -1165,6 +975,7 @@ export class EntityMapper<
 ```
 
 **领域层支持点**:
+
 1. ✅ `Entity` 基类：领域实体基类
 2. ✅ `AggregateRoot` 基类：聚合根基类
 3. ✅ `EntityId` 类型：标识符类型
@@ -1177,21 +988,10 @@ export class EntityMapper<
 
 ```typescript
 // 基础设施层：将领域层规范转换为数据库查询
-import {
-  ISpecification,
-  IQuerySpecification,
-  QueryCriteria,
-  QueryOperator,
-  AndSpecification,
-  OrSpecification,
-  NotSpecification,
-} from "@hl8/domain-kernel";
+import { ISpecification, IQuerySpecification, QueryCriteria, QueryOperator, AndSpecification, OrSpecification, NotSpecification } from "@hl8/domain-kernel";
 
 export class SpecificationConverter implements ISpecificationConverter {
-  convertToQuery<T>(
-    spec: ISpecification<T>,
-    entityName: string
-  ): MikroORMQueryOptions {
+  convertToQuery<T>(spec: ISpecification<T>, entityName: string): MikroORMQueryOptions {
     // 如果规范实现了 IQuerySpecification，使用其查询条件
     if (this.isQuerySpecification(spec)) {
       return this.convertCriteriaToQuery(spec.getQueryCriteria());
@@ -1201,9 +1001,7 @@ export class SpecificationConverter implements ISpecificationConverter {
     return this.convertSpecificationToQuery(spec, 0);
   }
 
-  protected convertCriteriaToQuery(
-    criteria: QueryCriteria
-  ): MikroORMQueryOptions {
+  protected convertCriteriaToQuery(criteria: QueryCriteria): MikroORMQueryOptions {
     const options: MikroORMQueryOptions = {};
 
     // 转换查询条件（使用领域层的 QueryOperator）
@@ -1217,9 +1015,7 @@ export class SpecificationConverter implements ISpecificationConverter {
     return options;
   }
 
-  protected convertConditionsToWhere(
-    conditions: QueryCondition[]
-  ): Record<string, unknown> {
+  protected convertConditionsToWhere(conditions: QueryCondition[]): Record<string, unknown> {
     const where: Record<string, unknown> = {};
 
     for (const condition of conditions) {
@@ -1241,6 +1037,7 @@ export class SpecificationConverter implements ISpecificationConverter {
 ```
 
 **领域层支持点**:
+
 1. ✅ `ISpecification` 接口：规范接口
 2. ✅ `IQuerySpecification` 接口：查询规范接口
 3. ✅ `QueryCriteria` 类型：查询条件类型
@@ -1253,31 +1050,14 @@ export class SpecificationConverter implements ISpecificationConverter {
 
 ```typescript
 // 基础设施层：将技术异常转换为领域异常
-import {
-  DomainException,
-  RepositoryException,
-  AggregateVersionConflictException,
-  RepositoryConnectionException,
-  RepositoryQueryException,
-} from "@hl8/domain-kernel";
+import { DomainException, RepositoryException, AggregateVersionConflictException, RepositoryConnectionException, RepositoryQueryException } from "@hl8/domain-kernel";
 import { OptimisticLockError } from "@mikro-orm/core";
 
 export class ExceptionConverter implements IExceptionConverter {
-  convertToDomainException(
-    error: unknown,
-    operation: string,
-    entityType: string,
-    entityId?: string
-  ): DomainException {
+  convertToDomainException(error: unknown, operation: string, entityType: string, entityId?: string): DomainException {
     // 识别异常类型并转换为领域层异常
     if (this.isOptimisticLockException(error)) {
-      return new AggregateVersionConflictException(
-        entityType,
-        entityId || "unknown",
-        expectedVersion,
-        actualVersion,
-        originalError
-      );
+      return new AggregateVersionConflictException(entityType, entityId || "unknown", expectedVersion, actualVersion, originalError);
     }
 
     if (this.isConnectionException(error)) {
@@ -1290,6 +1070,7 @@ export class ExceptionConverter implements IExceptionConverter {
 ```
 
 **领域层支持点**:
+
 1. ✅ `DomainException` 基类：异常基类
 2. ✅ `RepositoryException` 类：仓储异常
 3. ✅ `AggregateVersionConflictException` 类：版本冲突异常
@@ -1313,7 +1094,7 @@ export class User extends AggregateRoot {
     super(id);
     this._email = email;
     this._password = password;
-    
+
     this.addDomainEvent({
       type: "UserCreated",
       aggregateRootId: this.id,
@@ -1326,11 +1107,7 @@ export class User extends AggregateRoot {
 }
 
 // 基础设施层：实现用户仓储
-import {
-  IRepository,
-  EntityId,
-  AggregateRoot,
-} from "@hl8/domain-kernel";
+import { IRepository, EntityId, AggregateRoot } from "@hl8/domain-kernel";
 import { EntityManager } from "@mikro-orm/core";
 import { UserEntity } from "./entities/user.entity.js";
 import { EntityMapper } from "./mappers/entity-mapper.js";
@@ -1338,7 +1115,7 @@ import { EntityMapper } from "./mappers/entity-mapper.js";
 export class UserRepository implements IRepository<User> {
   constructor(
     private readonly em: EntityManager,
-    private readonly mapper: EntityMapper<User, UserEntity>
+    private readonly mapper: EntityMapper<User, UserEntity>,
   ) {}
 
   async findById(id: EntityId): Promise<User | null> {
@@ -1354,12 +1131,7 @@ export class UserRepository implements IRepository<User> {
       // 使用实体映射器转换为领域实体
       return this.mapper.toDomain(entity);
     } catch (error) {
-      throw this.exceptionConverter.convertToDomainException(
-        error,
-        "findById",
-        "User",
-        id.value
-      );
+      throw this.exceptionConverter.convertToDomainException(error, "findById", "User", id.value);
     }
   }
 
@@ -1371,12 +1143,7 @@ export class UserRepository implements IRepository<User> {
       this.em.persist(entity);
       await this.em.flush();
     } catch (error) {
-      throw this.exceptionConverter.convertToDomainException(
-        error,
-        "save",
-        "User",
-        aggregate.id.value
-      );
+      throw this.exceptionConverter.convertToDomainException(error, "save", "User", aggregate.id.value);
     }
   }
 
@@ -1385,6 +1152,7 @@ export class UserRepository implements IRepository<User> {
 ```
 
 **领域层支持点**:
+
 1. ✅ `IRepository` 接口：定义仓储契约
 2. ✅ `EntityId` 类型：标识符类型
 3. ✅ `AggregateRoot` 类型：聚合根类型
@@ -1397,19 +1165,9 @@ export class UserRepository implements IRepository<User> {
 
 ```typescript
 // 基础设施层：租户隔离查询实现
-import {
-  ITenantIsolatedRepository,
-  TenantContext,
-  TenantId,
-  OrganizationId,
-  EntityId,
-  BusinessException,
-} from "@hl8/domain-kernel";
+import { ITenantIsolatedRepository, TenantContext, TenantId, OrganizationId, EntityId, BusinessException } from "@hl8/domain-kernel";
 
-export class ProductRepository
-  extends MikroORMTenantIsolatedRepository<ProductEntity>
-  implements ITenantIsolatedRepository<Product>
-{
+export class ProductRepository extends MikroORMTenantIsolatedRepository<ProductEntity> implements ITenantIsolatedRepository<Product> {
   async findAllByContext(context: TenantContext): Promise<Product[]> {
     // 使用领域层的租户上下文构建查询
     const where: Record<string, unknown> = {
@@ -1429,15 +1187,11 @@ export class ProductRepository
 
     try {
       const entities = await this.em.find(ProductEntity, where);
-      
+
       // 映射为领域实体
-      return entities.map(entity => this.mapper.toDomain(entity));
+      return entities.map((entity) => this.mapper.toDomain(entity));
     } catch (error) {
-      throw this.exceptionConverter.convertToDomainException(
-        error,
-        "findAllByContext",
-        "Product"
-      );
+      throw this.exceptionConverter.convertToDomainException(error, "findAllByContext", "Product");
     }
   }
 
@@ -1454,18 +1208,14 @@ export class ProductRepository
       // 使用领域层的 TenantId 进行比较
       return entity.tenantId.value === tenantId.value;
     } catch (error) {
-      throw this.exceptionConverter.convertToDomainException(
-        error,
-        "belongsToTenant",
-        "Product",
-        id.value
-      );
+      throw this.exceptionConverter.convertToDomainException(error, "belongsToTenant", "Product", id.value);
     }
   }
 }
 ```
 
 **领域层支持点**:
+
 1. ✅ `ITenantIsolatedRepository` 接口：租户隔离仓储接口
 2. ✅ `TenantContext` 类型：租户上下文
 3. ✅ `TenantId`、`OrganizationId`、`DepartmentId` 类型：租户标识符
@@ -1479,9 +1229,7 @@ export class ProductRepository
 // 领域层：定义业务规范
 import { ISpecification, IQuerySpecification, QueryCriteria } from "@hl8/domain-kernel";
 
-export class ActiveProductSpecification
-  implements IQuerySpecification<Product>
-{
+export class ActiveProductSpecification implements IQuerySpecification<Product> {
   getQueryCriteria(): QueryCriteria {
     return {
       conditions: [
@@ -1505,45 +1253,28 @@ export class ActiveProductSpecification
 }
 
 // 基础设施层：使用规范查询
-import {
-  ISpecification,
-  QueryOperator,
-} from "@hl8/domain-kernel";
+import { ISpecification, QueryOperator } from "@hl8/domain-kernel";
 
 export class ProductRepository {
-  constructor(
-    private readonly specificationConverter: SpecificationConverter
-  ) {}
+  constructor(private readonly specificationConverter: SpecificationConverter) {}
 
-  async findBySpecification(
-    spec: ISpecification<Product>
-  ): Promise<Product[]> {
+  async findBySpecification(spec: ISpecification<Product>): Promise<Product[]> {
     // 将领域层的规范转换为 MikroORM 查询
-    const queryOptions = this.specificationConverter.convertToQuery(
-      spec,
-      ProductEntity.name
-    );
+    const queryOptions = this.specificationConverter.convertToQuery(spec, ProductEntity.name);
 
     try {
-      const entities = await this.em.find(
-        ProductEntity,
-        queryOptions.where,
-        queryOptions
-      );
+      const entities = await this.em.find(ProductEntity, queryOptions.where, queryOptions);
 
-      return entities.map(entity => this.mapper.toDomain(entity));
+      return entities.map((entity) => this.mapper.toDomain(entity));
     } catch (error) {
-      throw this.exceptionConverter.convertToDomainException(
-        error,
-        "findBySpecification",
-        "Product"
-      );
+      throw this.exceptionConverter.convertToDomainException(error, "findBySpecification", "Product");
     }
   }
 }
 ```
 
 **领域层支持点**:
+
 1. ✅ `ISpecification` 接口：规范接口
 2. ✅ `IQuerySpecification` 接口：查询规范接口
 3. ✅ `QueryCriteria` 类型：查询条件
@@ -1556,13 +1287,12 @@ export class ProductRepository {
 ### 1. 接口实现
 
 **✅ 正确做法**:
+
 ```typescript
 // 基础设施层实现领域层定义的接口
 import { IRepository, EntityId } from "@hl8/domain-kernel";
 
-export class MikroORMRepository<T extends BaseEntity>
-  implements IRepository<T>
-{
+export class MikroORMRepository<T extends BaseEntity> implements IRepository<T> {
   async findById(id: EntityId): Promise<T | null> {
     // 实现接口方法
   }
@@ -1570,10 +1300,12 @@ export class MikroORMRepository<T extends BaseEntity>
 ```
 
 **❌ 错误做法**:
+
 ```typescript
 // 不要绕过领域层接口直接实现
 export class MikroORMRepository<T> {
-  async findById(id: string): Promise<T | null> { // ❌ 不应该直接使用 string
+  async findById(id: string): Promise<T | null> {
+    // ❌ 不应该直接使用 string
     // ...
   }
 }
@@ -1582,6 +1314,7 @@ export class MikroORMRepository<T> {
 ### 2. 类型使用
 
 **✅ 正确做法**:
+
 ```typescript
 // 使用领域层的类型
 import { EntityId, TenantContext, TenantId } from "@hl8/domain-kernel";
@@ -1594,6 +1327,7 @@ async findById(id: EntityId): Promise<User | null> {
 ```
 
 **❌ 错误做法**:
+
 ```typescript
 // 不要直接使用原始类型
 async findById(id: string): Promise<User | null> { // ❌
@@ -1604,6 +1338,7 @@ async findById(id: string): Promise<User | null> { // ❌
 ### 3. 异常转换
 
 **✅ 正确做法**:
+
 ```typescript
 // 将所有技术异常转换为领域层异常
 import { DomainException } from "@hl8/domain-kernel";
@@ -1611,16 +1346,12 @@ import { DomainException } from "@hl8/domain-kernel";
 try {
   // 数据库操作
 } catch (error) {
-  throw this.exceptionConverter.convertToDomainException(
-    error,
-    "save",
-    "User",
-    entity.id.value
-  );
+  throw this.exceptionConverter.convertToDomainException(error, "save", "User", entity.id.value);
 }
 ```
 
 **❌ 错误做法**:
+
 ```typescript
 // 不要直接抛出技术异常
 try {
@@ -1633,6 +1364,7 @@ try {
 ### 4. 实体映射
 
 **✅ 正确做法**:
+
 ```typescript
 // 使用实体映射器进行双向转换
 const domainEntity = this.mapper.toDomain(persistenceEntity);
@@ -1640,6 +1372,7 @@ const persistenceEntity = this.mapper.toPersistence(domainEntity);
 ```
 
 **❌ 错误做法**:
+
 ```typescript
 // 不要直接使用持久化实体作为领域实体
 const domainEntity = persistenceEntity as DomainEntity; // ❌
@@ -1648,6 +1381,7 @@ const domainEntity = persistenceEntity as DomainEntity; // ❌
 ### 5. 租户隔离
 
 **✅ 正确做法**:
+
 ```typescript
 // 使用领域层的租户上下文进行查询
 import { TenantContext, TenantId } from "@hl8/domain-kernel";
@@ -1661,6 +1395,7 @@ async findByContext(context: TenantContext): Promise<Product[]> {
 ```
 
 **❌ 错误做法**:
+
 ```typescript
 // 不要直接使用字符串作为租户ID
 async findByTenant(tenantId: string): Promise<Product[]> { // ❌
@@ -1674,18 +1409,18 @@ async findByTenant(tenantId: string): Promise<Product[]> { // ❌
 
 ### 核心支持作用总结
 
-| 领域层组件 | 基础设施层使用场景 | 关键支持作用 |
-|-----------|------------------|-------------|
-| **IRepository** | 仓储实现 | 定义仓储契约，确保实现一致性 |
-| **ITenantIsolatedRepository** | 租户隔离仓储实现 | 定义租户隔离契约，确保安全隔离 |
-| **EntityId** | 标识符处理 | 统一标识符格式，类型安全 |
-| **Entity / AggregateRoot** | 实体映射 | 提供领域实体类型定义 |
-| **TenantContext** | 租户隔离查询 | 多层级数据隔离上下文 |
-| **TenantId / OrganizationId / DepartmentId** | 租户隔离字段 | 租户标识符类型，确保隔离正确性 |
-| **ISpecification / QueryCriteria** | 查询转换 | 提供查询抽象，技术无关 |
-| **QueryOperator** | 查询条件构建 | 统一查询操作符枚举 |
-| **DomainException** | 异常转换 | 统一异常体系，业务语义 |
-| **DomainEvent** | 事件存储 | 统一事件结构，版本管理 |
+| 领域层组件                                   | 基础设施层使用场景 | 关键支持作用                   |
+| -------------------------------------------- | ------------------ | ------------------------------ |
+| **IRepository**                              | 仓储实现           | 定义仓储契约，确保实现一致性   |
+| **ITenantIsolatedRepository**                | 租户隔离仓储实现   | 定义租户隔离契约，确保安全隔离 |
+| **EntityId**                                 | 标识符处理         | 统一标识符格式，类型安全       |
+| **Entity / AggregateRoot**                   | 实体映射           | 提供领域实体类型定义           |
+| **TenantContext**                            | 租户隔离查询       | 多层级数据隔离上下文           |
+| **TenantId / OrganizationId / DepartmentId** | 租户隔离字段       | 租户标识符类型，确保隔离正确性 |
+| **ISpecification / QueryCriteria**           | 查询转换           | 提供查询抽象，技术无关         |
+| **QueryOperator**                            | 查询条件构建       | 统一查询操作符枚举             |
+| **DomainException**                          | 异常转换           | 统一异常体系，业务语义         |
+| **DomainEvent**                              | 事件存储           | 统一事件结构，版本管理         |
 
 ### 设计原则体现
 
@@ -1748,4 +1483,3 @@ async findByTenant(tenantId: string): Promise<Product[]> { // ❌
    - 体验领域层对基础设施层的支持作用
 
 **祝你开发顺利！** 🚀
-

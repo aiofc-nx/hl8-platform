@@ -2,26 +2,26 @@
   Sync Impact Report:
   Version: 1.0.0 → 1.1.0
   Status: Minor Update - Added Module Usage Guidelines
-  
+
   Principles Added:
   - I. 中文优先原则 (NON-NEGOTIABLE)
   - II. 代码即文档原则
   - III. 架构原则（Clean Architecture + DDD + CQRS + ES + EDA）
-  
+
   Sections Added:
   - Core Principles (3 main principles with detailed sub-sections)
   - 模块使用规范（新增）
   - Governance
-  
+
   Changes:
   - v1.1.0: 新增模块使用规范章节，规定基础设施模块和kernel模块的使用要求
-  
+
   Templates Status:
   ✅ plan-template.md - Constitution Check section ready
   ✅ spec-template.md - Ready for use
   ✅ tasks-template.md - Ready for use
   ⚠️ Need to verify alignment with DDD/ES patterns in future updates
-  
+
   Follow-up TODOs: None
 -->
 

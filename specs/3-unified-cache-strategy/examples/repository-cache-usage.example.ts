@@ -61,17 +61,19 @@ export class AppConfig {
         config: RepositoryCacheConfig,
       ): IRepository<User> => {
         // 创建基础仓储
-        const inner = new MikroORMRepository<UserEntity>(
-          em,
-          "UserEntity",
-        );
+        const inner = new MikroORMRepository<UserEntity>(em, "UserEntity");
 
         // 包装为带缓存的仓储
-        return createCachedRepository(inner, "user", { cache, tenantContext }, {
-          enabled: config.enabled,
-          defaultTtlMs: config.defaultTtlMs,
-          keyPrefix: config.keyPrefix,
-        });
+        return createCachedRepository(
+          inner,
+          "user",
+          { cache, tenantContext },
+          {
+            enabled: config.enabled,
+            defaultTtlMs: config.defaultTtlMs,
+            keyPrefix: config.keyPrefix,
+          },
+        );
       },
       inject: [
         "EntityManager",
@@ -141,24 +143,15 @@ export class UserService {
   /**
    * 手动失效缓存示例
    */
-  async invalidateUserCache(
-    id: string,
-    tenantId?: string,
-  ): Promise<void> {
+  async invalidateUserCache(id: string, tenantId?: string): Promise<void> {
     // 方式1：按实体ID失效（精确）
-    await this.cacheInvalidation.invalidateEntityId(
-      "user",
-      id,
-      tenantId,
-    );
+    await this.cacheInvalidation.invalidateEntityId("user", id, tenantId);
 
     // 方式2：按实体类型失效（粗粒度，失效所有 user 实体缓存）
     await this.cacheInvalidation.invalidateEntity("user", tenantId);
 
     // 方式3：按模式失效（灵活）
-    const pattern = tenantId
-      ? `${tenantId}:repo:user:*`
-      : "repo:user:*";
+    const pattern = tenantId ? `${tenantId}:repo:user:*` : "repo:user:*";
     await this.cacheInvalidation.invalidateByPattern(pattern);
   }
 
@@ -194,9 +187,7 @@ export class UserUpdatedEvent {
 export class UserUpdatedEventHandler
   implements IEventHandler<UserUpdatedEvent>
 {
-  constructor(
-    private readonly cacheInvalidation: CacheInvalidationService,
-  ) {}
+  constructor(private readonly cacheInvalidation: CacheInvalidationService) {}
 
   async handle(event: UserUpdatedEvent): Promise<void> {
     // 事件触发时自动失效缓存
@@ -234,9 +225,6 @@ export class TenantUserService {
     await this.cacheInvalidation.invalidateEntity("user", tenantId);
 
     // 或使用模式匹配
-    await this.cacheInvalidation.invalidateByPattern(
-      `${tenantId}:repo:user:*`,
-    );
+    await this.cacheInvalidation.invalidateByPattern(`${tenantId}:repo:user:*`);
   }
 }
-

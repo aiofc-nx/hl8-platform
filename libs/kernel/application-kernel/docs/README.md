@@ -598,21 +598,18 @@ Application Kernel 集成 `@hl8/cache` 提供统一缓存服务，支持查询�
 #### 1. 注入缓存服务
 
 ```typescript
-import { Injectable, Inject } from '@nestjs/common';
-import { ICache, CacheKeyBuilder } from '@hl8/application-kernel';
+import { Injectable, Inject } from "@nestjs/common";
+import { ICache, CacheKeyBuilder } from "@hl8/application-kernel";
 
 @Injectable()
 export class UserService {
   private readonly keyBuilder = new CacheKeyBuilder();
 
-  constructor(@Inject('CacheService') private readonly cache: ICache) {}
+  constructor(@Inject("CacheService") private readonly cache: ICache) {}
 
   async getUserProfile(userId: string): Promise<UserProfile | null> {
     // 构建缓存键
-    const cacheKey = this.keyBuilder.buildQueryKey(
-      'GetUserProfile',
-      { userId }
-    );
+    const cacheKey = this.keyBuilder.buildQueryKey("GetUserProfile", { userId });
 
     // 先查缓存
     const cached = await this.cache.get<UserProfile>(cacheKey);
@@ -624,7 +621,7 @@ export class UserService {
     const profile = await this.userRepository.getProfile(userId);
 
     // 缓存结果
-    await this.cache.set(cacheKey, profile, 3600000, ['entity:User']);
+    await this.cache.set(cacheKey, profile, 3600000, ["entity:User"]);
 
     return profile;
   }
@@ -634,15 +631,15 @@ export class UserService {
 #### 2. 使用缓存配置
 
 ```typescript
-import { Module } from '@nestjs/common';
-import { ApplicationKernelModule } from '@hl8/application-kernel';
-import { TypedConfigModule, fileLoader } from '@hl8/config';
+import { Module } from "@nestjs/common";
+import { ApplicationKernelModule } from "@hl8/application-kernel";
+import { TypedConfigModule, fileLoader } from "@hl8/config";
 
 @Module({
   imports: [
     TypedConfigModule.forRoot({
       schema: ApplicationKernelConfig,
-      load: [fileLoader({ path: './config/app.yml' })],
+      load: [fileLoader({ path: "./config/app.yml" })],
     }),
     ApplicationKernelModule.forRoot(),
   ],
@@ -656,7 +653,7 @@ export class AppModule {}
 cache:
   type: memory
   ttl:
-    default: 3600  # 默认 1 小时（秒）
+    default: 3600 # 默认 1 小时（秒）
   invalidation:
     strategy: event-based
     events:
@@ -668,37 +665,34 @@ cache:
 #### 3. 事件驱动缓存失效
 
 ```typescript
-import { Injectable, Inject } from '@nestjs/common';
-import { ICache, EventDrivenCacheInvalidation, Logger } from '@hl8/application-kernel';
-import { EventBus } from '@nestjs/cqrs';
+import { Injectable, Inject } from "@nestjs/common";
+import { ICache, EventDrivenCacheInvalidation, Logger } from "@hl8/application-kernel";
+import { EventBus } from "@nestjs/cqrs";
 
 @Injectable()
 export class CacheEventHandler {
   private invalidation: EventDrivenCacheInvalidation;
 
   constructor(
-    @Inject('CacheService') private readonly cache: ICache,
+    @Inject("CacheService") private readonly cache: ICache,
     private readonly logger: Logger,
   ) {}
 
   onModuleInit() {
-    this.invalidation = new EventDrivenCacheInvalidation(
-      this.cache,
-      this.logger
-    );
+    this.invalidation = new EventDrivenCacheInvalidation(this.cache, this.logger);
 
     // 注册失效规则
     this.invalidation.registerRule({
-      id: 'user-update-invalidation',
-      eventType: 'UserUpdatedEvent',
+      id: "user-update-invalidation",
+      eventType: "UserUpdatedEvent",
       keyGenerator: (event) => [`repo:User:${(event.data as any).userId}`],
-      tags: ['entity:User'],
+      tags: ["entity:User"],
       enabled: true,
       priority: 100,
     });
 
     // 监听事件
-    this.eventBus.subscribe('UserUpdatedEvent', (event) => {
+    this.eventBus.subscribe("UserUpdatedEvent", (event) => {
       this.invalidation.handleEvent(event);
     });
   }
@@ -708,12 +702,12 @@ export class CacheEventHandler {
 #### 4. 监控缓存统计
 
 ```typescript
-import { Injectable, Inject } from '@nestjs/common';
-import { ICache } from '@hl8/application-kernel';
+import { Injectable, Inject } from "@nestjs/common";
+import { ICache } from "@hl8/application-kernel";
 
 @Injectable()
 export class CacheMonitoringService {
-  constructor(@Inject('CacheService') private readonly cache: ICache) {}
+  constructor(@Inject("CacheService") private readonly cache: ICache) {}
 
   async getStats() {
     const stats = await this.cache.getStats();

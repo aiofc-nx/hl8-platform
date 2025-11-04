@@ -154,18 +154,12 @@ describe("EventDrivenCacheInvalidation", () => {
       invalidation.registerRule(rule);
 
       // 设置带标签的缓存
-      await cache.set(
-        "cache1",
-        { data: "user data 1" },
-        undefined,
-        ["entity:user"],
-      );
-      await cache.set(
-        "cache2",
-        { data: "user data 2" },
-        undefined,
-        ["entity:user"],
-      );
+      await cache.set("cache1", { data: "user data 1" }, undefined, [
+        "entity:user",
+      ]);
+      await cache.set("cache2", { data: "user data 2" }, undefined, [
+        "entity:user",
+      ]);
       await cache.set("cache3", { data: "order data" }, undefined, [
         "entity:order",
       ]);

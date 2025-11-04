@@ -229,9 +229,7 @@ export class InvalidationRuleRegistry {
 
     // 通配符匹配
     if (pattern.includes("*")) {
-      const regexPattern = pattern
-        .replace(/\./g, "\\.")
-        .replace(/\*/g, ".*");
+      const regexPattern = pattern.replace(/\./g, "\\.").replace(/\*/g, ".*");
 
       const regex = new RegExp(`^${regexPattern}$`);
       return regex.test(eventType);

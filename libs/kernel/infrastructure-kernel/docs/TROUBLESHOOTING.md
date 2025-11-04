@@ -138,7 +138,7 @@ const orm = await MikroORM.init({
     EventEntity,
     EventSnapshotEntity,
     ProductEntity, // 你的实体
-    OrderEntity,   // 你的实体
+    OrderEntity, // 你的实体
   ],
 });
 ```
@@ -321,7 +321,8 @@ class ProductEntity extends BaseEntity {
 
 **症状**: 每次查询都访问数据库。
 
-**原因**: 
+**原因**:
+
 1. 缓存已过期
 2. 缓存 TTL 配置过短
 3. 缓存存储空间已满
@@ -332,7 +333,7 @@ class ProductEntity extends BaseEntity {
 // 调整缓存配置
 const cacheConfig: CacheConfig = {
   defaultTtl: 3600000, // 增加到 1 小时
-  maxSize: 100000,     // 增加缓存大小
+  maxSize: 100000, // 增加缓存大小
   enableStats: true,
 };
 
@@ -357,7 +358,7 @@ await cachedRepo.save(entity); // 自动失效
 
 // 或手动失效
 const invalidationService = new CacheInvalidationService(cache, tenantContext);
-await invalidationService.invalidateEntity('Product');
+await invalidationService.invalidateEntity("Product");
 ```
 
 ---
@@ -376,11 +377,7 @@ const tenantContext: TenantContextProvider = {
   getTenantId: () => tenantId, // 确保提供租户 ID
 };
 
-const cachedRepo = createCachedRepository(
-  repo,
-  'Product',
-  { cache, tenantContext, logger },
-);
+const cachedRepo = createCachedRepository(repo, "Product", { cache, tenantContext, logger });
 ```
 
 ---
@@ -405,7 +402,7 @@ const currentVersion = await eventStore.getCurrentVersion(aggregateId);
 const result = await eventStore.saveEvents(
   aggregateId,
   events,
-  currentVersion // 使用当前版本号
+  currentVersion, // 使用当前版本号
 );
 
 if (!result.success) {
@@ -475,7 +472,7 @@ const orm = await MikroORM.init({
   password: process.env.DB_PASSWORD,
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT || "5432"),
-  entities: ['./dist/**/*.entity.js'], // 确保路径正确
+  entities: ["./dist/**/*.entity.js"], // 确保路径正确
   debug: process.env.NODE_ENV === "development",
 });
 ```
@@ -502,7 +499,7 @@ for (const order of orders) {
 
 // 正确示例
 const orders = await repository.findAll();
-const orderIds = orders.map(o => o.id);
+const orderIds = orders.map((o) => o.id);
 // 一次查询获取所有数据
 const items = await orderItemRepository.findByOrderIds(orderIds);
 ```
@@ -527,7 +524,7 @@ const cleanupInterval = setInterval(async () => {
 }, 3600000); // 每小时检查一次
 
 // 应用关闭时清理
-process.on('SIGTERM', () => {
+process.on("SIGTERM", () => {
   clearInterval(cleanupInterval);
   cache.destroy();
 });
@@ -643,4 +640,3 @@ setInterval(async () => {
 2. **查看文档**: 参考 [快速入门指南](./QUICKSTART.md)
 3. **提交 Issue**: [GitHub Issues](https://github.com/your-org/hl8-platform/issues)
 4. **社区讨论**: [GitHub Discussions](https://github.com/your-org/hl8-platform/discussions)
-

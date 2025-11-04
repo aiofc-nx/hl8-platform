@@ -253,8 +253,12 @@ describe("TTL Expiration Integration", () => {
       const promises = [
         cache.get("key1"),
         cache.get("key2"),
-        new Promise((resolve) => setTimeout(() => resolve(cache.get("key1")), 20)),
-        new Promise((resolve) => setTimeout(() => resolve(cache.get("key2")), 20)),
+        new Promise((resolve) =>
+          setTimeout(() => resolve(cache.get("key1")), 20),
+        ),
+        new Promise((resolve) =>
+          setTimeout(() => resolve(cache.get("key2")), 20),
+        ),
       ];
 
       const results = await Promise.all(promises);

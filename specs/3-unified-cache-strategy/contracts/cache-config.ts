@@ -3,20 +3,20 @@
  * @description 使用 @hl8/config 的 TypedConfigModule 进行类型安全的配置管理
  */
 
-import { Type } from 'class-transformer';
-import { IsBoolean, IsIn, IsNumber, Min } from 'class-validator';
+import { Type } from "class-transformer";
+import { IsBoolean, IsIn, IsNumber, Min } from "class-validator";
 
 /**
  * 缓存配置类
  * @description 定义缓存系统的全局配置，使用 class-validator 进行验证
- * 
+ *
  * **必须使用 @hl8/config 的 TypedConfigModule 进行管理**
- * 
+ *
  * @example
  * ```typescript
  * import { TypedConfigModule, fileLoader } from '@hl8/config';
  * import { CacheConfig } from '@hl8/cache';
- * 
+ *
  * TypedConfigModule.forRoot({
  *   schema: CacheConfig,
  *   load: [fileLoader({ path: './config/cache.yml' })],
@@ -79,7 +79,6 @@ export class CacheConfig {
    * - FIFO: 先进先出（First In First Out）
    * - LFU: 最不经常使用（Least Frequently Used）
    */
-  @IsIn(['LRU', 'FIFO', 'LFU'])
-  evictionStrategy: 'LRU' | 'FIFO' | 'LFU' = 'LRU';
+  @IsIn(["LRU", "FIFO", "LFU"])
+  evictionStrategy: "LRU" | "FIFO" | "LFU" = "LRU";
 }
-

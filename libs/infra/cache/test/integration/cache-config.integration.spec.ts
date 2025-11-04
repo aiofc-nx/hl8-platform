@@ -194,7 +194,7 @@ describe("Cache Configuration Integration", () => {
       const cache = new InMemoryCache(config, mockLogger);
 
       await cache.set("key1", { v: 1 });
-      
+
       // 等待至少两次清理周期
       await new Promise((resolve) => setTimeout(resolve, 150));
 

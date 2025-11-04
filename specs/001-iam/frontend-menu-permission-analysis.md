@@ -128,19 +128,17 @@ const payload = decodeJWT(token);
 const permissions = payload.permissions;
 
 // 使用CASL前端库检查权限
-import { AbilityBuilder } from '@casl/ability';
+import { AbilityBuilder } from "@casl/ability";
 
 const { can, build } = new AbilityBuilder();
-permissions.forEach(perm => {
-  const [action, subject] = perm.split(':');
+permissions.forEach((perm) => {
+  const [action, subject] = perm.split(":");
   can(action, subject);
 });
 const ability = build();
 
 // 菜单过滤
-const visibleMenus = menus.filter(menu => 
-  ability.can(menu.requiredPermission.action, menu.requiredPermission.subject)
-);
+const visibleMenus = menus.filter((menu) => ability.can(menu.requiredPermission.action, menu.requiredPermission.subject));
 ```
 
 #### 方案B：API查询方式
@@ -154,7 +152,7 @@ const visibleMenus = menus.filter(menu =>
 
 ```typescript
 // 前端调用API获取权限
-const response = await fetch('/api/users/me/permissions');
+const response = await fetch("/api/users/me/permissions");
 const { permissions } = await response.json();
 
 // 后续同方案A
@@ -168,15 +166,15 @@ const { permissions } = await response.json();
 // 前端菜单配置
 const menuConfig = [
   {
-    key: 'user-management',
-    label: '用户管理',
-    requiredPermission: { action: 'read', subject: 'User' }
+    key: "user-management",
+    label: "用户管理",
+    requiredPermission: { action: "read", subject: "User" },
   },
   {
-    key: 'tenant-settings',
-    label: '租户设置',
-    requiredPermission: { action: 'manage', subject: 'Tenant' }
-  }
+    key: "tenant-settings",
+    label: "租户设置",
+    requiredPermission: { action: "manage", subject: "Tenant" },
+  },
 ];
 ```
 

@@ -15,14 +15,14 @@
 ### 1. 注册失效规则
 
 ```typescript
-import { EventDrivenCacheInvalidation } from '@hl8/cache';
+import { EventDrivenCacheInvalidation } from "@hl8/cache";
 
 const invalidation = new EventDrivenCacheInvalidation(cache, logger);
 
 // 注册简单规则
 invalidation.registerRule({
-  id: 'user-update-rule',
-  eventType: 'UserUpdatedEvent',
+  id: "user-update-rule",
+  eventType: "UserUpdatedEvent",
   keyGenerator: (event) => [`repo:user:${(event.data as any).userId}`],
   enabled: true,
   priority: 100,
@@ -30,18 +30,18 @@ invalidation.registerRule({
 
 // 注册标签规则
 invalidation.registerRule({
-  id: 'order-cancel-rule',
-  eventType: 'OrderCancelledEvent',
-  tags: ['entity:order', 'entity:payment'],
+  id: "order-cancel-rule",
+  eventType: "OrderCancelledEvent",
+  tags: ["entity:order", "entity:payment"],
   enabled: true,
   priority: 100,
 });
 
 // 注册模式规则
 invalidation.registerRule({
-  id: 'batch-update-rule',
-  eventType: 'UserBatchUpdateEvent',
-  patterns: ['repo:user:*', 'query:GetUser:*'],
+  id: "batch-update-rule",
+  eventType: "UserBatchUpdateEvent",
+  patterns: ["repo:user:*", "query:GetUser:*"],
   enabled: true,
   priority: 100,
 });
@@ -51,14 +51,14 @@ invalidation.registerRule({
 
 ```typescript
 // 监听领域事件
-eventBus.subscribe('UserUpdatedEvent', async (event) => {
+eventBus.subscribe("UserUpdatedEvent", async (event) => {
   await invalidation.handleEvent(event);
 });
 
 // 手动触发
 await invalidation.handleEvent({
-  eventType: 'UserUpdatedEvent',
-  data: { userId: '123', name: 'Alice' },
+  eventType: "UserUpdatedEvent",
+  data: { userId: "123", name: "Alice" },
   timestamp: new Date(),
 });
 ```
@@ -70,9 +70,9 @@ await invalidation.handleEvent({
 ```typescript
 // 匹配所有 user 相关事件
 invalidation.registerRule({
-  id: 'user-all-events',
-  eventType: 'user.*',
-  tags: ['entity:user'],
+  id: "user-all-events",
+  eventType: "user.*",
+  tags: ["entity:user"],
   enabled: true,
   priority: 100,
 });
@@ -89,18 +89,18 @@ invalidation.registerRule({
 ```typescript
 // 只在满足条件时失效
 invalidation.registerRule({
-  id: 'conditional-invalidation',
-  eventType: 'OrderStatusChangedEvent',
-  condition: (event) => (event.data as any).newStatus === 'CANCELLED',
-  tags: ['entity:order'],
+  id: "conditional-invalidation",
+  eventType: "OrderStatusChangedEvent",
+  condition: (event) => (event.data as any).newStatus === "CANCELLED",
+  tags: ["entity:order"],
   enabled: true,
   priority: 200,
 });
 
 // 只有订单取消时才失效缓存
 await invalidation.handleEvent({
-  eventType: 'OrderStatusChangedEvent',
-  data: { orderId: '123', newStatus: 'CANCELLED' },
+  eventType: "OrderStatusChangedEvent",
+  data: { orderId: "123", newStatus: "CANCELLED" },
 });
 ```
 
@@ -109,17 +109,17 @@ await invalidation.handleEvent({
 ```typescript
 // 高优先级规则先执行
 invalidation.registerRule({
-  id: 'high-priority',
-  eventType: 'CriticalUpdateEvent',
-  tags: ['entity:user'],
+  id: "high-priority",
+  eventType: "CriticalUpdateEvent",
+  tags: ["entity:user"],
   enabled: true,
   priority: 1000, // 最高优先级
 });
 
 invalidation.registerRule({
-  id: 'low-priority',
-  eventType: 'SoftUpdateEvent',
-  tags: ['entity:user'],
+  id: "low-priority",
+  eventType: "SoftUpdateEvent",
+  tags: ["entity:user"],
   enabled: true,
   priority: 10, // 低优先级
 });
@@ -130,11 +130,11 @@ invalidation.registerRule({
 ```typescript
 // 使用多种失效方式
 invalidation.registerRule({
-  id: 'comprehensive-invalidation',
-  eventType: 'UserDeletedEvent',
+  id: "comprehensive-invalidation",
+  eventType: "UserDeletedEvent",
   keyGenerator: (event) => [`repo:user:${(event.data as any).userId}`],
-  tags: ['entity:user', 'entity:profile'],
-  patterns: ['query:GetUser:*', 'query:GetUserProfile:*'],
+  tags: ["entity:user", "entity:profile"],
+  patterns: ["query:GetUser:*", "query:GetUserProfile:*"],
   enabled: true,
   priority: 100,
 });
@@ -146,12 +146,12 @@ invalidation.registerRule({
 // 批量处理多个事件
 await invalidation.handleEvents([
   {
-    eventType: 'UserUpdatedEvent',
-    data: { userId: '1' },
+    eventType: "UserUpdatedEvent",
+    data: { userId: "1" },
   },
   {
-    eventType: 'UserUpdatedEvent',
-    data: { userId: '2' },
+    eventType: "UserUpdatedEvent",
+    data: { userId: "2" },
   },
 ]);
 ```
@@ -161,8 +161,8 @@ await invalidation.handleEvents([
 ### 与事件总线集成
 
 ```typescript
-import { EventBus } from '@nestjs/cqrs';
-import { Injectable } from '@nestjs/common';
+import { EventBus } from "@nestjs/cqrs";
+import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class CacheInvalidationHandler {
@@ -175,13 +175,9 @@ export class CacheInvalidationHandler {
 
   private setupSubscriptions(): void {
     // 注册事件监听
-    this.eventBus.subscribe('UserUpdatedEvent', (event) => 
-      this.invalidation.handleEvent(event)
-    );
-    
-    this.eventBus.subscribe('OrderCreatedEvent', (event) =>
-      this.invalidation.handleEvent(event)
-    );
+    this.eventBus.subscribe("UserUpdatedEvent", (event) => this.invalidation.handleEvent(event));
+
+    this.eventBus.subscribe("OrderCreatedEvent", (event) => this.invalidation.handleEvent(event));
   }
 }
 ```
@@ -193,13 +189,13 @@ class CachedUserRepository extends CachedRepository<User> {
   async save(entity: User): Promise<void> {
     // 保存实体
     await this.dbRepository.save(entity);
-    
+
     // 自动失效缓存
     await this.cache.delete(`repo:User:${entity.id}`);
-    
+
     // 发布事件触发其他失效
     await this.eventBus.publish({
-      eventType: 'UserSavedEvent',
+      eventType: "UserSavedEvent",
       data: { userId: entity.id },
     });
   }

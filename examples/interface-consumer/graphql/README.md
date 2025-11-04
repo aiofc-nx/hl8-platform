@@ -4,6 +4,7 @@
 - 建议在 SDL 顶部注释标注 `# schema: v1`
 
 示例查询（伪 SDL/Query）：
+
 ```graphql
 # schema: v1
 query GetEntity($tenantId: ID!, $entityId: ID!) {

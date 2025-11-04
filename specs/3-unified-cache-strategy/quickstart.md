@@ -15,11 +15,11 @@ pnpm install
 ### 2. 在 NestJS 模块中导入 CacheModule（使用 @hl8/config）
 
 ```typescript
-import { Module } from '@nestjs/common';
-import { TypedConfigModule, fileLoader, dotenvLoader } from '@hl8/config';
-import { LoggerModule } from '@hl8/logger';
-import { CacheModule } from '@hl8/cache';
-import { CacheConfig } from '@hl8/cache';
+import { Module } from "@nestjs/common";
+import { TypedConfigModule, fileLoader, dotenvLoader } from "@hl8/config";
+import { LoggerModule } from "@hl8/logger";
+import { CacheModule } from "@hl8/cache";
+import { CacheConfig } from "@hl8/cache";
 
 // 定义配置类（类型安全）
 export class CacheConfig {
@@ -28,7 +28,7 @@ export class CacheConfig {
   enableStats = true;
   enableEventInvalidation = true;
   cleanupInterval = 600000; // 10 分钟
-  evictionStrategy: 'LRU' | 'FIFO' | 'LFU' = 'LRU';
+  evictionStrategy: "LRU" | "FIFO" | "LFU" = "LRU";
 }
 
 @Module({
@@ -37,8 +37,8 @@ export class CacheConfig {
     TypedConfigModule.forRoot({
       schema: CacheConfig,
       load: [
-        fileLoader({ path: './config/cache.yml' }), // 从配置文件加载
-        dotenvLoader({ separator: '__' }), // 从环境变量加载
+        fileLoader({ path: "./config/cache.yml" }), // 从配置文件加载
+        dotenvLoader({ separator: "__" }), // 从环境变量加载
       ],
     }),
     // 使用 @hl8/logger 进行日志记录
@@ -59,40 +59,40 @@ export class AppModule {}
 ### 3. 在服务中注入缓存（使用 @hl8/logger 记录日志）
 
 ```typescript
-import { Injectable, Inject } from '@nestjs/common';
-import { Logger } from '@hl8/logger';
-import { ICache } from '@hl8/cache';
+import { Injectable, Inject } from "@nestjs/common";
+import { Logger } from "@hl8/logger";
+import { ICache } from "@hl8/cache";
 
 @Injectable()
 export class UserService {
   constructor(
-    @Inject('CacheService')
+    @Inject("CacheService")
     private readonly cache: ICache,
     private readonly logger: Logger, // 注入 @hl8/logger
   ) {}
 
   async getUser(id: string): Promise<User | null> {
     const cacheKey = `repo:user:${id}`;
-    
+
     // 先查缓存
     const cached = await this.cache.get<User>(cacheKey);
     if (cached) {
       return cached;
     }
-    
+
     // 查数据库
     const user = await this.userRepository.findById(id);
-    
+
     // 缓存结果
     if (user) {
       await this.cache.set(
         cacheKey,
         user,
         3600000, // 1 小时
-        ['entity:user'], // 标签
+        ["entity:user"], // 标签
       );
     }
-    
+
     return user;
   }
 }
@@ -101,15 +101,15 @@ export class UserService {
 ### 4. 使用 @Cacheable 装饰器（高级用法）
 
 ```typescript
-import { Injectable } from '@nestjs/common';
-import { Cacheable } from '@hl8/cache';
+import { Injectable } from "@nestjs/common";
+import { Cacheable } from "@hl8/cache";
 
 @Injectable()
 export class UserRepository {
   @Cacheable({
-    keyPrefix: 'repo:user',
+    keyPrefix: "repo:user",
     ttl: 3600000,
-    tags: ['entity:user'],
+    tags: ["entity:user"],
   })
   async findById(id: string): Promise<User | null> {
     // 实现查询逻辑
@@ -124,35 +124,35 @@ export class UserRepository {
 
 ```typescript
 // 删除单个缓存项
-await cache.delete('repo:user:123');
+await cache.delete("repo:user:123");
 
 // 通过标签失效
-await cache.invalidateByTags(['entity:user']);
+await cache.invalidateByTags(["entity:user"]);
 
 // 通过模式匹配失效
-await cache.invalidateByPattern('query:*:user:*');
+await cache.invalidateByPattern("query:*:user:*");
 ```
 
 #### 事件驱动失效
 
 ```typescript
-import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { ICache } from '@hl8/cache';
+import { EventsHandler, IEventHandler } from "@nestjs/cqrs";
+import { ICache } from "@hl8/cache";
 
 @EventsHandler(UserUpdatedEvent)
 export class UserUpdatedHandler implements IEventHandler<UserUpdatedEvent> {
   constructor(
-    @Inject('CacheService')
+    @Inject("CacheService")
     private readonly cache: ICache,
   ) {}
 
   async handle(event: UserUpdatedEvent) {
     // 失效实体缓存
     await this.cache.delete(`repo:user:${event.userId}`);
-    
+
     // 失效相关查询缓存
-    await this.cache.invalidateByTags(['entity:user']);
-    await this.cache.invalidateByPattern('query:*:user:*');
+    await this.cache.invalidateByTags(["entity:user"]);
+    await this.cache.invalidateByPattern("query:*:user:*");
   }
 }
 ```
@@ -170,18 +170,14 @@ console.log(`未命中次数: ${stats.misses}`);
 ### 7. 基础设施层仓储查询缓存（US1）
 
 ```typescript
-import { Module } from '@nestjs/common';
-import { TypedConfigModule, fileLoader } from '@hl8/config';
-import { LoggerModule } from '@hl8/logger';
-import { CacheModule } from '@hl8/cache';
-import { InfrastructureKernelModule } from '@hl8/infrastructure-kernel';
-import { 
-  createCachedRepository,
-  RepositoryCacheConfig,
-  CacheInvalidationService 
-} from '@hl8/infrastructure-kernel';
-import { MikroORMRepository } from '@hl8/infrastructure-kernel';
-import type { ICache, TenantContextProvider } from '@hl8/cache';
+import { Module } from "@nestjs/common";
+import { TypedConfigModule, fileLoader } from "@hl8/config";
+import { LoggerModule } from "@hl8/logger";
+import { CacheModule } from "@hl8/cache";
+import { InfrastructureKernelModule } from "@hl8/infrastructure-kernel";
+import { createCachedRepository, RepositoryCacheConfig, CacheInvalidationService } from "@hl8/infrastructure-kernel";
+import { MikroORMRepository } from "@hl8/infrastructure-kernel";
+import type { ICache, TenantContextProvider } from "@hl8/cache";
 
 // 配置类（使用 @hl8/config）
 export class RootConfig {
@@ -192,25 +188,22 @@ export class RootConfig {
   imports: [
     TypedConfigModule.forRoot({
       schema: RootConfig,
-      load: fileLoader({ path: './config/app.yml' }),
+      load: fileLoader({ path: "./config/app.yml" }),
     }),
     LoggerModule.forRoot(),
     CacheModule.forRoot(CacheConfig),
-    InfrastructureKernelModule.forRoot({ /* ... */ }),
+    InfrastructureKernelModule.forRoot({
+      /* ... */
+    }),
   ],
   providers: [
     {
-      provide: 'UserRepository',
-      useFactory: (
-        em: EntityManager,
-        cache: ICache,
-        tenantContext: TenantContextProvider,
-        config: RepositoryCacheConfig,
-      ) => {
-        const inner = new MikroORMRepository<UserEntity>(em, 'UserEntity');
+      provide: "UserRepository",
+      useFactory: (em: EntityManager, cache: ICache, tenantContext: TenantContextProvider, config: RepositoryCacheConfig) => {
+        const inner = new MikroORMRepository<UserEntity>(em, "UserEntity");
         return createCachedRepository(
           inner,
-          'user',
+          "user",
           { cache, tenantContext },
           {
             enabled: config.enabled,
@@ -219,7 +212,7 @@ export class RootConfig {
           },
         );
       },
-      inject: ['EntityManager', 'CacheService', 'TenantContextProvider', RepositoryCacheConfig],
+      inject: ["EntityManager", "CacheService", "TenantContextProvider", RepositoryCacheConfig],
     },
   ],
 })
@@ -229,9 +222,9 @@ export class AppModule {}
 #### 使用示例
 
 ```typescript
-import { Injectable } from '@nestjs/common';
-import { CacheInvalidationService } from '@hl8/infrastructure-kernel';
-import type { IRepository } from '@hl8/domain-kernel';
+import { Injectable } from "@nestjs/common";
+import { CacheInvalidationService } from "@hl8/infrastructure-kernel";
+import type { IRepository } from "@hl8/domain-kernel";
 
 @Injectable()
 export class UserService {
@@ -247,8 +240,8 @@ export class UserService {
 
   async updateUser(id: string, data: Partial<User>): Promise<void> {
     const user = await this.userRepo.findById(EntityId.from(id));
-    if (!user) throw new Error('User not found');
-    
+    if (!user) throw new Error("User not found");
+
     Object.assign(user, data);
     await this.userRepo.save(user);
     // save 操作会自动失效缓存，无需手动调用
@@ -256,11 +249,11 @@ export class UserService {
 
   async invalidateUserCache(id: string, tenantId?: string): Promise<void> {
     // 手动失效：按实体ID
-    await this.cacheInvalidation.invalidateEntityId('user', id, tenantId);
-    
+    await this.cacheInvalidation.invalidateEntityId("user", id, tenantId);
+
     // 或按实体类型失效（失效所有 user 实体缓存）
-    await this.cacheInvalidation.invalidateEntity('user', tenantId);
-    
+    await this.cacheInvalidation.invalidateEntity("user", tenantId);
+
     // 或按模式失效
     await this.cacheInvalidation.invalidateByPattern(`${tenantId}:repo:user:*`);
   }
@@ -270,26 +263,22 @@ export class UserService {
 ### 8. 多租户场景
 
 ```typescript
-import { CacheKeyBuilder } from '@hl8/cache';
+import { CacheKeyBuilder } from "@hl8/cache";
 
 @Injectable()
 export class UserService {
   constructor(
-    @Inject('CacheService')
+    @Inject("CacheService")
     private readonly cache: ICache,
     private readonly keyBuilder: CacheKeyBuilder,
-    @Inject('TenantContext')
+    @Inject("TenantContext")
     private readonly tenantId: string,
   ) {}
 
   async getUser(id: string): Promise<User | null> {
     // 使用租户 ID 构建缓存键
-    const cacheKey = this.keyBuilder.buildEntityKey(
-      'user',
-      id,
-      this.tenantId,
-    );
-    
+    const cacheKey = this.keyBuilder.buildEntityKey("user", id, this.tenantId);
+
     // 缓存操作同单租户场景
     // ...
   }
@@ -311,7 +300,7 @@ export class UserService {
 A: 缓存空值，使用特殊标记表示"不存在"：
 
 ```typescript
-const NULL_VALUE = Symbol('NULL_VALUE');
+const NULL_VALUE = Symbol("NULL_VALUE");
 if (entity === null) {
   await cache.set(key, NULL_VALUE, ttl);
 }

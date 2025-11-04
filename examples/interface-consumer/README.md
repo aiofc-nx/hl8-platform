@@ -7,6 +7,7 @@
 - **目标**: 演示“稳定契约 + 可替换实现”
 
 目录说明：
+
 - `rest/` 使用 RESTful 适配层（路径含 `/v{MAJOR}`）
 - `graphql/` 使用 GraphQL 适配层（Schema 版本标注）
 - `scripts/e2e-switch.sh` 快速切换实现并做端到端校验

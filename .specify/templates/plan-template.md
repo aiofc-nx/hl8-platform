@@ -34,16 +34,19 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 根据项目宪章 (`.specify/memory/constitution.md`)，以下检查项必须满足：
 
 ### I. 中文优先原则检查
+
 - [ ] 所有文档和注释使用中文
 - [ ] API 文档和接口说明使用中文
 - [ ] 错误消息和日志使用中文
 
 ### II. 代码即文档原则检查
+
 - [ ] 所有公共 API 有完整的 TSDoc 注释（中文）
 - [ ] 注释包含 @description、@param、@returns、@throws、@example
 - [ ] 业务规则在注释中详细描述
 
 ### III. 架构原则检查
+
 - [ ] 采用 Clean Architecture 四层架构（领域层、应用层、基础设施层、接口层）
 - [ ] 领域层保持纯净（无数据库/ORM 依赖）
 - [ ] 使用充血模型（Rich Domain Model），禁止贫血模型
@@ -54,11 +57,13 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 - [ ] 事件驱动架构：系统组件通过事件通信
 
 ### 技术栈检查
+
 - [ ] 使用 NodeNext 模块系统
 - [ ] TypeScript 配置：module: "NodeNext", moduleResolution: "NodeNext"
 - [ ] package.json：type: "module", engines: { "node": ">=20" }
 
 ### 模块使用规范检查
+
 - [ ] 优先使用 @hl8/config 配置模块（libs/infra/config）
 - [ ] 优先使用 @hl8/logger 日志模块（libs/infra/logger）
 - [ ] 优先使用 @hl8/cache 缓存模块（libs/infra/cache）
@@ -68,6 +73,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 - [ ] 业务模块基于 libs/kernel/interface-kernel 开发接口层
 
 ### 测试要求检查
+
 - [ ] 单元测试文件命名：`{被测试文件名}.spec.ts`，与源代码同目录
 - [ ] 集成测试位于 `test/integration/`
 - [ ] 端到端测试位于 `test/e2e/`

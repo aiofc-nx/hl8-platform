@@ -11,6 +11,7 @@
 **聚合根**: 用户管理子领域
 
 **领域实体**:
+
 - `User` (聚合根)
   - `userId`: EntityId - 用户唯一标识（来自 `@hl8/domain-kernel`）
   - `email`: EmailValueObject - 邮箱地址
@@ -24,6 +25,7 @@
   - `version`: number - 乐观锁版本号
 
 **内部实体**:
+
 - `VerificationCode` - 验证码实体
   - `code`: string - 验证码
   - `type`: 'EMAIL' | 'PHONE' - 验证类型
@@ -31,12 +33,14 @@
   - `verified`: boolean - 是否已验证
 
 **业务规则**:
+
 - 邮箱和手机号必须在平台范围内唯一
 - 密码必须符合安全要求（最小8字符，包含字母和数字）
 - 邮箱和手机必须都验证后才能激活账户
 - 用户状态只能由认证子领域通过事件更新（如锁定）
 
 **状态转换**:
+
 - UNVERIFIED → VERIFIED (邮箱和手机验证完成)
 - VERIFIED → ACTIVE (账户激活)
 - ACTIVE → DISABLED (管理员禁用)
@@ -48,6 +52,7 @@
 **聚合根**: 认证子领域
 
 **领域实体**:
+
 - `LoginSession` (聚合根)
   - `sessionId`: EntityId - 会话唯一标识（来自 `@hl8/domain-kernel`）
   - `userId`: EntityId - 用户ID（关联User，来自 `@hl8/domain-kernel`）
@@ -62,6 +67,7 @@
   - `version`: number - 乐观锁版本号
 
 **业务规则**:
+
 - 会话30分钟无活动自动过期
 - 同一用户最多同时存在5个活跃会话
 - 登录失败5次后锁定账户（通过事件通知用户管理子领域）
@@ -69,6 +75,7 @@
 - 租户状态为SUSPENDED或EXPIRED时，该租户用户无法登录
 
 **状态转换**:
+
 - ACTIVE → EXPIRED (30分钟无活动)
 - ACTIVE → REVOKED (用户登出或管理员撤销)
 - EXPIRED → 不可恢复
@@ -80,6 +87,7 @@
 **聚合根**: 认证子领域
 
 **领域实体**:
+
 - `AuthenticationToken` (聚合根)
   - `tokenId`: EntityId - 令牌唯一标识（来自 `@hl8/domain-kernel`）
   - `userId`: EntityId - 用户ID（来自 `@hl8/domain-kernel`）
@@ -94,6 +102,7 @@
   - `version`: number - 乐观锁版本号
 
 **业务规则**:
+
 - Access Token 15分钟过期
 - Refresh Token 7天过期
 - 令牌撤销后立即失效，无法刷新
@@ -101,6 +110,7 @@
 - 刷新令牌时生成新的访问令牌和刷新令牌
 
 **状态转换**:
+
 - ACTIVE → EXPIRED (超过过期时间)
 - ACTIVE → REVOKED (用户登出或管理员撤销)
 - EXPIRED → 不可恢复
@@ -113,6 +123,7 @@
 **聚合根**: 用户管理子领域
 
 **领域实体**:
+
 - `UserAssignment` (聚合根)
   - `assignmentId`: EntityId - 分配唯一标识（来自 `@hl8/domain-kernel`）
   - `userId`: EntityId - 用户ID（来自 `@hl8/domain-kernel`）
@@ -120,6 +131,7 @@
   - `assignments`: UserAssignmentItem[] - 分配项列表
 
 **内部实体**:
+
 - `UserTenantAssignment` - 用户到租户的分配
   - `tenantId`: TenantId（来自 `@hl8/domain-kernel`）
   - `role`: RoleReference - 角色引用
@@ -136,6 +148,7 @@
   - `assignedAt`: Date
 
 **业务规则**:
+
 - 用户必须在平台用户存在后才能分配
 - 用户可以在多个租户中拥有不同身份
 - 用户可以在多个组织中兼职，但在同一组织内只能属于一个部门
@@ -148,6 +161,7 @@
 **聚合根**: 租户管理子领域
 
 **领域实体**:
+
 - `Tenant` (聚合根)
   - `tenantId`: TenantId - 租户唯一标识（来自 `@hl8/domain-kernel`）
   - `code`: TenantCodeValueObject - 租户代码（3-20字符，字母数字开头/结尾，可包含连字符和下划线）
@@ -162,11 +176,13 @@
   - `version`: number - 乐观锁版本号
 
 **内部实体**:
+
 - `TenantConfiguration` - 租户配置
   - `settings`: Map<string, any> - 配置项
   - `updatedAt`: Date
 
 **业务规则**:
+
 - 租户代码和域名必须在平台范围内唯一
 - 所有租户运营初期统一采用行级隔离策略
 - 创建租户时自动创建默认组织和根部门
@@ -174,6 +190,7 @@
 - 租户删除前必须处理所有关联数据
 
 **状态转换**:
+
 - TRIAL → ACTIVE (激活)
 - TRIAL → EXPIRED (试用期到期)
 - ACTIVE → SUSPENDED (暂停)
@@ -188,6 +205,7 @@
 **聚合根**: 组织管理子领域
 
 **领域实体**:
+
 - `Organization` (聚合根)
   - `organizationId`: OrganizationId - 组织唯一标识（来自 `@hl8/domain-kernel`）
   - `tenantId`: TenantId - 所属租户（来自 `@hl8/domain-kernel`，可通过organizationId.tenantId获取）
@@ -199,6 +217,7 @@
   - `version`: number - 乐观锁版本号
 
 **业务规则**:
+
 - 组织必须属于某个租户
 - 组织名称在租户内必须唯一
 - 组织之间是平级关系，无上下级结构
@@ -213,6 +232,7 @@
 **聚合根**: 部门管理子领域
 
 **领域实体**:
+
 - `Department` (聚合根)
   - `departmentId`: DepartmentId - 部门唯一标识（来自 `@hl8/domain-kernel`）
   - `organizationId`: OrganizationId - 所属组织（来自 `@hl8/domain-kernel`，可通过departmentId.organizationId获取）
@@ -225,6 +245,7 @@
   - `version`: number - 乐观锁版本号
 
 **业务规则**:
+
 - 部门必须属于某个组织
 - 部门不能跨组织移动
 - 部门支持多级嵌套（默认最多8层）
@@ -239,6 +260,7 @@
 **聚合根**: 角色管理子领域
 
 **领域实体**:
+
 - `Role` (聚合根)
   - `roleId`: EntityId - 角色唯一标识（来自 `@hl8/domain-kernel`）
   - `tenantId`: TenantId - 所属租户（来自 `@hl8/domain-kernel`）
@@ -252,6 +274,7 @@
   - `version`: number - 乐观锁版本号
 
 **业务规则**:
+
 - 角色层级权限继承规则
 - 角色不可循环依赖
 - 角色删除前检查分配情况
@@ -264,6 +287,7 @@
 **聚合根**: 权限管理子领域
 
 **领域实体**:
+
 - `Permission` (聚合根)
   - `permissionId`: EntityId - 权限唯一标识（来自 `@hl8/domain-kernel`）
   - `code`: PermissionCodeValueObject - 权限代码
@@ -274,6 +298,7 @@
   - `createdAt`: Date - 创建时间
 
 **内部实体**:
+
 - `PermissionAssignment` - 权限分配
   - `assignmentId`: EntityId（来自 `@hl8/domain-kernel`）
   - `targetType`: 'USER' | 'ROLE' - 分配目标类型
@@ -282,6 +307,7 @@
   - `assignedAt`: Date
 
 **业务规则**:
+
 - 权限不能超出租户类型的功能范围
 - 权限依赖关系验证
 - 权限分配冲突检测和处理
@@ -387,18 +413,20 @@ User (1) ──< (N) LoginSession ──> (N) AuthenticationToken
 ### Ability定义
 
 **CASL Ability结构**:
+
 ```typescript
 interface CaslAbility {
-  actions: string[];      // ['manage', 'read', 'create', 'update', 'delete']
-  subjects: string[];      // ['Tenant', 'User', 'Organization', 'Department', 'Role', 'Permission']
-  conditions: object;      // { tenantId: string, organizationId?: string, departmentId?: string }
-  fields?: string[];       // 字段级权限（可选）
+  actions: string[]; // ['manage', 'read', 'create', 'update', 'delete']
+  subjects: string[]; // ['Tenant', 'User', 'Organization', 'Department', 'Role', 'Permission']
+  conditions: object; // { tenantId: string, organizationId?: string, departmentId?: string }
+  fields?: string[]; // 字段级权限（可选）
 }
 ```
 
 ### 规则到CASL的映射
 
 **领域权限 → CASL规则**:
+
 - 权限代码 (`Permission.code`) → CASL action
 - 资源类型 → CASL subject
 - 租户上下文 → CASL conditions
@@ -481,4 +509,3 @@ interface CaslAbility {
 
 **文档生成时间**: 2024-12-19  
 **状态**: ✅ 数据模型定义完成，可以进入API契约设计阶段
-

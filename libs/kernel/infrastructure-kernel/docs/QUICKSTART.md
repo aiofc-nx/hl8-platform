@@ -155,10 +155,7 @@ await repository.delete(new EntityId(product.id));
 import { MikroORMTenantIsolatedRepository } from "@hl8/infrastructure-kernel";
 import { TenantContext, TenantId } from "@hl8/domain-kernel";
 
-const repository = new MikroORMTenantIsolatedRepository<OrderEntity>(
-  em,
-  "OrderEntity"
-);
+const repository = new MikroORMTenantIsolatedRepository<OrderEntity>(em, "OrderEntity");
 
 const tenantId = new TenantId("tenant-123");
 const context = new TenantContext(tenantId);
@@ -185,14 +182,11 @@ import { RepositoryFactory } from "@hl8/infrastructure-kernel";
 export class ProductService {
   constructor(
     @Inject("IRepositoryFactory")
-    private readonly factory: RepositoryFactory
+    private readonly factory: RepositoryFactory,
   ) {}
 
   async saveProduct(product: ProductEntity): Promise<void> {
-    const repository = this.factory.createRepository<ProductEntity>(
-      "ProductEntity",
-      this.em
-    );
+    const repository = this.factory.createRepository<ProductEntity>("ProductEntity", this.em);
     await repository.save(product);
   }
 }
@@ -211,7 +205,7 @@ import { ITransactionManager } from "@hl8/infrastructure-kernel";
 export class OrderService {
   constructor(
     @Inject("ITransactionManager")
-    private readonly transactionManager: ITransactionManager
+    private readonly transactionManager: ITransactionManager,
   ) {}
 
   // 推荐：自动管理事务
@@ -301,7 +295,7 @@ export class UserService {
 
   constructor(
     private readonly cache: ICache,
-    private readonly userRepo: IRepository<UserEntity>
+    private readonly userRepo: IRepository<UserEntity>,
   ) {
     this.cachedRepo = createCachedRepository(
       userRepo,
@@ -314,7 +308,7 @@ export class UserService {
       {
         enabled: true,
         defaultTtlMs: 3600000,
-      }
+      },
     );
   }
 
@@ -402,7 +396,7 @@ export class CreateOrderHandler {
     @Inject("OrderRepository")
     private readonly orderRepo: ITenantIsolatedRepository<OrderEntity>,
     @Inject("IEventStore")
-    private readonly eventStore: IEventStore
+    private readonly eventStore: IEventStore,
   ) {}
 
   async handle(command: CreateOrderCommand): Promise<CommandResult> {
@@ -412,11 +406,7 @@ export class CreateOrderHandler {
 
     const order = await this.transactionManager.runInTransaction(async (em) => {
       // 1. 创建领域实体
-      const domainOrder = new Order(
-        command.tenantContext!.tenantId,
-        command.orderNumber,
-        command.items
-      );
+      const domainOrder = new Order(command.tenantContext!.tenantId, command.orderNumber, command.items);
 
       // 2. 转换为持久化实体
       const orderEntity = this.mapper.toPersistence(domainOrder);
@@ -447,4 +437,3 @@ export class CreateOrderHandler {
 - 🔧 了解 [配置说明](#配置)
 - 🧪 参考 [测试示例](../../test/)
 - 📚 阅读 [API 参考](./API.md)
-

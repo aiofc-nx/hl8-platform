@@ -86,25 +86,29 @@ pnpm init
 **位置**: `libs/iam/src/domain/`
 
 **职责**:
+
 - 定义聚合根、实体、值对象
 - 实现业务规则和领域逻辑
 - 发布领域事件
 - **保持纯净**：不依赖任何基础设施库
 
 **标识符值对象使用规范**:
+
 - **优先使用** `@hl8/domain-kernel/src/identifiers` 提供的值对象
 - 从 `@hl8/domain-kernel` 导入：`EntityId`, `TenantId`, `OrganizationId`, `DepartmentId`
 - **禁止**在IAM模块中重新定义这些标识符值对象
 
 **示例导入**:
+
 ```typescript
-import { EntityId, TenantId, OrganizationId, DepartmentId } from '@hl8/domain-kernel';
+import { EntityId, TenantId, OrganizationId, DepartmentId } from "@hl8/domain-kernel";
 ```
 
 **示例结构**:
+
 ```
 domain/
-├── 
+├──
 │   ├── user/
 │   │   ├── aggregates/
 │   │   │   └── platform-user.aggregate.ts
@@ -124,12 +128,14 @@ domain/
 **位置**: `libs/iam/src/application/`
 
 **职责**:
+
 - 实现用例（Use Cases）
 - CQRS命令和查询处理
 - 事件投影器
 - **不依赖基础设施细节**
 
 **示例结构**:
+
 ```
 application/
 ├── commands/
@@ -152,12 +158,14 @@ application/
 **位置**: `libs/iam/src/infrastructure/`
 
 **职责**:
+
 - 实现仓储（Repository）
 - 实现事件存储（Event Store）
 - **CASL集成**（权限管理）
 - 外部服务集成（邮件、短信）
 
 **CASL集成示例**:
+
 ```
 infrastructure/
 ├── casl/
@@ -176,11 +184,13 @@ infrastructure/
 **位置**: `libs/iam/src/interface/`
 
 **职责**:
+
 - REST API控制器
 - DTO定义
 - **CASL守卫**（权限验证）
 
 **示例结构**:
+
 ```
 interface/
 ├── http/
@@ -202,8 +212,8 @@ interface/
 
 ```typescript
 // infrastructure/casl/ability-factory.ts
-import { Ability, AbilityBuilder } from '@casl/ability';
-import type { TenantContext } from '@hl8/domain-kernel';
+import { Ability, AbilityBuilder } from "@casl/ability";
+import type { TenantContext } from "@hl8/domain-kernel";
 
 /**
  * CASL Ability工厂
@@ -219,15 +229,15 @@ export class CaslAbilityFactory {
     const { can, build } = new AbilityBuilder(Ability);
 
     // 基于角色定义权限规则
-    if (context.hasPermission('tenant:manage')) {
-      can('manage', 'Tenant', { tenantId: context.tenantId.value });
+    if (context.hasPermission("tenant:manage")) {
+      can("manage", "Tenant", { tenantId: context.tenantId.value });
     }
 
     // 基于组织上下文定义权限
     if (context.organizationId) {
-      can('read', 'Organization', { 
+      can("read", "Organization", {
         tenantId: context.tenantId.value,
-        organizationId: context.organizationId.value 
+        organizationId: context.organizationId.value,
       });
     }
 
@@ -240,10 +250,10 @@ export class CaslAbilityFactory {
 
 ```typescript
 // infrastructure/casl/casl-permission-validator.ts
-import { Injectable } from '@nestjs/common';
-import { Ability } from '@casl/ability';
-import type { ITenantPermissionValidator, TenantContext } from '@hl8/application-kernel';
-import { CaslAbilityFactory } from './ability-factory.js';
+import { Injectable } from "@nestjs/common";
+import { Ability } from "@casl/ability";
+import type { ITenantPermissionValidator, TenantContext } from "@hl8/application-kernel";
+import { CaslAbilityFactory } from "./ability-factory.js";
 
 /**
  * CASL权限验证器实现
@@ -253,13 +263,10 @@ import { CaslAbilityFactory } from './ability-factory.js';
 export class CaslPermissionValidator implements ITenantPermissionValidator {
   constructor(private readonly abilityFactory: CaslAbilityFactory) {}
 
-  async validatePermission(
-    context: TenantContext,
-    permission: string,
-  ): Promise<boolean> {
+  async validatePermission(context: TenantContext, permission: string): Promise<boolean> {
     const ability = this.abilityFactory.create(context);
     // 解析权限字符串（如 "read:User"）为CASL action和subject
-    const [action, subject] = permission.split(':');
+    const [action, subject] = permission.split(":");
     return ability.can(action, subject);
   }
 }
@@ -271,7 +278,7 @@ export class CaslPermissionValidator implements ITenantPermissionValidator {
 
 ```typescript
 // infrastructure/casl/ability-factory.ts (生成JWT时)
-import { sign } from 'jsonwebtoken';
+import { sign } from "jsonwebtoken";
 
 function generateJWT(user: User, tenantContext: TenantContext): string {
   const payload = {
@@ -282,46 +289,45 @@ function generateJWT(user: User, tenantContext: TenantContext): string {
     permissions: tenantContext.permissions, // 权限列表
     roles: tenantContext.roles, // 角色列表（可选）
   };
-  
-  return sign(payload, JWT_SECRET, { expiresIn: '15m' });
+
+  return sign(payload, JWT_SECRET, { expiresIn: "15m" });
 }
 ```
 
 **前端使用**：
+
 ```typescript
 // 前端从JWT解析权限
-import { decode } from 'jsonwebtoken';
-import { AbilityBuilder } from '@casl/ability';
+import { decode } from "jsonwebtoken";
+import { AbilityBuilder } from "@casl/ability";
 
-const token = localStorage.getItem('accessToken');
+const token = localStorage.getItem("accessToken");
 const payload = decode(token);
 const permissions = payload.permissions;
 
 // 构建CASL Ability实例
 const { can, build } = new AbilityBuilder();
-permissions.forEach(perm => {
-  const [action, subject] = perm.split(':');
+permissions.forEach((perm) => {
+  const [action, subject] = perm.split(":");
   can(action, subject);
 });
 const ability = build();
 
 // 菜单权限过滤
-const visibleMenus = menus.filter(menu => 
-  ability.can(menu.permission.action, menu.permission.subject)
-);
+const visibleMenus = menus.filter((menu) => ability.can(menu.permission.action, menu.permission.subject));
 ```
 
 ### 4. 权限列表查询API（前端菜单权限控制）
 
 ```typescript
 // interface/http/controllers/permissions.controller.ts
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { CaslGuard } from 'nest-casl';
+import { Controller, Get, UseGuards } from "@nestjs/common";
+import { CaslGuard } from "nest-casl";
 
-@Controller('users')
+@Controller("users")
 @UseGuards(CaslGuard)
 export class PermissionsController {
-  @Get('me/permissions')
+  @Get("me/permissions")
   async getMyPermissions(@Request() request) {
     const tenantContext = request.tenantContext;
     return {
@@ -339,27 +345,27 @@ export class PermissionsController {
 
 ```typescript
 // interface/http/controllers/users.controller.ts
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
-import { CheckPolicies, CaslGuard } from 'nest-casl';
-import { CaslAbilityFactory } from '../../infrastructure/casl/ability-factory.js';
+import { Controller, Post, Body, UseGuards } from "@nestjs/common";
+import { CheckPolicies, CaslGuard } from "nest-casl";
+import { CaslAbilityFactory } from "../../infrastructure/casl/ability-factory.js";
 
 /**
  * 用户管理控制器
  * @description 使用 nest-casl 装饰器进行权限检查
  */
-@Controller('users')
+@Controller("users")
 @UseGuards(CaslGuard)
 export class UsersController {
   constructor(private readonly abilityFactory: CaslAbilityFactory) {}
 
-  @Post('register')
+  @Post("register")
   // 不需要权限检查的公开端点
   async register(@Body() dto: RegisterUserDto) {
     // 处理注册请求
   }
 
-  @Post('invite')
-  @CheckPolicies((ability) => ability.can('manage', 'User'))
+  @Post("invite")
+  @CheckPolicies((ability) => ability.can("manage", "User"))
   // 需要 manage:User 权限
   async inviteUser(@Body() dto: InviteUserDto) {
     // 处理邀请请求
@@ -371,9 +377,9 @@ export class UsersController {
 
 ```typescript
 // infrastructure/casl/casl.module.ts
-import { Module } from '@nestjs/common';
-import { CaslModule as NestCaslModule } from 'nest-casl';
-import { CaslAbilityFactory } from './ability-factory.js';
+import { Module } from "@nestjs/common";
+import { CaslModule as NestCaslModule } from "nest-casl";
+import { CaslAbilityFactory } from "./ability-factory.js";
 
 @Module({
   imports: [
@@ -401,8 +407,8 @@ export class CaslModule {}
 
 ```typescript
 // domain/user/aggregates/user.aggregate.ts
-import { AggregateRoot, EntityId } from '@hl8/domain-kernel';
-import { UserEntity } from '../entities/user.entity.js';
+import { AggregateRoot, EntityId } from "@hl8/domain-kernel";
+import { UserEntity } from "../entities/user.entity.js";
 
 /**
  * 用户聚合根
@@ -442,7 +448,7 @@ export class User extends AggregateRoot {
 
 ```typescript
 // application/commands/register-user.command.ts
-import { BaseCommand } from '@hl8/interface-kernel';
+import { BaseCommand } from "@hl8/interface-kernel";
 
 /**
  * 注册用户命令
@@ -459,8 +465,8 @@ export class RegisterUserCommand extends BaseCommand {
 }
 
 // application/handlers/register-user.handler.ts
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { RegisterUserCommand } from '../commands/register-user.command.js';
+import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
+import { RegisterUserCommand } from "../commands/register-user.command.js";
 
 /**
  * 注册用户命令处理器
@@ -477,16 +483,16 @@ export class RegisterUserHandler implements ICommandHandler<RegisterUserCommand>
 
 ```typescript
 // interface/http/controllers/users.controller.ts
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
-import { CaslPermissionGuard } from '../guards/casl-permission.guard.js';
-import { RegisterUserDto } from '../dto/register-user.dto.js';
+import { Controller, Post, Body, UseGuards } from "@nestjs/common";
+import { CaslPermissionGuard } from "../guards/casl-permission.guard.js";
+import { RegisterUserDto } from "../dto/register-user.dto.js";
 
 /**
  * 用户管理控制器
  */
-@Controller('users')
+@Controller("users")
 export class UsersController {
-  @Post('register')
+  @Post("register")
   async register(@Body() dto: RegisterUserDto) {
     // 处理注册请求
   }
@@ -501,16 +507,16 @@ export class UsersController {
 
 ```typescript
 // domain/user/aggregates/platform-user.aggregate.spec.ts
-import { describe, it, expect } from '@jest/globals';
-import { PlatformUser } from './platform-user.aggregate.js';
+import { describe, it, expect } from "@jest/globals";
+import { PlatformUser } from "./platform-user.aggregate.js";
 
-describe('PlatformUser', () => {
-  it('应该能够注册新用户', () => {
+describe("PlatformUser", () => {
+  it("应该能够注册新用户", () => {
     const user = new PlatformUser();
-    user.register('张三', 'zhangsan@example.com', '13800138000', 'password123');
-    
-    expect(user.email).toBe('zhangsan@example.com');
-    expect(user.status).toBe('UNVERIFIED');
+    user.register("张三", "zhangsan@example.com", "13800138000", "password123");
+
+    expect(user.email).toBe("zhangsan@example.com");
+    expect(user.status).toBe("UNVERIFIED");
   });
 });
 ```
@@ -529,4 +535,3 @@ describe('PlatformUser', () => {
 
 **文档生成时间**: 2024-12-19  
 **状态**: ✅ 快速开始指南完成
-

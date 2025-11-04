@@ -6,6 +6,7 @@
   - `POST /v1/tenants/:tenantId/entities`
 
 示例调用（伪代码）：
+
 ```ts
 import { EntityId, TenantId } from "@hl8/interface-kernel";
 

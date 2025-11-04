@@ -29,12 +29,12 @@ MAJOR.MINOR.PATCH
 
 ### 版本规则
 
-| 变更类型 | MAJOR | MINOR | PATCH | 示例 |
-|---------|-------|-------|-------|------|
-| **破坏性变更** | ✅ +1 | - | - | `1.0.0` → `2.0.0` |
-| **新增功能（向后兼容）** | - | ✅ +1 | - | `1.0.0` → `1.1.0` |
-| **Bug 修复（向后兼容）** | - | - | ✅ +1 | `1.0.0` → `1.0.1` |
-| **文档/注释更新** | - | - | ✅ +1 | `1.0.0` → `1.0.1` |
+| 变更类型                 | MAJOR | MINOR | PATCH | 示例              |
+| ------------------------ | ----- | ----- | ----- | ----------------- |
+| **破坏性变更**           | ✅ +1 | -     | -     | `1.0.0` → `2.0.0` |
+| **新增功能（向后兼容）** | -     | ✅ +1 | -     | `1.0.0` → `1.1.0` |
+| **Bug 修复（向后兼容）** | -     | -     | ✅ +1 | `1.0.0` → `1.0.1` |
+| **文档/注释更新**        | -     | -     | ✅ +1 | `1.0.0` → `1.0.1` |
 
 ### MAJOR 版本冻结期
 
@@ -98,25 +98,31 @@ MAJOR.MINOR.PATCH
 ## [版本号] - [发布日期]
 
 ### 🔴 Breaking Changes
+
 - [变更描述] ([#PR号](链接))
   - **影响**: [受影响范围]
   - **迁移指南**: [如何迁移]
 
 ### 🟢 Added
+
 - [新增功能描述] ([#PR号](链接))
 
 ### 🟡 Changed
+
 - [变更描述] ([#PR号](链接))
 
 ### 🟠 Deprecated
+
 - [废弃 API 描述] ([#PR号](链接))
   - **替代方案**: [推荐的替代 API]
   - **移除计划**: [计划移除的版本]
 
 ### 🐛 Fixed
+
 - [修复描述] ([#PR号](链接))
 
 ### 📚 Documentation
+
 - [文档更新描述] ([#PR号](链接))
 ```
 
@@ -126,23 +132,28 @@ MAJOR.MINOR.PATCH
 ## [2.0.0] - 2025-04-XX
 
 ### 🔴 Breaking Changes
+
 - 移除 `IRepository.findById()` 方法 ([#123](https://github.com/...))
   - **影响**: 所有使用 `IRepository.findById()` 的代码需要迁移
   - **迁移指南**: 使用 `IRepository.findOne({ id })` 替代
 
 ### 🟢 Added
+
 - 新增 `IQueryRepository.findMany()` 方法 ([#124](https://github.com/...))
 - 新增子路径导出 `/events` ([#125](https://github.com/...))
 
 ### 🟡 Changed
+
 - `Pagination` 接口的 `size` 属性重命名为 `limit` ([#126](https://github.com/...))
 
 ### 🟠 Deprecated
+
 - 废弃 `BaseCommand.execute()` 方法 ([#127](https://github.com/...))
   - **替代方案**: 使用 `IBaseCommand.handle()` 方法
   - **移除计划**: 将在 `3.0.0` 中移除
 
 ### 🐛 Fixed
+
 - 修复 `TenantContext` 类型定义中的可选属性错误 ([#128](https://github.com/...))
 ```
 
@@ -206,4 +217,3 @@ MAJOR.MINOR.PATCH
 - [Semantic Versioning 2.0.0](https://semver.org/)
 - [对齐矩阵](MATRIX.md) - 契约到内核的映射
 - [破坏性变更检测脚本](../../libs/kernel/interface-kernel/scripts/check-breaking.mjs) - 自动化检测工具
-

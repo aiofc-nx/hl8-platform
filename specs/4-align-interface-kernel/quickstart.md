@@ -1,11 +1,13 @@
 # Quickstart: Using @hl8/interface-kernel Contracts
 
 ## Install
+
 ```bash
 pnpm add @hl8/interface-kernel
 ```
 
 ## Consume Identifiers and TenantContext
+
 ```ts
 import { EntityId, TenantId, TenantContext } from "@hl8/interface-kernel";
 
@@ -14,6 +16,7 @@ const ctx: TenantContext = { tenantId: new TenantId("t-1") };
 ```
 
 ## Use Repository Contracts in Application Layer
+
 ```ts
 import type { ITenantIsolatedRepository } from "@hl8/interface-kernel";
 
@@ -55,11 +58,7 @@ async function fetchEntity(apiBase: string, tenantId: TenantId, entityId: Entity
 }
 
 // GET /v1/tenants/:tenantId/entities?page=1&limit=10
-async function listEntities(
-  apiBase: string,
-  tenantId: TenantId,
-  pagination?: Pagination,
-) {
+async function listEntities(apiBase: string, tenantId: TenantId, pagination?: Pagination) {
   const params = new URLSearchParams();
   if (pagination) {
     params.set("page", String(pagination.page));
@@ -90,6 +89,7 @@ query GetEntity($tenantId: ID!, $entityId: ID!) {
 完整示例参见 `examples/interface-consumer/graphql/`
 
 ## Versioning Alignment
+
 - External APIs expose `/v{MAJOR}/...` paths (REST) or `# schema: v{MAJOR}` (GraphQL).
 - Keep MAJOR aligned with `@hl8/interface-kernel` package version.
 - When `@hl8/interface-kernel` bumps to `2.0.0`, update API paths to `/v2/...`.
@@ -97,7 +97,7 @@ query GetEntity($tenantId: ID!, $entityId: ID!) {
 ## Example Consumers
 
 详细示例代码位于 `examples/interface-consumer/`：
-- `rest/` - RESTful API 适配示例
-- `graphql/` - GraphQL 适配示例  
-- `scripts/e2e-switch.sh` - 端到端测试脚本，验证不同实现的一致性
 
+- `rest/` - RESTful API 适配示例
+- `graphql/` - GraphQL 适配示例
+- `scripts/e2e-switch.sh` - 端到端测试脚本，验证不同实现的一致性

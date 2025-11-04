@@ -48,23 +48,23 @@
 
 ### Tasks
 
-- [X] T001 Create project directory structure in libs/iam/
-- [X] T002 Create domain layer directories (7 subdomains: user, authentication, tenant, organization, department, role, permission)
-- [X] T003 Create application layer directories (按子领域组织: user/, authentication/, tenant/, organization/, department/, role/, permission/, shared/)
-- [X] T004 Create infrastructure layer directories (按子领域组织: user/, authentication/, tenant/, organization/, department/, role/, permission/, shared/)
-- [X] T005 Create interface layer directories (http/controllers, http/dto, http/guards, events)
-- [X] T006 Initialize package.json in libs/iam/ with type: "module" and engines: { "node": ">=20" }
-- [X] T007 Configure tsconfig.json extending root config with NodeNext module system
-- [X] T008 Setup Jest configuration for testing in libs/iam/jest.config.ts
-- [X] T009 Install dependencies: @hl8/domain-kernel, @hl8/application-kernel, @hl8/infrastructure-kernel, @hl8/interface-kernel
-- [X] T010 Install dependencies: @hl8/config, @hl8/logger, @hl8/cache
-- [X] T011 Install dependencies: @casl/ability, nest-casl, @nestjs/common, @nestjs/cqrs
-- [X] T012 Install dependencies: class-validator, class-transformer
-- [X] T013 Install dev dependencies: @jest/globals, @types/node, typescript, jest, ts-jest
-- [X] T014 Create src/index.ts as main entry point in libs/iam/src/index.ts
-- [X] T015 Setup ESLint configuration extending root rules in libs/iam/eslint.config.mjs
-- [X] T016 Create .gitignore for TypeScript project
-- [X] T017 Verify build system works with pnpm run build
+- [x] T001 Create project directory structure in libs/iam/
+- [x] T002 Create domain layer directories (7 subdomains: user, authentication, tenant, organization, department, role, permission)
+- [x] T003 Create application layer directories (按子领域组织: user/, authentication/, tenant/, organization/, department/, role/, permission/, shared/)
+- [x] T004 Create infrastructure layer directories (按子领域组织: user/, authentication/, tenant/, organization/, department/, role/, permission/, shared/)
+- [x] T005 Create interface layer directories (http/controllers, http/dto, http/guards, events)
+- [x] T006 Initialize package.json in libs/iam/ with type: "module" and engines: { "node": ">=20" }
+- [x] T007 Configure tsconfig.json extending root config with NodeNext module system
+- [x] T008 Setup Jest configuration for testing in libs/iam/jest.config.ts
+- [x] T009 Install dependencies: @hl8/domain-kernel, @hl8/application-kernel, @hl8/infrastructure-kernel, @hl8/interface-kernel
+- [x] T010 Install dependencies: @hl8/config, @hl8/logger, @hl8/cache
+- [x] T011 Install dependencies: @casl/ability, nest-casl, @nestjs/common, @nestjs/cqrs
+- [x] T012 Install dependencies: class-validator, class-transformer
+- [x] T013 Install dev dependencies: @jest/globals, @types/node, typescript, jest, ts-jest
+- [x] T014 Create src/index.ts as main entry point in libs/iam/src/index.ts
+- [x] T015 Setup ESLint configuration extending root rules in libs/iam/eslint.config.mjs
+- [x] T016 Create .gitignore for TypeScript project
+- [x] T017 Verify build system works with pnpm run build
 
 ## Phase 2: Foundational
 
@@ -79,20 +79,20 @@
 
 ### Tasks
 
-- [X] T018 [P] Create EmailValueObject in libs/iam/src/domain/user/value-objects/email.value-object.ts
-- [X] T019 [P] Create PhoneNumberValueObject in libs/iam/src/domain/user/value-objects/phone-number.value-object.ts
-- [X] T020 [P] Create PasswordHashValueObject in libs/iam/src/domain/user/value-objects/password-hash.value-object.ts
-- [X] T021 [P] Create TenantCodeValueObject in libs/iam/src/domain/tenant/value-objects/tenant-code.value-object.ts
-- [X] T022 [P] Create TenantNameValueObject in libs/iam/src/domain/tenant/value-objects/tenant-name.value-object.ts
-- [X] T023 [P] Create TenantDomainValueObject in libs/iam/src/domain/tenant/value-objects/tenant-domain.value-object.ts
-- [X] T024 [P] Create UserRegisteredEvent in libs/iam/src/domain/user/events/user-registered.event.ts
-- [X] T025 [P] Create UserVerifiedEvent in libs/iam/src/domain/user/events/user-verified.event.ts
-- [X] T026 [P] Create UserStatusChangedEvent in libs/iam/src/domain/user/events/user-status-changed.event.ts
-- [X] T027 [P] Create UserLoggedInEvent in libs/iam/src/domain/authentication/events/user-logged-in.event.ts
-- [X] T028 [P] Create LoginFailedEvent in libs/iam/src/domain/authentication/events/login-failed.event.ts
-- [X] T029 [P] Create AccountLockedEvent in libs/iam/src/domain/authentication/events/account-locked.event.ts
-- [X] T030 [P] Create TenantCreatedEvent in libs/iam/src/domain/tenant/events/tenant-created.event.ts
-- [X] T031 [P] Create TenantStatusChangedEvent in libs/iam/src/domain/tenant/events/tenant-status-changed.event.ts
+- [x] T018 [P] Create EmailValueObject in libs/iam/src/domain/user/value-objects/email.value-object.ts
+- [x] T019 [P] Create PhoneNumberValueObject in libs/iam/src/domain/user/value-objects/phone-number.value-object.ts
+- [x] T020 [P] Create PasswordHashValueObject in libs/iam/src/domain/user/value-objects/password-hash.value-object.ts
+- [x] T021 [P] Create TenantCodeValueObject in libs/iam/src/domain/tenant/value-objects/tenant-code.value-object.ts
+- [x] T022 [P] Create TenantNameValueObject in libs/iam/src/domain/tenant/value-objects/tenant-name.value-object.ts
+- [x] T023 [P] Create TenantDomainValueObject in libs/iam/src/domain/tenant/value-objects/tenant-domain.value-object.ts
+- [x] T024 [P] Create UserRegisteredEvent in libs/iam/src/domain/user/events/user-registered.event.ts
+- [x] T025 [P] Create UserVerifiedEvent in libs/iam/src/domain/user/events/user-verified.event.ts
+- [x] T026 [P] Create UserStatusChangedEvent in libs/iam/src/domain/user/events/user-status-changed.event.ts
+- [x] T027 [P] Create UserLoggedInEvent in libs/iam/src/domain/authentication/events/user-logged-in.event.ts
+- [x] T028 [P] Create LoginFailedEvent in libs/iam/src/domain/authentication/events/login-failed.event.ts
+- [x] T029 [P] Create AccountLockedEvent in libs/iam/src/domain/authentication/events/account-locked.event.ts
+- [x] T030 [P] Create TenantCreatedEvent in libs/iam/src/domain/tenant/events/tenant-created.event.ts
+- [x] T031 [P] Create TenantStatusChangedEvent in libs/iam/src/domain/tenant/events/tenant-status-changed.event.ts
 - [ ] T032 [P] Setup event bus infrastructure in libs/iam/src/infrastructure/shared/event-store/
 
 ## Phase 3: User Story 1 - 用户注册 [US1]
@@ -111,46 +111,46 @@
 
 #### 领域层 - 用户管理子领域
 
-- [X] T033 [P] [US1] Create UserNameValueObject in libs/iam/src/domain/user/value-objects/user-name.value-object.ts
-- [X] T034 [P] [US1] Create VerificationCode entity in libs/iam/src/domain/user/entities/verification-code.entity.ts
-- [X] T035 [US1] Create User entity in libs/iam/src/domain/user/entities/user.entity.ts
-- [X] T036 [US1] Create User aggregate root in libs/iam/src/domain/user/aggregates/user.aggregate.ts
-- [X] T037 [US1] Create UserRepository interface in libs/iam/src/domain/user/repositories/user.repository.interface.ts
-- [X] T038 [US1] Create UserRegisteredEvent implementation
-- [X] T039 [US1] Create UserVerifiedEvent implementation
+- [x] T033 [P] [US1] Create UserNameValueObject in libs/iam/src/domain/user/value-objects/user-name.value-object.ts
+- [x] T034 [P] [US1] Create VerificationCode entity in libs/iam/src/domain/user/entities/verification-code.entity.ts
+- [x] T035 [US1] Create User entity in libs/iam/src/domain/user/entities/user.entity.ts
+- [x] T036 [US1] Create User aggregate root in libs/iam/src/domain/user/aggregates/user.aggregate.ts
+- [x] T037 [US1] Create UserRepository interface in libs/iam/src/domain/user/repositories/user.repository.interface.ts
+- [x] T038 [US1] Create UserRegisteredEvent implementation
+- [x] T039 [US1] Create UserVerifiedEvent implementation
 
 #### 应用层 - 用户管理子领域（用户注册用例）
 
-- [X] T040 [US1] Create RegisterUserUseCase in libs/iam/src/application/user/use-cases/register-user.use-case.ts
-- [X] T041 [US1] Create VerifyEmailUseCase in libs/iam/src/application/user/use-cases/verify-email.use-case.ts
-- [X] T042 [US1] Create VerifyPhoneUseCase in libs/iam/src/application/user/use-cases/verify-phone.use-case.ts
-- [X] T043 [US1] Create RegisterUserCommand in libs/iam/src/application/user/commands/register-user.command.ts
-- [X] T044 [US1] Create VerifyEmailCommand in libs/iam/src/application/user/commands/verify-email.command.ts
-- [X] T045 [US1] Create VerifyPhoneCommand in libs/iam/src/application/user/commands/verify-phone.command.ts
-- [X] T046 [US1] Create RegisterUserHandler in libs/iam/src/application/user/handlers/register-user.handler.ts
-- [X] T047 [US1] Create VerifyEmailHandler in libs/iam/src/application/user/handlers/verify-email.handler.ts
-- [X] T048 [US1] Create VerifyPhoneHandler in libs/iam/src/application/user/handlers/verify-phone.handler.ts
+- [x] T040 [US1] Create RegisterUserUseCase in libs/iam/src/application/user/use-cases/register-user.use-case.ts
+- [x] T041 [US1] Create VerifyEmailUseCase in libs/iam/src/application/user/use-cases/verify-email.use-case.ts
+- [x] T042 [US1] Create VerifyPhoneUseCase in libs/iam/src/application/user/use-cases/verify-phone.use-case.ts
+- [x] T043 [US1] Create RegisterUserCommand in libs/iam/src/application/user/commands/register-user.command.ts
+- [x] T044 [US1] Create VerifyEmailCommand in libs/iam/src/application/user/commands/verify-email.command.ts
+- [x] T045 [US1] Create VerifyPhoneCommand in libs/iam/src/application/user/commands/verify-phone.command.ts
+- [x] T046 [US1] Create RegisterUserHandler in libs/iam/src/application/user/handlers/register-user.handler.ts
+- [x] T047 [US1] Create VerifyEmailHandler in libs/iam/src/application/user/handlers/verify-email.handler.ts
+- [x] T048 [US1] Create VerifyPhoneHandler in libs/iam/src/application/user/handlers/verify-phone.handler.ts
 
 #### 基础设施层 - 用户管理子领域
 
-- [X] T049 [P] [US1] Create User persistence entity in libs/iam/src/infrastructure/user/persistence/entities/user.persistence-entity.ts
-- [X] T050 [P] [US1] Create UserRepository implementation in libs/iam/src/infrastructure/user/persistence/repositories/user.repository.ts
-- [X] T051 [P] [US1] Create UserMapper in libs/iam/src/infrastructure/user/persistence/mappers/user.mapper.ts
-- [X] T052 [P] [US1] Create EmailService interface in libs/iam/src/infrastructure/shared/external/email/email.service.interface.ts
-- [X] T053 [P] [US1] Create EmailService implementation in libs/iam/src/infrastructure/shared/external/email/email.service.ts
-- [X] T054 [P] [US1] Create SmsService interface in libs/iam/src/infrastructure/shared/external/sms/sms.service.interface.ts
-- [X] T055 [P] [US1] Create SmsService implementation in libs/iam/src/infrastructure/shared/external/sms/sms.service.ts
-- [X] T056 [US1] Implement retry mechanism with exponential backoff in external services
+- [x] T049 [P] [US1] Create User persistence entity in libs/iam/src/infrastructure/user/persistence/entities/user.persistence-entity.ts
+- [x] T050 [P] [US1] Create UserRepository implementation in libs/iam/src/infrastructure/user/persistence/repositories/user.repository.ts
+- [x] T051 [P] [US1] Create UserMapper in libs/iam/src/infrastructure/user/persistence/mappers/user.mapper.ts
+- [x] T052 [P] [US1] Create EmailService interface in libs/iam/src/infrastructure/shared/external/email/email.service.interface.ts
+- [x] T053 [P] [US1] Create EmailService implementation in libs/iam/src/infrastructure/shared/external/email/email.service.ts
+- [x] T054 [P] [US1] Create SmsService interface in libs/iam/src/infrastructure/shared/external/sms/sms.service.interface.ts
+- [x] T055 [P] [US1] Create SmsService implementation in libs/iam/src/infrastructure/shared/external/sms/sms.service.ts
+- [x] T056 [US1] Implement retry mechanism with exponential backoff in external services
 
 #### 接口层 - REST API
 
-- [X] T057 [US1] Create RegisterUserDto in libs/iam/src/interface/http/dto/register-user.dto.ts
-- [X] T058 [US1] Create VerifyEmailDto in libs/iam/src/interface/http/dto/verify-email.dto.ts
-- [X] T059 [US1] Create VerifyPhoneDto in libs/iam/src/interface/http/dto/verify-phone.dto.ts
-- [X] T060 [US1] Create UsersController in libs/iam/src/interface/http/controllers/users.controller.ts
-- [X] T061 [US1] Implement POST /users/register endpoint
-- [X] T062 [US1] Implement POST /users/verify-email endpoint
-- [X] T063 [US1] Implement POST /users/verify-phone endpoint
+- [x] T057 [US1] Create RegisterUserDto in libs/iam/src/interface/http/dto/register-user.dto.ts
+- [x] T058 [US1] Create VerifyEmailDto in libs/iam/src/interface/http/dto/verify-email.dto.ts
+- [x] T059 [US1] Create VerifyPhoneDto in libs/iam/src/interface/http/dto/verify-phone.dto.ts
+- [x] T060 [US1] Create UsersController in libs/iam/src/interface/http/controllers/users.controller.ts
+- [x] T061 [US1] Implement POST /users/register endpoint
+- [x] T062 [US1] Implement POST /users/verify-email endpoint
+- [x] T063 [US1] Implement POST /users/verify-phone endpoint
 
 ## Phase 4: User Story 2 - 租户创建和初始化 [US2]
 
@@ -168,38 +168,38 @@
 
 #### 领域层 - 租户管理子领域
 
-- [X] T064 [P] [US2] Create TenantType enum in libs/iam/src/domain/tenant/value-objects/tenant-type.enum.ts
-- [X] T065 [P] [US2] Create TenantStatus enum in libs/iam/src/domain/tenant/value-objects/tenant-status.enum.ts
-- [X] T066 [US2] Create Tenant entity in libs/iam/src/domain/tenant/entities/tenant.entity.ts (Tenant是聚合根，已创建TenantConfiguration entity)
-- [X] T067 [US2] Create TenantConfiguration entity in libs/iam/src/domain/tenant/entities/tenant-configuration.entity.ts
-- [X] T068 [US2] Create Tenant aggregate root in libs/iam/src/domain/tenant/aggregates/tenant.aggregate.ts
-- [X] T069 [US2] Create TenantRepository interface in libs/iam/src/domain/tenant/repositories/tenant.repository.interface.ts
-- [X] T070 [US2] Create TenantCreatedEvent implementation
+- [x] T064 [P] [US2] Create TenantType enum in libs/iam/src/domain/tenant/value-objects/tenant-type.enum.ts
+- [x] T065 [P] [US2] Create TenantStatus enum in libs/iam/src/domain/tenant/value-objects/tenant-status.enum.ts
+- [x] T066 [US2] Create Tenant entity in libs/iam/src/domain/tenant/entities/tenant.entity.ts (Tenant是聚合根，已创建TenantConfiguration entity)
+- [x] T067 [US2] Create TenantConfiguration entity in libs/iam/src/domain/tenant/entities/tenant-configuration.entity.ts
+- [x] T068 [US2] Create Tenant aggregate root in libs/iam/src/domain/tenant/aggregates/tenant.aggregate.ts
+- [x] T069 [US2] Create TenantRepository interface in libs/iam/src/domain/tenant/repositories/tenant.repository.interface.ts
+- [x] T070 [US2] Create TenantCreatedEvent implementation
 
 #### 领域层 - 组织管理子领域（用于默认组织）
 
-- [X] T071 [P] [US2] Create OrganizationNameValueObject in libs/iam/src/domain/organization/value-objects/organization-name.value-object.ts
-- [X] T072 [US2] Create Organization entity in libs/iam/src/domain/organization/entities/organization.entity.ts (Organization是聚合根，无需单独实体)
-- [X] T073 [US2] Create Organization aggregate root in libs/iam/src/domain/organization/aggregates/organization.aggregate.ts
-- [X] T074 [US2] Create OrganizationRepository interface in libs/iam/src/domain/organization/repositories/organization.repository.interface.ts
-- [X] T075 [US2] Create OrganizationCreatedEvent in libs/iam/src/domain/organization/events/organization-created.event.ts
+- [x] T071 [P] [US2] Create OrganizationNameValueObject in libs/iam/src/domain/organization/value-objects/organization-name.value-object.ts
+- [x] T072 [US2] Create Organization entity in libs/iam/src/domain/organization/entities/organization.entity.ts (Organization是聚合根，无需单独实体)
+- [x] T073 [US2] Create Organization aggregate root in libs/iam/src/domain/organization/aggregates/organization.aggregate.ts
+- [x] T074 [US2] Create OrganizationRepository interface in libs/iam/src/domain/organization/repositories/organization.repository.interface.ts
+- [x] T075 [US2] Create OrganizationCreatedEvent in libs/iam/src/domain/organization/events/organization-created.event.ts
 
 #### 领域层 - 部门管理子领域（用于根部门）
 
-- [X] T076 [P] [US2] Create DepartmentNameValueObject in libs/iam/src/domain/department/value-objects/department-name.value-object.ts
-- [X] T077 [US2] Create Department entity in libs/iam/src/domain/department/entities/department.entity.ts (Department是聚合根，无需单独实体)
-- [X] T078 [US2] Create Department aggregate root in libs/iam/src/domain/department/aggregates/department.aggregate.ts
-- [X] T079 [US2] Create DepartmentRepository interface in libs/iam/src/domain/department/repositories/department.repository.interface.ts
-- [X] T080 [US2] Create DepartmentCreatedEvent in libs/iam/src/domain/department/events/department-created.event.ts
+- [x] T076 [P] [US2] Create DepartmentNameValueObject in libs/iam/src/domain/department/value-objects/department-name.value-object.ts
+- [x] T077 [US2] Create Department entity in libs/iam/src/domain/department/entities/department.entity.ts (Department是聚合根，无需单独实体)
+- [x] T078 [US2] Create Department aggregate root in libs/iam/src/domain/department/aggregates/department.aggregate.ts
+- [x] T079 [US2] Create DepartmentRepository interface in libs/iam/src/domain/department/repositories/department.repository.interface.ts
+- [x] T080 [US2] Create DepartmentCreatedEvent in libs/iam/src/domain/department/events/department-created.event.ts
 
 #### 应用层 - 租户管理子领域（租户创建用例）
 
-- [X] T081 [US2] Create CreateTenantUseCase in libs/iam/src/application/tenant/use-cases/create-tenant.use-case.ts
-- [X] T082 [US2] Create CreateTenantCommand in libs/iam/src/application/tenant/commands/create-tenant.command.ts
-- [X] T083 [US2] Create CreateTenantHandler in libs/iam/src/application/tenant/handlers/create-tenant.handler.ts
-- [X] T084 [US2] Create TenantCreationService in libs/iam/src/application/shared/services/tenant-creation.service.ts
-- [X] T085 [US2] Create TenantCreatedOrganizationProjector in libs/iam/src/application/organization/projectors/tenant-created-organization-projector.ts
-- [X] T086 [US2] Create OrganizationCreatedDepartmentProjector in libs/iam/src/application/department/projectors/organization-created-department-projector.ts
+- [x] T081 [US2] Create CreateTenantUseCase in libs/iam/src/application/tenant/use-cases/create-tenant.use-case.ts
+- [x] T082 [US2] Create CreateTenantCommand in libs/iam/src/application/tenant/commands/create-tenant.command.ts
+- [x] T083 [US2] Create CreateTenantHandler in libs/iam/src/application/tenant/handlers/create-tenant.handler.ts
+- [x] T084 [US2] Create TenantCreationService in libs/iam/src/application/shared/services/tenant-creation.service.ts
+- [x] T085 [US2] Create TenantCreatedOrganizationProjector in libs/iam/src/application/organization/projectors/tenant-created-organization-projector.ts
+- [x] T086 [US2] Create OrganizationCreatedDepartmentProjector in libs/iam/src/application/department/projectors/organization-created-department-projector.ts
 
 #### 基础设施层 - 租户管理子领域
 

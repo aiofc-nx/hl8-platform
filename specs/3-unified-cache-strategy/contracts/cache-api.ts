@@ -1,7 +1,7 @@
 /**
  * @fileoverview 缓存库 API 接口定义
  * @description 定义统一的缓存操作接口和类型
- * 
+ *
  * **重要**: 缓存库必须使用 `@hl8/config` 进行配置管理，必须使用 `@hl8/logger` 进行日志记录。
  */
 
@@ -23,7 +23,7 @@ export interface CacheConfig {
   /** 是否启用压缩（未来功能） */
   enableCompression?: boolean;
   /** 淘汰策略 */
-  evictionStrategy?: 'LRU' | 'FIFO' | 'LFU';
+  evictionStrategy?: "LRU" | "FIFO" | "LFU";
 }
 
 /**
@@ -80,7 +80,7 @@ export interface CacheInvalidationRule {
   /** 领域事件类型 */
   eventType: string;
   /** 失效策略 */
-  invalidationStrategy: 'tag' | 'pattern' | 'key';
+  invalidationStrategy: "tag" | "pattern" | "key";
   /** 缓存键模式（用于模式匹配，支持 glob） */
   keyPattern?: string;
   /** 标签列表（用于标签失效） */
@@ -195,4 +195,3 @@ export interface CacheKeyBuilder {
    */
   buildQueryKey(queryType: string, params: Record<string, unknown>): string;
 }
-

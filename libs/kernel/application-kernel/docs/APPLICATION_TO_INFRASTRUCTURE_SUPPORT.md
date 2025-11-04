@@ -51,12 +51,14 @@
 ### 依赖关系
 
 **应用层 (Application Layer)**:
+
 - ✅ **定义接口**：定义事件存储、命令查询总线等核心接口
 - ✅ **架构模式**：提供 CQRS、事件溯源等架构模式的标准化接口
 - ✅ **类型规范**：提供事件、快照、结果等类型定义
 - ✅ **配置抽象**：提供技术无关的配置接口
 
 **基础设施层 (Infrastructure Layer)**:
+
 - ✅ **实现接口**：实现应用层定义的接口（如 `IEventStore`）
 - ✅ **技术适配**：将技术实现（MikroORM）适配到应用层接口
 - ✅ **数据持久化**：提供数据库层面的持久化实现
@@ -111,11 +113,7 @@ export interface IEventStore {
    * @param expectedVersion 期望版本号，用于乐观并发控制
    * @returns 保存结果
    */
-  saveEvents(
-    aggregateId: EntityId,
-    events: DomainEvent[],
-    expectedVersion: number,
-  ): Promise<EventStoreResult>;
+  saveEvents(aggregateId: EntityId, events: DomainEvent[], expectedVersion: number): Promise<EventStoreResult>;
 
   /**
    * 获取聚合根的所有事件
@@ -124,11 +122,7 @@ export interface IEventStore {
    * @param toVersion 结束版本号，可选
    * @returns 事件列表
    */
-  getEvents(
-    aggregateId: EntityId,
-    fromVersion?: number,
-    toVersion?: number,
-  ): Promise<DomainEvent[]>;
+  getEvents(aggregateId: EntityId, fromVersion?: number, toVersion?: number): Promise<DomainEvent[]>;
 
   /**
    * 获取聚合根的事件流
@@ -137,11 +131,7 @@ export interface IEventStore {
    * @param toVersion 结束版本号，可选
    * @returns 事件流
    */
-  getEventStream(
-    aggregateId: EntityId,
-    fromVersion?: number,
-    toVersion?: number,
-  ): Promise<EventStream>;
+  getEventStream(aggregateId: EntityId, fromVersion?: number, toVersion?: number): Promise<EventStream>;
 
   /**
    * 获取事件快照
@@ -149,10 +139,7 @@ export interface IEventStore {
    * @param version 版本号，可选，默认最新版本
    * @returns 事件快照
    */
-  getSnapshot(
-    aggregateId: EntityId,
-    version?: number,
-  ): Promise<EventSnapshot | null>;
+  getSnapshot(aggregateId: EntityId, version?: number): Promise<EventSnapshot | null>;
 
   /**
    * 保存事件快照
@@ -181,14 +168,7 @@ export interface IEventStore {
 
 ```typescript
 // @hl8/infrastructure-kernel - MikroORM事件存储实现
-import {
-  IEventStore,
-  EventStoreResult,
-  EventStream,
-  EventStoreStatistics,
-  DomainEvent as ApplicationDomainEvent,
-  EventSnapshot,
-} from "@hl8/application-kernel";
+import { IEventStore, EventStoreResult, EventStream, EventStoreStatistics, DomainEvent as ApplicationDomainEvent, EventSnapshot } from "@hl8/application-kernel";
 import { EntityId } from "@hl8/domain-kernel";
 import { EntityManager } from "@mikro-orm/core";
 
@@ -199,18 +179,12 @@ export class MikroORMEventStore implements IEventStore {
     private readonly snapshotEntityClass: typeof EventSnapshotEntity = EventSnapshotEntity,
   ) {}
 
-  async saveEvents(
-    aggregateId: EntityId,
-    events: ApplicationDomainEvent[],
-    expectedVersion: number,
-  ): Promise<EventStoreResult> {
+  async saveEvents(aggregateId: EntityId, events: ApplicationDomainEvent[], expectedVersion: number): Promise<EventStoreResult> {
     try {
       // 验证版本号（使用应用层定义的接口约束）
       const currentVersion = await this.getCurrentVersion(aggregateId);
       if (currentVersion !== expectedVersion) {
-        throw new Error(
-          `版本冲突：期望版本 ${expectedVersion}，实际版本 ${currentVersion}`,
-        );
+        throw new Error(`版本冲突：期望版本 ${expectedVersion}，实际版本 ${currentVersion}`);
       }
 
       // 创建事件实体并保存（使用应用层定义的 DomainEvent 类型）
@@ -227,7 +201,7 @@ export class MikroORMEventStore implements IEventStore {
         eventEntity.data = this.serializeEventData(event.data);
         eventEntity.metadata = event.metadata;
         eventEntity.timestamp = event.timestamp;
-        
+
         eventEntities.push(eventEntity);
         this.em.persist(eventEntity);
       }
@@ -252,11 +226,7 @@ export class MikroORMEventStore implements IEventStore {
     }
   }
 
-  async getEvents(
-    aggregateId: EntityId,
-    fromVersion?: number,
-    toVersion?: number,
-  ): Promise<ApplicationDomainEvent[]> {
+  async getEvents(aggregateId: EntityId, fromVersion?: number, toVersion?: number): Promise<ApplicationDomainEvent[]> {
     const where: Record<string, unknown> = {
       aggregateId: aggregateId.value,
       deletedAt: null,
@@ -278,11 +248,7 @@ export class MikroORMEventStore implements IEventStore {
     return eventEntities.map((entity) => this.entityToDomainEvent(entity));
   }
 
-  async getEventStream(
-    aggregateId: EntityId,
-    fromVersion?: number,
-    toVersion?: number,
-  ): Promise<EventStream> {
+  async getEventStream(aggregateId: EntityId, fromVersion?: number, toVersion?: number): Promise<EventStream> {
     const events = await this.getEvents(aggregateId, fromVersion, toVersion);
 
     // 返回应用层定义的 EventStream 类型
@@ -298,15 +264,7 @@ export class MikroORMEventStore implements IEventStore {
 
   private entityToDomainEvent(entity: EventEntity): ApplicationDomainEvent {
     // 使用应用层定义的 DomainEvent 构造函数
-    return new ApplicationDomainEvent(
-      EntityId.fromString(entity.aggregateId),
-      entity.eventType,
-      this.deserializeEventData(entity.data),
-      entity.metadata || {},
-      EntityId.fromString(entity.eventId),
-      entity.timestamp,
-      entity.eventVersion,
-    );
+    return new ApplicationDomainEvent(EntityId.fromString(entity.aggregateId), entity.eventType, this.deserializeEventData(entity.data), entity.metadata || {}, EntityId.fromString(entity.eventId), entity.timestamp, entity.eventVersion);
   }
 
   // ... 实现其他接口方法
@@ -314,6 +272,7 @@ export class MikroORMEventStore implements IEventStore {
 ```
 
 **支持作用**:
+
 - ✅ **接口契约**：定义清晰的事件存储契约，基础设施层必须遵守
 - ✅ **技术无关**：接口不涉及具体数据库实现，基础设施层可以自由选择技术栈
 - ✅ **类型安全**：通过 TypeScript 接口确保类型安全
@@ -333,24 +292,8 @@ export class MikroORMEventStore implements IEventStore {
 import { DomainEvent as BaseDomainEvent, EntityId } from "@hl8/domain-kernel";
 
 export class DomainEvent extends BaseDomainEvent {
-  constructor(
-    aggregateRootId: EntityId,
-    eventType: string,
-    data: unknown,
-    metadata: Record<string, unknown> = {},
-    eventId?: EntityId,
-    timestamp?: Date,
-    version: number = 1,
-  ) {
-    super(
-      aggregateRootId,
-      eventType,
-      data,
-      metadata,
-      eventId,
-      timestamp,
-      version,
-    );
+  constructor(aggregateRootId: EntityId, eventType: string, data: unknown, metadata: Record<string, unknown> = {}, eventId?: EntityId, timestamp?: Date, version: number = 1) {
+    super(aggregateRootId, eventType, data, metadata, eventId, timestamp, version);
   }
 
   public toJSON(): Record<string, unknown> {
@@ -366,13 +309,7 @@ export class DomainEvent extends BaseDomainEvent {
   }
 
   public clone(): DomainEvent {
-    return new DomainEvent(
-      this.aggregateRootId,
-      this.eventType,
-      this.data,
-      { ...this.metadata },
-      this.eventId,
-    );
+    return new DomainEvent(this.aggregateRootId, this.eventType, this.data, { ...this.metadata }, this.eventId);
   }
 }
 ```
@@ -387,15 +324,7 @@ import { EntityId } from "@hl8/domain-kernel";
 export class MikroORMEventStore {
   private entityToDomainEvent(entity: EventEntity): ApplicationDomainEvent {
     // 使用应用层定义的 DomainEvent 构造函数
-    return new ApplicationDomainEvent(
-      EntityId.fromString(entity.aggregateId),
-      entity.eventType,
-      this.deserializeEventData(entity.data),
-      entity.metadata || {},
-      EntityId.fromString(entity.eventId),
-      entity.timestamp,
-      entity.eventVersion,
-    );
+    return new ApplicationDomainEvent(EntityId.fromString(entity.aggregateId), entity.eventType, this.deserializeEventData(entity.data), entity.metadata || {}, EntityId.fromString(entity.eventId), entity.timestamp, entity.eventVersion);
   }
 
   private serializeEventData(data: unknown): Record<string, unknown> {
@@ -411,11 +340,7 @@ export class MikroORMEventStore {
     return { value: data };
   }
 
-  async saveEvents(
-    aggregateId: EntityId,
-    events: ApplicationDomainEvent[],
-    expectedVersion: number,
-  ): Promise<EventStoreResult> {
+  async saveEvents(aggregateId: EntityId, events: ApplicationDomainEvent[], expectedVersion: number): Promise<EventStoreResult> {
     for (const event of events) {
       const eventEntity = new EventEntity();
       // 使用应用层 DomainEvent 的属性
@@ -426,17 +351,20 @@ export class MikroORMEventStore {
       eventEntity.metadata = event.metadata;
       eventEntity.timestamp = event.timestamp;
       eventEntity.eventVersion = event.version;
-      
+
       this.em.persist(eventEntity);
     }
-    
+
     await this.em.flush();
-    return { /* ... */ };
+    return {
+      /* ... */
+    };
   }
 }
 ```
 
 **支持作用**:
+
 - ✅ **事件结构统一**：确保所有基础设施层实现使用统一的事件结构
 - ✅ **序列化支持**：提供标准的事件序列化方法
 - ✅ **版本管理**：事件版本信息由应用层定义，基础设施层遵守
@@ -461,14 +389,7 @@ export class EventSnapshot {
   public readonly type: string;
   public readonly metadata: Record<string, unknown>;
 
-  constructor(
-    aggregateId: EntityId,
-    version: number,
-    data: Record<string, unknown>,
-    type: string,
-    metadata: Record<string, unknown> = {},
-    timestamp?: Date,
-  ) {
+  constructor(aggregateId: EntityId, version: number, data: Record<string, unknown>, type: string, metadata: Record<string, unknown> = {}, timestamp?: Date) {
     this.aggregateId = aggregateId;
     this.version = version;
     this.data = { ...data };
@@ -489,14 +410,7 @@ export class EventSnapshot {
   }
 
   public static fromJSON(json: Record<string, unknown>): EventSnapshot {
-    return new EventSnapshot(
-      EntityId.fromString(json.aggregateId as string),
-      json.version as number,
-      json.data as Record<string, unknown>,
-      json.type as string,
-      json.metadata as Record<string, unknown>,
-      new Date(json.timestamp as string),
-    );
+    return new EventSnapshot(EntityId.fromString(json.aggregateId as string), json.version as number, json.data as Record<string, unknown>, json.type as string, json.metadata as Record<string, unknown>, new Date(json.timestamp as string));
   }
 }
 ```
@@ -508,10 +422,7 @@ export class EventSnapshot {
 import { EventSnapshot } from "@hl8/application-kernel";
 
 export class MikroORMEventStore {
-  async getSnapshot(
-    aggregateId: EntityId,
-    version?: number,
-  ): Promise<EventSnapshot | null> {
+  async getSnapshot(aggregateId: EntityId, version?: number): Promise<EventSnapshot | null> {
     const snapshotEntity = await this.em.findOne(
       this.snapshotEntityClass,
       {
@@ -529,14 +440,7 @@ export class MikroORMEventStore {
     }
 
     // 使用应用层定义的 EventSnapshot 构造函数
-    return new EventSnapshot(
-      aggregateId,
-      snapshotEntity.snapshotVersion,
-      snapshotEntity.data,
-      snapshotEntity.snapshotType,
-      snapshotEntity.metadata || {},
-      snapshotEntity.timestamp,
-    );
+    return new EventSnapshot(aggregateId, snapshotEntity.snapshotVersion, snapshotEntity.data, snapshotEntity.snapshotType, snapshotEntity.metadata || {}, snapshotEntity.timestamp);
   }
 
   async saveSnapshot(snapshot: EventSnapshot): Promise<EventStoreResult> {
@@ -548,7 +452,7 @@ export class MikroORMEventStore {
     snapshotEntity.snapshotType = snapshot.type;
     snapshotEntity.metadata = snapshot.metadata;
     snapshotEntity.timestamp = snapshot.timestamp;
-    
+
     this.em.persist(snapshotEntity);
     await this.em.flush();
 
@@ -563,6 +467,7 @@ export class MikroORMEventStore {
 ```
 
 **支持作用**:
+
 - ✅ **快照结构统一**：确保快照在不同技术实现中保持一致
 - ✅ **优化支持**：快照用于优化事件重放性能
 - ✅ **序列化支持**：提供标准的快照序列化方法
@@ -602,11 +507,7 @@ export interface EventStream {
 import { EventStream, DomainEvent } from "@hl8/application-kernel";
 
 export class MikroORMEventStore {
-  async getEventStream(
-    aggregateId: EntityId,
-    fromVersion?: number,
-    toVersion?: number,
-  ): Promise<EventStream> {
+  async getEventStream(aggregateId: EntityId, fromVersion?: number, toVersion?: number): Promise<EventStream> {
     // 获取事件（使用应用层定义的 DomainEvent 类型）
     const events = await this.getEvents(aggregateId, fromVersion, toVersion);
 
@@ -615,9 +516,7 @@ export class MikroORMEventStore {
       aggregateId,
       events, // DomainEvent[]
       fromVersion: events.length > 0 ? events[0].version : fromVersion || 0,
-      toVersion: events.length > 0 
-        ? events[events.length - 1].version 
-        : toVersion || 0,
+      toVersion: events.length > 0 ? events[events.length - 1].version : toVersion || 0,
       totalEvents: events.length,
       hasMore: false, // 暂时不支持分页，返回全部事件
     };
@@ -626,6 +525,7 @@ export class MikroORMEventStore {
 ```
 
 **支持作用**:
+
 - ✅ **流式处理支持**：提供事件流的标准化结构
 - ✅ **元数据丰富**：包含版本范围、事件数量等元数据
 - ✅ **分页支持**：通过 `hasMore` 字段支持分页查询
@@ -663,11 +563,7 @@ export interface EventStoreResult {
 import { EventStoreResult } from "@hl8/application-kernel";
 
 export class MikroORMEventStore {
-  async saveEvents(
-    aggregateId: EntityId,
-    events: ApplicationDomainEvent[],
-    expectedVersion: number,
-  ): Promise<EventStoreResult> {
+  async saveEvents(aggregateId: EntityId, events: ApplicationDomainEvent[], expectedVersion: number): Promise<EventStoreResult> {
     try {
       // ... 保存逻辑
 
@@ -693,6 +589,7 @@ export class MikroORMEventStore {
 ```
 
 **支持作用**:
+
 - ✅ **结果标准化**：统一操作结果的格式
 - ✅ **错误处理**：标准化的错误信息格式
 - ✅ **版本追踪**：包含版本信息用于乐观并发控制
@@ -732,11 +629,9 @@ export interface EventStoreStatistics {
 import { EventStoreStatistics } from "@hl8/application-kernel";
 
 export class MikroORMEventStore {
-  async getStatistics(
-    aggregateId?: EntityId
-  ): Promise<EventStoreStatistics> {
+  async getStatistics(aggregateId?: EntityId): Promise<EventStoreStatistics> {
     const where: Record<string, unknown> = { deletedAt: null };
-    
+
     if (aggregateId) {
       where.aggregateId = aggregateId.value;
     }
@@ -753,17 +648,12 @@ export class MikroORMEventStore {
       const allEvents = await this.em.find(this.eventEntityClass, where, {
         fields: ["aggregateId"],
       });
-      const distinctAggregateIds = new Set(
-        allEvents.map(e => e.aggregateId)
-      );
+      const distinctAggregateIds = new Set(allEvents.map((e) => e.aggregateId));
       aggregateCount = distinctAggregateIds.size;
     }
 
     // 统计快照数量
-    const snapshotCount = await this.em.count(
-      this.snapshotEntityClass,
-      where
-    );
+    const snapshotCount = await this.em.count(this.snapshotEntityClass, where);
 
     // 返回应用层定义的 EventStoreStatistics 类型
     return {
@@ -780,6 +670,7 @@ export class MikroORMEventStore {
 ```
 
 **支持作用**:
+
 - ✅ **监控支持**：提供标准化的统计信息用于监控
 - ✅ **性能分析**：包含存储大小等性能指标
 - ✅ **分组统计**：支持按类型和聚合根分组统计
@@ -859,6 +750,7 @@ export class MikroORMEventStore implements IEventStore {
 ```
 
 **支持作用**:
+
 - ✅ **配置标准化**：统一的配置接口，便于管理
 - ✅ **技术选型**：通过配置决定使用哪种数据库
 - ✅ **性能调优**：通过配置调整性能参数
@@ -871,36 +763,22 @@ export class MikroORMEventStore implements IEventStore {
 
 ```typescript
 // 基础设施层：实现应用层定义的事件存储接口
-import {
-  IEventStore,
-  EventStoreResult,
-  EventStream,
-  DomainEvent,
-  EventSnapshot,
-} from "@hl8/application-kernel";
+import { IEventStore, EventStoreResult, EventStream, DomainEvent, EventSnapshot } from "@hl8/application-kernel";
 import { EntityId } from "@hl8/domain-kernel";
 import { EntityManager } from "@mikro-orm/core";
 
 export class MikroORMEventStore implements IEventStore {
   constructor(
     private readonly em: EntityManager,
-    private readonly config: EventStoreConfig
+    private readonly config: EventStoreConfig,
   ) {}
 
   // 实现应用层定义的所有接口方法
-  async saveEvents(
-    aggregateId: EntityId,
-    events: DomainEvent[],
-    expectedVersion: number,
-  ): Promise<EventStoreResult> {
+  async saveEvents(aggregateId: EntityId, events: DomainEvent[], expectedVersion: number): Promise<EventStoreResult> {
     // 实现逻辑...
   }
 
-  async getEvents(
-    aggregateId: EntityId,
-    fromVersion?: number,
-    toVersion?: number,
-  ): Promise<DomainEvent[]> {
+  async getEvents(aggregateId: EntityId, fromVersion?: number, toVersion?: number): Promise<DomainEvent[]> {
     // 实现逻辑...
   }
 
@@ -909,6 +787,7 @@ export class MikroORMEventStore implements IEventStore {
 ```
 
 **应用层支持点**:
+
 1. ✅ `IEventStore` 接口：定义事件存储契约
 2. ✅ `DomainEvent` 类型：事件类型定义
 3. ✅ `EventStoreResult` 类型：结果类型定义
@@ -926,15 +805,7 @@ import { EntityId } from "@hl8/domain-kernel";
 export class MikroORMEventStore {
   // 将数据库实体转换为应用层的 DomainEvent
   private entityToDomainEvent(entity: EventEntity): DomainEvent {
-    return new DomainEvent(
-      EntityId.fromString(entity.aggregateId),
-      entity.eventType,
-      this.deserializeEventData(entity.data),
-      entity.metadata || {},
-      EntityId.fromString(entity.eventId),
-      entity.timestamp,
-      entity.eventVersion,
-    );
+    return new DomainEvent(EntityId.fromString(entity.aggregateId), entity.eventType, this.deserializeEventData(entity.data), entity.metadata || {}, EntityId.fromString(entity.eventId), entity.timestamp, entity.eventVersion);
   }
 
   // 将应用层的 EventSnapshot 转换为数据库实体
@@ -952,6 +823,7 @@ export class MikroORMEventStore {
 ```
 
 **应用层支持点**:
+
 1. ✅ `DomainEvent` 构造函数：提供标准化的事件创建方式
 2. ✅ `EventSnapshot` 类型：提供标准化的快照类型
 
@@ -964,10 +836,7 @@ export class MikroORMEventStore {
 import { EventStoreConfig } from "@hl8/application-kernel";
 
 export class MikroORMEventStoreFactory {
-  static create(
-    config: EventStoreConfig,
-    em: EntityManager
-  ): IEventStore {
+  static create(config: EventStoreConfig, em: EntityManager): IEventStore {
     // 根据应用层定义的配置选择实现
     switch (config.type) {
       case "postgresql":
@@ -984,6 +853,7 @@ export class MikroORMEventStoreFactory {
 ```
 
 **应用层支持点**:
+
 1. ✅ `EventStoreConfig` 接口：定义配置结构
 2. ✅ 配置类型枚举：`"postgresql" | "mongodb" | "hybrid"`
 
@@ -997,45 +867,25 @@ export class MikroORMEventStoreFactory {
 // 应用层：定义事件存储接口和类型
 // @hl8/application-kernel
 export interface IEventStore {
-  saveEvents(
-    aggregateId: EntityId,
-    events: DomainEvent[],
-    expectedVersion: number,
-  ): Promise<EventStoreResult>;
-  
-  getEvents(
-    aggregateId: EntityId,
-    fromVersion?: number,
-    toVersion?: number,
-  ): Promise<DomainEvent[]>;
-  
-  getSnapshot(
-    aggregateId: EntityId,
-    version?: number,
-  ): Promise<EventSnapshot | null>;
+  saveEvents(aggregateId: EntityId, events: DomainEvent[], expectedVersion: number): Promise<EventStoreResult>;
+
+  getEvents(aggregateId: EntityId, fromVersion?: number, toVersion?: number): Promise<DomainEvent[]>;
+
+  getSnapshot(aggregateId: EntityId, version?: number): Promise<EventSnapshot | null>;
 }
 
 // 基础设施层：实现事件存储接口
 // @hl8/infrastructure-kernel
-import {
-  IEventStore,
-  DomainEvent,
-  EventStoreResult,
-  EventSnapshot,
-} from "@hl8/application-kernel";
+import { IEventStore, DomainEvent, EventStoreResult, EventSnapshot } from "@hl8/application-kernel";
 import { EntityId } from "@hl8/domain-kernel";
 
 export class MikroORMEventStore implements IEventStore {
   constructor(
     private readonly em: EntityManager,
-    private readonly config: EventStoreConfig
+    private readonly config: EventStoreConfig,
   ) {}
 
-  async saveEvents(
-    aggregateId: EntityId,
-    events: DomainEvent[],
-    expectedVersion: number,
-  ): Promise<EventStoreResult> {
+  async saveEvents(aggregateId: EntityId, events: DomainEvent[], expectedVersion: number): Promise<EventStoreResult> {
     // 1. 验证版本（使用应用层定义的接口）
     const currentVersion = await this.getCurrentVersion(aggregateId);
     if (currentVersion !== expectedVersion) {
@@ -1060,7 +910,7 @@ export class MikroORMEventStore implements IEventStore {
       entity.metadata = event.metadata;
       entity.timestamp = event.timestamp;
       entity.eventVersion = event.version;
-      
+
       this.em.persist(entity);
     }
 
@@ -1075,11 +925,7 @@ export class MikroORMEventStore implements IEventStore {
     };
   }
 
-  async getEvents(
-    aggregateId: EntityId,
-    fromVersion?: number,
-    toVersion?: number,
-  ): Promise<DomainEvent[]> {
+  async getEvents(aggregateId: EntityId, fromVersion?: number, toVersion?: number): Promise<DomainEvent[]> {
     const where: Record<string, unknown> = {
       aggregateId: aggregateId.value,
       deletedAt: null,
@@ -1098,13 +944,10 @@ export class MikroORMEventStore implements IEventStore {
     });
 
     // 转换为应用层定义的 DomainEvent 类型
-    return entities.map(entity => this.entityToDomainEvent(entity));
+    return entities.map((entity) => this.entityToDomainEvent(entity));
   }
 
-  async getSnapshot(
-    aggregateId: EntityId,
-    version?: number,
-  ): Promise<EventSnapshot | null> {
+  async getSnapshot(aggregateId: EntityId, version?: number): Promise<EventSnapshot | null> {
     const snapshotEntity = await this.em.findOne(
       EventSnapshotEntity,
       {
@@ -1122,32 +965,18 @@ export class MikroORMEventStore implements IEventStore {
     }
 
     // 使用应用层定义的 EventSnapshot 构造函数
-    return new EventSnapshot(
-      aggregateId,
-      snapshotEntity.snapshotVersion,
-      snapshotEntity.data,
-      snapshotEntity.snapshotType,
-      snapshotEntity.metadata || {},
-      snapshotEntity.timestamp,
-    );
+    return new EventSnapshot(aggregateId, snapshotEntity.snapshotVersion, snapshotEntity.data, snapshotEntity.snapshotType, snapshotEntity.metadata || {}, snapshotEntity.timestamp);
   }
 
   private entityToDomainEvent(entity: EventEntity): DomainEvent {
     // 使用应用层定义的 DomainEvent 构造函数
-    return new DomainEvent(
-      EntityId.fromString(entity.aggregateId),
-      entity.eventType,
-      this.deserializeEventData(entity.data),
-      entity.metadata || {},
-      EntityId.fromString(entity.eventId),
-      entity.timestamp,
-      entity.eventVersion,
-    );
+    return new DomainEvent(EntityId.fromString(entity.aggregateId), entity.eventType, this.deserializeEventData(entity.data), entity.metadata || {}, EntityId.fromString(entity.eventId), entity.timestamp, entity.eventVersion);
   }
 }
 ```
 
 **应用层支持点**:
+
 1. ✅ `IEventStore` 接口：定义事件存储契约
 2. ✅ `DomainEvent` 类型：事件类型定义
 3. ✅ `EventStoreResult` 类型：结果类型定义
@@ -1173,10 +1002,7 @@ export interface ApplicationKernelModuleOptions {
 import { ApplicationKernelModuleOptions } from "@hl8/application-kernel";
 
 export class EventStoreFactory {
-  static create(
-    options: ApplicationKernelModuleOptions["eventStore"],
-    em: EntityManager
-  ): IEventStore {
+  static create(options: ApplicationKernelModuleOptions["eventStore"], em: EntityManager): IEventStore {
     if (!options || !options.type) {
       throw new Error("事件存储配置不能为空");
     }
@@ -1187,18 +1013,18 @@ export class EventStoreFactory {
         return new PostgreSQLEventStore(em, {
           connectionString: options.postgresql!,
         });
-      
+
       case "mongodb":
         return new MongoDBEventStore(em, {
           connectionString: options.mongodb!,
         });
-      
+
       case "hybrid":
         return new HybridEventStore(em, {
           postgresql: options.postgresql,
           mongodb: options.mongodb,
         });
-      
+
       default:
         throw new Error(`不支持的存储类型: ${options.type}`);
     }
@@ -1207,6 +1033,7 @@ export class EventStoreFactory {
 ```
 
 **应用层支持点**:
+
 1. ✅ `ApplicationKernelModuleOptions` 接口：定义模块配置
 2. ✅ 存储类型枚举：`"postgresql" | "mongodb" | "hybrid"`
 
@@ -1217,6 +1044,7 @@ export class EventStoreFactory {
 ### 1. 接口实现
 
 **✅ 正确做法**:
+
 ```typescript
 // 基础设施层完整实现应用层定义的接口
 import { IEventStore, DomainEvent } from "@hl8/application-kernel";
@@ -1229,7 +1057,7 @@ export class MikroORMEventStore implements IEventStore {
   ): Promise<EventStoreResult> {
     // 完整实现接口方法
   }
-  
+
   // 实现所有必需的方法
   async getEvents(...): Promise<DomainEvent[]> { /* ... */ }
   async getEventStream(...): Promise<EventStream> { /* ... */ }
@@ -1238,6 +1066,7 @@ export class MikroORMEventStore implements IEventStore {
 ```
 
 **❌ 错误做法**:
+
 ```typescript
 // 不要部分实现接口
 export class MikroORMEventStore implements IEventStore {
@@ -1249,6 +1078,7 @@ export class MikroORMEventStore implements IEventStore {
 ### 2. 类型使用
 
 **✅ 正确做法**:
+
 ```typescript
 // 使用应用层定义的类型
 import { DomainEvent, EventSnapshot } from "@hl8/application-kernel";
@@ -1263,15 +1093,21 @@ async getSnapshot(...): Promise<EventSnapshot | null> {
 ```
 
 **❌ 错误做法**:
+
 ```typescript
 // 不要创建自己的类型或绕过应用层类型
-class MyDomainEvent { /* ... */ } // ❌
-type MySnapshot = { /* ... */ } // ❌
+class MyDomainEvent {
+  /* ... */
+} // ❌
+type MySnapshot = {
+  /* ... */
+}; // ❌
 ```
 
 ### 3. 配置使用
 
 **✅ 正确做法**:
+
 ```typescript
 // 使用应用层定义的配置接口
 import { EventStoreConfig } from "@hl8/application-kernel";
@@ -1287,14 +1123,18 @@ constructor(
 ```
 
 **❌ 错误做法**:
+
 ```typescript
 // 不要定义自己的配置类型
-interface MyEventStoreConfig { /* ... */ } // ❌
+interface MyEventStoreConfig {
+  /* ... */
+} // ❌
 ```
 
 ### 4. 错误处理
 
 **✅ 正确做法**:
+
 ```typescript
 // 返回应用层定义的结果类型
 async saveEvents(...): Promise<EventStoreResult> {
@@ -1319,6 +1159,7 @@ async saveEvents(...): Promise<EventStoreResult> {
 ```
 
 **❌ 错误做法**:
+
 ```typescript
 // 不要抛出异常或返回自定义格式
 async saveEvents(...) {
@@ -1330,6 +1171,7 @@ async saveEvents(...) {
 ### 5. 版本控制
 
 **✅ 正确做法**:
+
 ```typescript
 // 遵守应用层定义的乐观并发控制
 async saveEvents(
@@ -1351,6 +1193,7 @@ async saveEvents(
 ```
 
 **❌ 错误做法**:
+
 ```typescript
 // 不要忽略版本控制
 async saveEvents(...) {
@@ -1365,16 +1208,16 @@ async saveEvents(...) {
 
 ### 核心支持作用总结
 
-| 应用层组件 | 基础设施层使用场景 | 关键支持作用 |
-|-----------|------------------|-------------|
-| **IEventStore** | 事件存储实现 | 定义事件存储契约，确保实现一致性 |
-| **DomainEvent** | 事件类型和序列化 | 统一事件结构，版本管理 |
-| **EventSnapshot** | 快照存储和恢复 | 优化事件重放性能 |
-| **EventStream** | 事件流查询 | 提供事件流的标准化结构 |
-| **EventStoreResult** | 操作结果返回 | 统一操作结果格式 |
-| **EventStoreStatistics** | 统计信息返回 | 标准化的监控和性能分析 |
-| **EventStoreConfig** | 配置管理 | 技术选型和性能调优 |
-| **ApplicationKernelModuleOptions** | 模块配置 | 统一的模块配置接口 |
+| 应用层组件                         | 基础设施层使用场景 | 关键支持作用                     |
+| ---------------------------------- | ------------------ | -------------------------------- |
+| **IEventStore**                    | 事件存储实现       | 定义事件存储契约，确保实现一致性 |
+| **DomainEvent**                    | 事件类型和序列化   | 统一事件结构，版本管理           |
+| **EventSnapshot**                  | 快照存储和恢复     | 优化事件重放性能                 |
+| **EventStream**                    | 事件流查询         | 提供事件流的标准化结构           |
+| **EventStoreResult**               | 操作结果返回       | 统一操作结果格式                 |
+| **EventStoreStatistics**           | 统计信息返回       | 标准化的监控和性能分析           |
+| **EventStoreConfig**               | 配置管理           | 技术选型和性能调优               |
+| **ApplicationKernelModuleOptions** | 模块配置           | 统一的模块配置接口               |
 
 ### 设计原则体现
 
@@ -1437,4 +1280,3 @@ async saveEvents(...) {
    - 体验应用层对基础设施层的支持作用
 
 **祝你开发顺利！** 🚀
-

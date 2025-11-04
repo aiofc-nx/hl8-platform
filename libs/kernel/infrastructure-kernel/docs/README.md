@@ -400,36 +400,39 @@ import { IRepository } from "@hl8/domain-kernel";
 import { Logger } from "@hl8/logger";
 
 // 配置缓存
-const cache: ICache = new InMemoryCache({
-  defaultTtl: 3600000,
-  maxSize: 10000,
-  enableStats: true,
-  enableEventInvalidation: true,
-  cleanupInterval: 60000,
-  evictionStrategy: 'LRU',
-}, logger);
+const cache: ICache = new InMemoryCache(
+  {
+    defaultTtl: 3600000,
+    maxSize: 10000,
+    enableStats: true,
+    enableEventInvalidation: true,
+    cleanupInterval: 60000,
+    evictionStrategy: "LRU",
+  },
+  logger,
+);
 
 // 租户上下文提供者
 const tenantContext: TenantContextProvider = {
-  getTenantId: () => 'tenant1',
+  getTenantId: () => "tenant1",
 };
 
 // 创建带缓存的仓储
 const cachedRepo = createCachedRepository(
   baseRepository,
-  'User',
+  "User",
   { cache, tenantContext, logger },
   {
     enabled: true,
     defaultTtlMs: 3600000,
-  }
+  },
 );
 
 // 第一次查询 - 从数据库获取
-const user1 = await cachedRepo.findById(new EntityId('123')); // 查询数据库
+const user1 = await cachedRepo.findById(new EntityId("123")); // 查询数据库
 
 // 第二次查询 - 从缓存获取
-const user2 = await cachedRepo.findById(new EntityId('123')); // 从缓存获取，快速！
+const user2 = await cachedRepo.findById(new EntityId("123")); // 从缓存获取，快速！
 
 // 更新时自动失效缓存
 await cachedRepo.save(user);
@@ -439,13 +442,13 @@ await cachedRepo.save(user);
 const invalidationService = new CacheInvalidationService(cache, tenantContext, logger);
 
 // 失效特定实体缓存
-await invalidationService.invalidateEntityId('User', '123');
+await invalidationService.invalidateEntityId("User", "123");
 
 // 失效所有用户实体缓存
-await invalidationService.invalidateEntity('User');
+await invalidationService.invalidateEntity("User");
 
 // 使用模式失效
-await invalidationService.invalidateByPattern('tenant1:repo:User:*');
+await invalidationService.invalidateByPattern("tenant1:repo:User:*");
 ```
 
 ### 9. 使用异常转换器

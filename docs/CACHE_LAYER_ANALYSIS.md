@@ -43,10 +43,10 @@
 
 ### 1.2 缓存粒度对比
 
-| 层次 | 缓存粒度 | 缓存内容 | 缓存键格式 | 共享性 |
-|------|---------|---------|-----------|--------|
-| **应用层缓存** | 粗粒度 | 完整的 Query 结果（业务结果） | `query:QueryType:params` | 仅限相同 Query |
-| **基础设施层缓存** | 细粒度 | 单个实体数据（原始数据） | `repo:EntityName:id` | 跨多个用例共享 |
+| 层次               | 缓存粒度 | 缓存内容                      | 缓存键格式               | 共享性         |
+| ------------------ | -------- | ----------------------------- | ------------------------ | -------------- |
+| **应用层缓存**     | 粗粒度   | 完整的 Query 结果（业务结果） | `query:QueryType:params` | 仅限相同 Query |
+| **基础设施层缓存** | 细粒度   | 单个实体数据（原始数据）      | `repo:EntityName:id`     | 跨多个用例共享 |
 
 ---
 
@@ -257,51 +257,51 @@
 
 ```typescript
 // Infrastructure Layer Repository 实现
-import { ICache } from '@hl8/cache';
+import { ICache } from "@hl8/cache";
 
 export class CachedRepository<T extends BaseEntity> {
   constructor(
     private readonly repository: MikroORMRepository<T>,
-    @Inject('CacheService')
-    private readonly cache: ICache  // 使用独立缓存库 @hl8/cache
+    @Inject("CacheService")
+    private readonly cache: ICache, // 使用独立缓存库 @hl8/cache
   ) {}
 
   async findById(id: EntityId): Promise<T | null> {
     const cacheKey = `repo:${this.entityName}:${id.value}`;
-    
+
     // 1. 先查基础设施层缓存（实体级别）
     const cached = await this.cache.get<T>(cacheKey);
     if (cached) {
-      this.logger.debug('实体缓存命中', { entityName: this.entityName, id });
+      this.logger.debug("实体缓存命中", { entityName: this.entityName, id });
       return cached;
     }
-    
+
     // 2. 查数据库
     const entity = await this.repository.findById(id);
-    
+
     // 3. 缓存实体（细粒度，可被多个用例共享）
     if (entity) {
       await this.cache.set(cacheKey, entity, 3600000, [`entity:${this.entityName}`]);
     }
-    
+
     return entity;
   }
 }
 
 // Application Layer CacheMiddleware 实现
-import { ICache } from '@hl8/cache';
+import { ICache } from "@hl8/cache";
 
 export class CacheMiddleware {
   async beforeQuery(query: BaseQuery, context: ExecutionContext): Promise<boolean> {
     const cacheKey = `query:${query.queryType}:${this.hashParams(query)}`;
-    
+
     // 1. 先查应用层缓存（查询结果级别）
     const cached = await this.cache.get<QueryResult>(cacheKey);
     if (cached) {
       context.metadata.cachedResult = cached;
       return false; // 不执行查询
     }
-    
+
     return true; // 继续执行查询（可能会使用基础设施层的实体缓存）
   }
 }
@@ -315,7 +315,7 @@ export class CacheMiddleware {
 async handleUserUpdated(event: UserUpdatedEvent) {
   // 1. 失效基础设施层缓存（实体级别）
   await this.cache.delete(`repo:user:${event.userId}`);
-  
+
   // 2. 失效应用层缓存（查询结果级别）
   await this.cache.invalidateByPattern('query:*:user:*');
   await this.cache.invalidateByTags([`entity:user`]);
@@ -390,7 +390,7 @@ async handleUserUpdated(event: UserUpdatedEvent) {
    ```typescript
    // 所有模块（Application Kernel、Infrastructure Kernel）都使用独立缓存库
    import { ICache } from '@hl8/cache';
-   
+
    @Inject('CacheService')
    private readonly cache: ICache  // 通过依赖注入共享同一个缓存实例
    ```
