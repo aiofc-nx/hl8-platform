@@ -4,12 +4,12 @@
  */
 
 import { EntityId } from "@hl8/domain-kernel";
-import { User } from "../../../domain/user/aggregates/user.aggregate.js";
-import { EmailValueObject } from "../../../domain/user/value-objects/email.value-object.js";
-import { PhoneNumberValueObject } from "../../../domain/user/value-objects/phone-number.value-object.js";
-import { UserNameValueObject } from "../../../domain/user/value-objects/user-name.value-object.js";
-import { PasswordHashValueObject } from "../../../domain/user/value-objects/password-hash.value-object.js";
-import { UserStatus } from "../../../domain/user/events/user-status-changed.event.js";
+import { User } from "../../../../domain/user/aggregates/user.aggregate.js";
+import { EmailValueObject } from "../../../../domain/user/value-objects/email.value-object.js";
+import { PhoneNumberValueObject } from "../../../../domain/user/value-objects/phone-number.value-object.js";
+import { UserNameValueObject } from "../../../../domain/user/value-objects/user-name.value-object.js";
+import { PasswordHashValueObject } from "../../../../domain/user/value-objects/password-hash.value-object.js";
+import { UserStatus } from "../../../../domain/user/events/user-status-changed.event.js";
 import {
   UserPersistenceEntity,
   UserStatusEnum,

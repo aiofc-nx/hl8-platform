@@ -5,9 +5,9 @@
 
 import { Controller, Post, Body, HttpCode, HttpStatus } from "@nestjs/common";
 import { CommandBus } from "@nestjs/cqrs";
-import { RegisterUserCommand } from "../../../application/commands/register-user.command.js";
-import { VerifyEmailCommand } from "../../../application/commands/verify-email.command.js";
-import { VerifyPhoneCommand } from "../../../application/commands/verify-phone.command.js";
+import { RegisterUserCommand } from "../../../application/user/commands/register-user.command.js";
+import { VerifyEmailCommand } from "../../../application/user/commands/verify-email.command.js";
+import { VerifyPhoneCommand } from "../../../application/user/commands/verify-phone.command.js";
 import { RegisterUserDto } from "../dto/register-user.dto.js";
 import { VerifyEmailDto } from "../dto/verify-email.dto.js";
 import { VerifyPhoneDto } from "../dto/verify-phone.dto.js";

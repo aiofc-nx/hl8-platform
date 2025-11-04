@@ -12,7 +12,7 @@ import {
   VerifyEmailCommand,
   type VerifyEmailCommandResult,
 } from "../commands/verify-email.command.js";
-import type { IUserRepository } from "../../domain/user/repositories/user.repository.interface.js";
+import type { IUserRepository } from "../../../domain/user/repositories/user.repository.interface.js";
 
 /**
  * 验证邮箱命令处理器

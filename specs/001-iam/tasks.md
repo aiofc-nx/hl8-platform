@@ -3,6 +3,7 @@
 **Feature**: IAM业务模块开发  
 **Branch**: `001-iam`  
 **Generated**: 2024-12-19  
+**Updated**: 2024-12-19 (同步修正：按子领域组织应用层和基础设施层)  
 **Total Tasks**: 159
 
 ## Summary
@@ -39,7 +40,7 @@
 
 ### Independent Test Criteria
 
-- 项目结构符合实施计划
+- 项目结构符合实施计划（按子领域组织应用层和基础设施层）
 - TypeScript配置正确（NodeNext模块系统）
 - 依赖正确安装
 - 构建系统正常工作
@@ -49,8 +50,8 @@
 
 - [X] T001 Create project directory structure in libs/iam/
 - [X] T002 Create domain layer directories (7 subdomains: user, authentication, tenant, organization, department, role, permission)
-- [X] T003 Create application layer directories (commands, queries, handlers, services, projectors)
-- [X] T004 Create infrastructure layer directories (persistence, event-store, casl, external)
+- [X] T003 Create application layer directories (按子领域组织: user/, authentication/, tenant/, organization/, department/, role/, permission/, shared/)
+- [X] T004 Create infrastructure layer directories (按子领域组织: user/, authentication/, tenant/, organization/, department/, role/, permission/, shared/)
 - [X] T005 Create interface layer directories (http/controllers, http/dto, http/guards, events)
 - [X] T006 Initialize package.json in libs/iam/ with type: "module" and engines: { "node": ">=20" }
 - [X] T007 Configure tsconfig.json extending root config with NodeNext module system
@@ -92,7 +93,7 @@
 - [X] T029 [P] Create AccountLockedEvent in libs/iam/src/domain/authentication/events/account-locked.event.ts
 - [X] T030 [P] Create TenantCreatedEvent in libs/iam/src/domain/tenant/events/tenant-created.event.ts
 - [X] T031 [P] Create TenantStatusChangedEvent in libs/iam/src/domain/tenant/events/tenant-status-changed.event.ts
-- [ ] T032 [P] Setup event bus infrastructure in libs/iam/src/infrastructure/event-store/
+- [ ] T032 [P] Setup event bus infrastructure in libs/iam/src/infrastructure/shared/event-store/
 
 ## Phase 3: User Story 1 - 用户注册 [US1]
 
@@ -118,35 +119,38 @@
 - [X] T038 [US1] Create UserRegisteredEvent implementation
 - [X] T039 [US1] Create UserVerifiedEvent implementation
 
-#### 应用层 - 用户注册用例
+#### 应用层 - 用户管理子领域（用户注册用例）
 
-- [X] T040 [US1] Create RegisterUserCommand in libs/iam/src/application/commands/register-user.command.ts
-- [X] T041 [US1] Create VerifyEmailCommand in libs/iam/src/application/commands/verify-email.command.ts
-- [X] T042 [US1] Create VerifyPhoneCommand in libs/iam/src/application/commands/verify-phone.command.ts
-- [X] T043 [US1] Create RegisterUserHandler in libs/iam/src/application/handlers/register-user.handler.ts
-- [X] T044 [US1] Create VerifyEmailHandler in libs/iam/src/application/handlers/verify-email.handler.ts
-- [X] T045 [US1] Create VerifyPhoneHandler in libs/iam/src/application/handlers/verify-phone.handler.ts
+- [X] T040 [US1] Create RegisterUserUseCase in libs/iam/src/application/user/use-cases/register-user.use-case.ts
+- [X] T041 [US1] Create VerifyEmailUseCase in libs/iam/src/application/user/use-cases/verify-email.use-case.ts
+- [X] T042 [US1] Create VerifyPhoneUseCase in libs/iam/src/application/user/use-cases/verify-phone.use-case.ts
+- [X] T043 [US1] Create RegisterUserCommand in libs/iam/src/application/user/commands/register-user.command.ts
+- [X] T044 [US1] Create VerifyEmailCommand in libs/iam/src/application/user/commands/verify-email.command.ts
+- [X] T045 [US1] Create VerifyPhoneCommand in libs/iam/src/application/user/commands/verify-phone.command.ts
+- [X] T046 [US1] Create RegisterUserHandler in libs/iam/src/application/user/handlers/register-user.handler.ts
+- [X] T047 [US1] Create VerifyEmailHandler in libs/iam/src/application/user/handlers/verify-email.handler.ts
+- [X] T048 [US1] Create VerifyPhoneHandler in libs/iam/src/application/user/handlers/verify-phone.handler.ts
 
-#### 基础设施层 - 用户仓储和外部服务
+#### 基础设施层 - 用户管理子领域
 
-- [X] T046 [P] [US1] Create User persistence entity in libs/iam/src/infrastructure/persistence/entities/user.persistence-entity.ts
-- [X] T047 [P] [US1] Create UserRepository implementation in libs/iam/src/infrastructure/persistence/repositories/user.repository.ts
-- [X] T048 [P] [US1] Create UserMapper in libs/iam/src/infrastructure/persistence/mappers/user.mapper.ts
-- [X] T049 [P] [US1] Create EmailService interface in libs/iam/src/infrastructure/external/email/email.service.interface.ts
-- [X] T050 [P] [US1] Create EmailService implementation in libs/iam/src/infrastructure/external/email/email.service.ts
-- [X] T051 [P] [US1] Create SmsService interface in libs/iam/src/infrastructure/external/sms/sms.service.interface.ts
-- [X] T052 [P] [US1] Create SmsService implementation in libs/iam/src/infrastructure/external/sms/sms.service.ts
-- [X] T053 [US1] Implement retry mechanism with exponential backoff in external services
+- [X] T049 [P] [US1] Create User persistence entity in libs/iam/src/infrastructure/user/persistence/entities/user.persistence-entity.ts
+- [X] T050 [P] [US1] Create UserRepository implementation in libs/iam/src/infrastructure/user/persistence/repositories/user.repository.ts
+- [X] T051 [P] [US1] Create UserMapper in libs/iam/src/infrastructure/user/persistence/mappers/user.mapper.ts
+- [X] T052 [P] [US1] Create EmailService interface in libs/iam/src/infrastructure/shared/external/email/email.service.interface.ts
+- [X] T053 [P] [US1] Create EmailService implementation in libs/iam/src/infrastructure/shared/external/email/email.service.ts
+- [X] T054 [P] [US1] Create SmsService interface in libs/iam/src/infrastructure/shared/external/sms/sms.service.interface.ts
+- [X] T055 [P] [US1] Create SmsService implementation in libs/iam/src/infrastructure/shared/external/sms/sms.service.ts
+- [X] T056 [US1] Implement retry mechanism with exponential backoff in external services
 
 #### 接口层 - REST API
 
-- [X] T054 [US1] Create RegisterUserDto in libs/iam/src/interface/http/dto/register-user.dto.ts
-- [X] T055 [US1] Create VerifyEmailDto in libs/iam/src/interface/http/dto/verify-email.dto.ts
-- [X] T056 [US1] Create VerifyPhoneDto in libs/iam/src/interface/http/dto/verify-phone.dto.ts
-- [X] T057 [US1] Create UsersController in libs/iam/src/interface/http/controllers/users.controller.ts
-- [X] T058 [US1] Implement POST /users/register endpoint
-- [X] T059 [US1] Implement POST /users/verify-email endpoint
-- [X] T060 [US1] Implement POST /users/verify-phone endpoint
+- [X] T057 [US1] Create RegisterUserDto in libs/iam/src/interface/http/dto/register-user.dto.ts
+- [X] T058 [US1] Create VerifyEmailDto in libs/iam/src/interface/http/dto/verify-email.dto.ts
+- [X] T059 [US1] Create VerifyPhoneDto in libs/iam/src/interface/http/dto/verify-phone.dto.ts
+- [X] T060 [US1] Create UsersController in libs/iam/src/interface/http/controllers/users.controller.ts
+- [X] T061 [US1] Implement POST /users/register endpoint
+- [X] T062 [US1] Implement POST /users/verify-email endpoint
+- [X] T063 [US1] Implement POST /users/verify-phone endpoint
 
 ## Phase 4: User Story 2 - 租户创建和初始化 [US2]
 
@@ -164,55 +168,62 @@
 
 #### 领域层 - 租户管理子领域
 
-- [X] T061 [P] [US2] Create TenantType enum in libs/iam/src/domain/tenant/value-objects/tenant-type.enum.ts
-- [X] T062 [P] [US2] Create TenantStatus enum in libs/iam/src/domain/tenant/value-objects/tenant-status.enum.ts
-- [X] T063 [US2] Create Tenant entity in libs/iam/src/domain/tenant/entities/tenant.entity.ts (Tenant是聚合根，已创建TenantConfiguration entity)
-- [X] T064 [US2] Create TenantConfiguration entity in libs/iam/src/domain/tenant/entities/tenant-configuration.entity.ts
-- [X] T065 [US2] Create Tenant aggregate root in libs/iam/src/domain/tenant/aggregates/tenant.aggregate.ts
-- [X] T066 [US2] Create TenantRepository interface in libs/iam/src/domain/tenant/repositories/tenant.repository.interface.ts
-- [X] T067 [US2] Create TenantCreatedEvent implementation
+- [X] T064 [P] [US2] Create TenantType enum in libs/iam/src/domain/tenant/value-objects/tenant-type.enum.ts
+- [X] T065 [P] [US2] Create TenantStatus enum in libs/iam/src/domain/tenant/value-objects/tenant-status.enum.ts
+- [X] T066 [US2] Create Tenant entity in libs/iam/src/domain/tenant/entities/tenant.entity.ts (Tenant是聚合根，已创建TenantConfiguration entity)
+- [X] T067 [US2] Create TenantConfiguration entity in libs/iam/src/domain/tenant/entities/tenant-configuration.entity.ts
+- [X] T068 [US2] Create Tenant aggregate root in libs/iam/src/domain/tenant/aggregates/tenant.aggregate.ts
+- [X] T069 [US2] Create TenantRepository interface in libs/iam/src/domain/tenant/repositories/tenant.repository.interface.ts
+- [X] T070 [US2] Create TenantCreatedEvent implementation
 
 #### 领域层 - 组织管理子领域（用于默认组织）
 
-- [X] T068 [P] [US2] Create OrganizationNameValueObject in libs/iam/src/domain/organization/value-objects/organization-name.value-object.ts
-- [X] T069 [US2] Create Organization entity in libs/iam/src/domain/organization/entities/organization.entity.ts (Organization是聚合根，无需单独实体)
-- [X] T070 [US2] Create Organization aggregate root in libs/iam/src/domain/organization/aggregates/organization.aggregate.ts
-- [X] T071 [US2] Create OrganizationRepository interface in libs/iam/src/domain/organization/repositories/organization.repository.interface.ts
-- [X] T072 [US2] Create OrganizationCreatedEvent in libs/iam/src/domain/organization/events/organization-created.event.ts
+- [X] T071 [P] [US2] Create OrganizationNameValueObject in libs/iam/src/domain/organization/value-objects/organization-name.value-object.ts
+- [X] T072 [US2] Create Organization entity in libs/iam/src/domain/organization/entities/organization.entity.ts (Organization是聚合根，无需单独实体)
+- [X] T073 [US2] Create Organization aggregate root in libs/iam/src/domain/organization/aggregates/organization.aggregate.ts
+- [X] T074 [US2] Create OrganizationRepository interface in libs/iam/src/domain/organization/repositories/organization.repository.interface.ts
+- [X] T075 [US2] Create OrganizationCreatedEvent in libs/iam/src/domain/organization/events/organization-created.event.ts
 
 #### 领域层 - 部门管理子领域（用于根部门）
 
-- [X] T073 [P] [US2] Create DepartmentNameValueObject in libs/iam/src/domain/department/value-objects/department-name.value-object.ts
-- [X] T074 [US2] Create Department entity in libs/iam/src/domain/department/entities/department.entity.ts (Department是聚合根，无需单独实体)
-- [X] T075 [US2] Create Department aggregate root in libs/iam/src/domain/department/aggregates/department.aggregate.ts
-- [X] T076 [US2] Create DepartmentRepository interface in libs/iam/src/domain/department/repositories/department.repository.interface.ts
-- [X] T077 [US2] Create DepartmentCreatedEvent in libs/iam/src/domain/department/events/department-created.event.ts
+- [X] T076 [P] [US2] Create DepartmentNameValueObject in libs/iam/src/domain/department/value-objects/department-name.value-object.ts
+- [X] T077 [US2] Create Department entity in libs/iam/src/domain/department/entities/department.entity.ts (Department是聚合根，无需单独实体)
+- [X] T078 [US2] Create Department aggregate root in libs/iam/src/domain/department/aggregates/department.aggregate.ts
+- [X] T079 [US2] Create DepartmentRepository interface in libs/iam/src/domain/department/repositories/department.repository.interface.ts
+- [X] T080 [US2] Create DepartmentCreatedEvent in libs/iam/src/domain/department/events/department-created.event.ts
 
-#### 应用层 - 租户创建用例
+#### 应用层 - 租户管理子领域（租户创建用例）
 
-- [ ] T078 [US2] Create CreateTenantCommand in libs/iam/src/application/commands/create-tenant.command.ts
-- [ ] T079 [US2] Create CreateTenantHandler in libs/iam/src/application/handlers/create-tenant.handler.ts
-- [ ] T080 [US2] Create TenantCreationService in libs/iam/src/application/services/tenant-creation.service.ts
-- [ ] T081 [US2] Create event projector for default organization creation
-- [ ] T082 [US2] Create event projector for root department creation
+- [X] T081 [US2] Create CreateTenantUseCase in libs/iam/src/application/tenant/use-cases/create-tenant.use-case.ts
+- [X] T082 [US2] Create CreateTenantCommand in libs/iam/src/application/tenant/commands/create-tenant.command.ts
+- [X] T083 [US2] Create CreateTenantHandler in libs/iam/src/application/tenant/handlers/create-tenant.handler.ts
+- [X] T084 [US2] Create TenantCreationService in libs/iam/src/application/shared/services/tenant-creation.service.ts
+- [X] T085 [US2] Create TenantCreatedOrganizationProjector in libs/iam/src/application/organization/projectors/tenant-created-organization-projector.ts
+- [X] T086 [US2] Create OrganizationCreatedDepartmentProjector in libs/iam/src/application/department/projectors/organization-created-department-projector.ts
 
-#### 基础设施层 - 租户仓储
+#### 基础设施层 - 租户管理子领域
 
-- [ ] T083 [P] [US2] Create Tenant persistence entity in libs/iam/src/infrastructure/persistence/entities/tenant.persistence-entity.ts
-- [ ] T084 [P] [US2] Create TenantRepository implementation in libs/iam/src/infrastructure/persistence/repositories/tenant.repository.ts
-- [ ] T085 [P] [US2] Create TenantMapper in libs/iam/src/infrastructure/persistence/mappers/tenant.mapper.ts
-- [ ] T086 [P] [US2] Create Organization persistence entity in libs/iam/src/infrastructure/persistence/entities/organization.persistence-entity.ts
-- [ ] T087 [P] [US2] Create OrganizationRepository implementation in libs/iam/src/infrastructure/persistence/repositories/organization.repository.ts
-- [ ] T088 [P] [US2] Create OrganizationMapper in libs/iam/src/infrastructure/persistence/mappers/organization.mapper.ts
-- [ ] T089 [P] [US2] Create Department persistence entity in libs/iam/src/infrastructure/persistence/entities/department.persistence-entity.ts
-- [ ] T090 [P] [US2] Create DepartmentRepository implementation in libs/iam/src/infrastructure/persistence/repositories/department.repository.ts
-- [ ] T091 [P] [US2] Create DepartmentMapper in libs/iam/src/infrastructure/persistence/mappers/department.mapper.ts
+- [ ] T087 [P] [US2] Create Tenant persistence entity in libs/iam/src/infrastructure/tenant/persistence/entities/tenant.persistence-entity.ts
+- [ ] T088 [P] [US2] Create TenantRepository implementation in libs/iam/src/infrastructure/tenant/persistence/repositories/tenant.repository.ts
+- [ ] T089 [P] [US2] Create TenantMapper in libs/iam/src/infrastructure/tenant/persistence/mappers/tenant.mapper.ts
+
+#### 基础设施层 - 组织管理子领域
+
+- [ ] T090 [P] [US2] Create Organization persistence entity in libs/iam/src/infrastructure/organization/persistence/entities/organization.persistence-entity.ts
+- [ ] T091 [P] [US2] Create OrganizationRepository implementation in libs/iam/src/infrastructure/organization/persistence/repositories/organization.repository.ts
+- [ ] T092 [P] [US2] Create OrganizationMapper in libs/iam/src/infrastructure/organization/persistence/mappers/organization.mapper.ts
+
+#### 基础设施层 - 部门管理子领域
+
+- [ ] T093 [P] [US2] Create Department persistence entity in libs/iam/src/infrastructure/department/persistence/entities/department.persistence-entity.ts
+- [ ] T094 [P] [US2] Create DepartmentRepository implementation in libs/iam/src/infrastructure/department/persistence/repositories/department.repository.ts
+- [ ] T095 [P] [US2] Create DepartmentMapper in libs/iam/src/infrastructure/department/persistence/mappers/department.mapper.ts
 
 #### 接口层 - REST API
 
-- [ ] T092 [US2] Create CreateTenantDto in libs/iam/src/interface/http/dto/create-tenant.dto.ts
-- [ ] T093 [US2] Create TenantsController in libs/iam/src/interface/http/controllers/tenants.controller.ts
-- [ ] T094 [US2] Implement POST /tenants endpoint
+- [ ] T096 [US2] Create CreateTenantDto in libs/iam/src/interface/http/dto/create-tenant.dto.ts
+- [ ] T097 [US2] Create TenantsController in libs/iam/src/interface/http/controllers/tenants.controller.ts
+- [ ] T098 [US2] Implement POST /tenants endpoint
 
 ## Phase 5: User Story 3 - 租户用户邀请和分配 [US3]
 
@@ -229,36 +240,38 @@
 
 ### Tasks
 
-#### 领域层 - 用户分配子领域
+#### 领域层 - 用户管理子领域（用户分配）
 
-- [ ] T095 [US3] Create UserAssignment entity in libs/iam/src/domain/user/entities/user-assignment.entity.ts
-- [ ] T096 [US3] Create UserTenantAssignment entity in libs/iam/src/domain/user/entities/user-tenant-assignment.entity.ts
-- [ ] T097 [US3] Create UserOrganizationAssignment entity in libs/iam/src/domain/user/entities/user-organization-assignment.entity.ts
-- [ ] T098 [US3] Create UserDepartmentAssignment entity in libs/iam/src/domain/user/entities/user-department-assignment.entity.ts
-- [ ] T099 [US3] Create UserAssignment aggregate root in libs/iam/src/domain/user/aggregates/user-assignment.aggregate.ts
-- [ ] T100 [US3] Create Invitation entity with expiration logic
-- [ ] T101 [US3] Create UserAssignmentRepository interface
+- [ ] T099 [US3] Create UserAssignment entity in libs/iam/src/domain/user/entities/user-assignment.entity.ts
+- [ ] T100 [US3] Create UserTenantAssignment entity in libs/iam/src/domain/user/entities/user-tenant-assignment.entity.ts
+- [ ] T101 [US3] Create UserOrganizationAssignment entity in libs/iam/src/domain/user/entities/user-organization-assignment.entity.ts
+- [ ] T102 [US3] Create UserDepartmentAssignment entity in libs/iam/src/domain/user/entities/user-department-assignment.entity.ts
+- [ ] T103 [US3] Create UserAssignment aggregate root in libs/iam/src/domain/user/aggregates/user-assignment.aggregate.ts
+- [ ] T104 [US3] Create Invitation entity with expiration logic in libs/iam/src/domain/user/entities/invitation.entity.ts
+- [ ] T105 [US3] Create UserAssignmentRepository interface in libs/iam/src/domain/user/repositories/user-assignment.repository.interface.ts
 
-#### 应用层 - 用户邀请和分配用例
+#### 应用层 - 用户管理子领域（用户邀请和分配用例）
 
-- [ ] T102 [US3] Create InviteUserCommand in libs/iam/src/application/commands/invite-user.command.ts
-- [ ] T103 [US3] Create CreateUserAssignmentCommand in libs/iam/src/application/commands/create-user-assignment.command.ts
-- [ ] T104 [US3] Create InviteUserHandler in libs/iam/src/application/handlers/invite-user.handler.ts
-- [ ] T105 [US3] Create CreateUserAssignmentHandler in libs/iam/src/application/handlers/create-user-assignment.handler.ts
-- [ ] T106 [US3] Create invitation expiration scheduler
+- [ ] T106 [US3] Create InviteUserUseCase in libs/iam/src/application/user/use-cases/invite-user.use-case.ts
+- [ ] T107 [US3] Create CreateUserAssignmentUseCase in libs/iam/src/application/user/use-cases/create-user-assignment.use-case.ts
+- [ ] T108 [US3] Create InviteUserCommand in libs/iam/src/application/user/commands/invite-user.command.ts
+- [ ] T109 [US3] Create CreateUserAssignmentCommand in libs/iam/src/application/user/commands/create-user-assignment.command.ts
+- [ ] T110 [US3] Create InviteUserHandler in libs/iam/src/application/user/handlers/invite-user.handler.ts
+- [ ] T111 [US3] Create CreateUserAssignmentHandler in libs/iam/src/application/user/handlers/create-user-assignment.handler.ts
+- [ ] T112 [US3] Create invitation expiration scheduler in libs/iam/src/application/user/services/invitation-expiration.scheduler.ts
 
-#### 基础设施层
+#### 基础设施层 - 用户管理子领域
 
-- [ ] T107 [P] [US3] Create UserAssignment persistence entity
-- [ ] T108 [P] [US3] Create UserAssignmentRepository implementation
-- [ ] T109 [P] [US3] Create UserAssignmentMapper
+- [ ] T113 [P] [US3] Create UserAssignment persistence entity in libs/iam/src/infrastructure/user/persistence/entities/user-assignment.persistence-entity.ts
+- [ ] T114 [P] [US3] Create UserAssignmentRepository implementation in libs/iam/src/infrastructure/user/persistence/repositories/user-assignment.repository.ts
+- [ ] T115 [P] [US3] Create UserAssignmentMapper in libs/iam/src/infrastructure/user/persistence/mappers/user-assignment.mapper.ts
 
 #### 接口层 - REST API
 
-- [ ] T110 [US3] Create InviteUserDto in libs/iam/src/interface/http/dto/invite-user.dto.ts
-- [ ] T111 [US3] Create CreateUserAssignmentDto in libs/iam/src/interface/http/dto/create-user-assignment.dto.ts
-- [ ] T112 [US3] Implement POST /tenants/{tenantId}/invitations endpoint
-- [ ] T113 [US3] Implement POST /tenants/{tenantId}/users/{userId}/assignments endpoint
+- [ ] T116 [US3] Create InviteUserDto in libs/iam/src/interface/http/dto/invite-user.dto.ts
+- [ ] T117 [US3] Create CreateUserAssignmentDto in libs/iam/src/interface/http/dto/create-user-assignment.dto.ts
+- [ ] T118 [US3] Implement POST /tenants/{tenantId}/invitations endpoint
+- [ ] T119 [US3] Implement POST /tenants/{tenantId}/users/{userId}/assignments endpoint
 
 ## Phase 6: User Story 4 - 组织创建和管理 [US4]
 
@@ -274,21 +287,22 @@
 
 ### Tasks
 
-#### 应用层 - 组织管理用例
+#### 应用层 - 组织管理子领域（组织创建用例）
 
-- [ ] T114 [US4] Create CreateOrganizationCommand in libs/iam/src/application/commands/create-organization.command.ts
-- [ ] T115 [US4] Create CreateOrganizationHandler in libs/iam/src/application/handlers/create-organization.handler.ts
-- [ ] T116 [US4] Implement organization count limit validation
+- [ ] T120 [US4] Create CreateOrganizationUseCase in libs/iam/src/application/organization/use-cases/create-organization.use-case.ts
+- [ ] T121 [US4] Create CreateOrganizationCommand in libs/iam/src/application/organization/commands/create-organization.command.ts
+- [ ] T122 [US4] Create CreateOrganizationHandler in libs/iam/src/application/organization/handlers/create-organization.handler.ts
+- [ ] T123 [US4] Implement organization count limit validation in CreateOrganizationUseCase
 
-#### 基础设施层
+#### 基础设施层 - 组织管理子领域
 
-- [ ] T117 [US4] Add organization count query to OrganizationRepository
+- [ ] T124 [US4] Add organization count query to OrganizationRepository in libs/iam/src/infrastructure/organization/persistence/repositories/organization.repository.ts
 
 #### 接口层 - REST API
 
-- [ ] T118 [US4] Create CreateOrganizationDto in libs/iam/src/interface/http/dto/create-organization.dto.ts
-- [ ] T119 [US4] Create OrganizationsController in libs/iam/src/interface/http/controllers/organizations.controller.ts
-- [ ] T120 [US4] Implement POST /organizations endpoint
+- [ ] T125 [US4] Create CreateOrganizationDto in libs/iam/src/interface/http/dto/create-organization.dto.ts
+- [ ] T126 [US4] Create OrganizationsController in libs/iam/src/interface/http/controllers/organizations.controller.ts
+- [ ] T127 [US4] Implement POST /organizations endpoint
 
 ## Phase 7: User Story 6 - 租户状态管理 [US6]
 
@@ -304,17 +318,18 @@
 
 ### Tasks
 
-#### 应用层 - 租户状态管理用例
+#### 应用层 - 租户管理子领域（租户状态管理用例）
 
-- [ ] T121 [US6] Create UpdateTenantStatusCommand in libs/iam/src/application/commands/update-tenant-status.command.ts
-- [ ] T122 [US6] Create UpdateTenantStatusHandler in libs/iam/src/application/handlers/update-tenant-status.handler.ts
-- [ ] T123 [US6] Create tenant status transition validation
-- [ ] T124 [US6] Create trial expiration scheduler
+- [ ] T128 [US6] Create UpdateTenantStatusUseCase in libs/iam/src/application/tenant/use-cases/update-tenant-status.use-case.ts
+- [ ] T129 [US6] Create UpdateTenantStatusCommand in libs/iam/src/application/tenant/commands/update-tenant-status.command.ts
+- [ ] T130 [US6] Create UpdateTenantStatusHandler in libs/iam/src/application/tenant/handlers/update-tenant-status.handler.ts
+- [ ] T131 [US6] Create tenant status transition validation in UpdateTenantStatusUseCase
+- [ ] T132 [US6] Create trial expiration scheduler in libs/iam/src/application/tenant/services/trial-expiration.scheduler.ts
 
 #### 接口层 - REST API
 
-- [ ] T125 [US6] Create UpdateTenantStatusDto in libs/iam/src/interface/http/dto/update-tenant-status.dto.ts
-- [ ] T126 [US6] Implement PATCH /tenants/{tenantId}/status endpoint
+- [ ] T133 [US6] Create UpdateTenantStatusDto in libs/iam/src/interface/http/dto/update-tenant-status.dto.ts
+- [ ] T134 [US6] Implement PATCH /tenants/{tenantId}/status endpoint
 
 ## Phase 8: User Story 5 - 部门结构管理 [US5]
 
@@ -332,27 +347,28 @@
 
 #### 领域层 - 部门管理子领域增强
 
-- [ ] T127 [US5] Create DepartmentPathValueObject in libs/iam/src/domain/department/value-objects/department-path.value-object.ts
-- [ ] T128 [US5] Enhance Department entity with level and path management
-- [ ] T129 [US5] Implement department hierarchy validation
+- [ ] T135 [US5] Create DepartmentPathValueObject in libs/iam/src/domain/department/value-objects/department-path.value-object.ts
+- [ ] T136 [US5] Enhance Department aggregate root with level and path management in libs/iam/src/domain/department/aggregates/department.aggregate.ts
+- [ ] T137 [US5] Implement department hierarchy validation in Department aggregate root
 
-#### 应用层 - 部门管理用例
+#### 应用层 - 部门管理子领域（部门创建用例）
 
-- [ ] T130 [US5] Create CreateDepartmentCommand in libs/iam/src/application/commands/create-department.command.ts
-- [ ] T131 [US5] Create CreateDepartmentHandler in libs/iam/src/application/handlers/create-department.handler.ts
-- [ ] T132 [US5] Implement department level limit validation
-- [ ] T133 [US5] Implement path compression for performance
+- [ ] T138 [US5] Create CreateDepartmentUseCase in libs/iam/src/application/department/use-cases/create-department.use-case.ts
+- [ ] T139 [US5] Create CreateDepartmentCommand in libs/iam/src/application/department/commands/create-department.command.ts
+- [ ] T140 [US5] Create CreateDepartmentHandler in libs/iam/src/application/department/handlers/create-department.handler.ts
+- [ ] T141 [US5] Implement department level limit validation in CreateDepartmentUseCase
+- [ ] T142 [US5] Implement path compression for performance in CreateDepartmentUseCase
 
-#### 基础设施层 - 性能优化
+#### 基础设施层 - 部门管理子领域（性能优化）
 
-- [ ] T134 [US5] Add department path indexing
-- [ ] T135 [US5] Implement department query caching
+- [ ] T143 [US5] Add department path indexing in libs/iam/src/infrastructure/department/persistence/entities/department.persistence-entity.ts
+- [ ] T144 [US5] Implement department query caching in libs/iam/src/infrastructure/department/persistence/repositories/department.repository.ts
 
 #### 接口层 - REST API
 
-- [ ] T136 [US5] Create CreateDepartmentDto in libs/iam/src/interface/http/dto/create-department.dto.ts
-- [ ] T137 [US5] Create DepartmentsController in libs/iam/src/interface/http/controllers/departments.controller.ts
-- [ ] T138 [US5] Implement POST /departments endpoint
+- [ ] T145 [US5] Create CreateDepartmentDto in libs/iam/src/interface/http/dto/create-department.dto.ts
+- [ ] T146 [US5] Create DepartmentsController in libs/iam/src/interface/http/controllers/departments.controller.ts
+- [ ] T147 [US5] Implement POST /departments endpoint
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
@@ -360,35 +376,47 @@
 
 ### Tasks
 
-#### 认证子领域实现
+#### 领域层 - 认证子领域实现
 
-- [ ] T139 Create LoginSession aggregate root in libs/iam/src/domain/authentication/aggregates/login-session.aggregate.ts
-- [ ] T140 Create AuthenticationToken aggregate root in libs/iam/src/domain/authentication/aggregates/authentication-token.aggregate.ts
-- [ ] T141 Create LoginCommand and LoginHandler
-- [ ] T142 Create LogoutCommand and LogoutHandler
-- [ ] T143 Implement JWT token generation
-- [ ] T144 Implement token refresh mechanism
-- [ ] T145 Create authentication guards
+- [ ] T148 Create LoginSession aggregate root in libs/iam/src/domain/authentication/aggregates/login-session.aggregate.ts
+- [ ] T149 Create AuthenticationToken aggregate root in libs/iam/src/domain/authentication/aggregates/authentication-token.aggregate.ts
 
-#### CASL权限管理集成
+#### 应用层 - 认证子领域（登录用例）
 
-- [ ] T146 Create CaslAbilityFactory in libs/iam/src/infrastructure/casl/ability-factory.ts
-- [ ] T147 Create role-based rules in libs/iam/src/infrastructure/casl/rules/role-based.rules.ts
-- [ ] T148 Create attribute-based rules in libs/iam/src/infrastructure/casl/rules/attribute-based.rules.ts
-- [ ] T149 Create TenantContextAdapter in libs/iam/src/infrastructure/casl/adapters/tenant-context-adapter.ts
-- [ ] T150 Create CaslPermissionValidator in libs/iam/src/infrastructure/casl/casl-permission-validator.ts
-- [ ] T151 Configure CaslModule using nest-casl in libs/iam/src/infrastructure/casl/casl.module.ts
-- [ ] T152 Use @CheckPolicies decorator in controllers for permission checks
-- [ ] T153 Implement GET /users/me/permissions endpoint for frontend menu permission control
-- [ ] T154 Implement POST /permissions/check-batch endpoint for batch permission checking
-- [ ] T155 Include permissions in JWT token payload during token generation
+- [ ] T150 Create LoginUseCase in libs/iam/src/application/authentication/use-cases/login.use-case.ts
+- [ ] T151 Create LogoutUseCase in libs/iam/src/application/authentication/use-cases/logout.use-case.ts
+- [ ] T152 Create LoginCommand in libs/iam/src/application/authentication/commands/login.command.ts
+- [ ] T153 Create LogoutCommand in libs/iam/src/application/authentication/commands/logout.command.ts
+- [ ] T154 Create LoginHandler in libs/iam/src/application/authentication/handlers/login.handler.ts
+- [ ] T155 Create LogoutHandler in libs/iam/src/application/authentication/handlers/logout.handler.ts
+- [ ] T156 Implement JWT token generation in LoginUseCase
+- [ ] T157 Implement token refresh mechanism in libs/iam/src/application/authentication/use-cases/refresh-token.use-case.ts
+- [ ] T158 Create authentication guards in libs/iam/src/interface/http/guards/authentication.guard.ts
 
-#### 角色和权限管理子领域
+#### 基础设施层 - CASL权限管理集成（共享组件）
 
-- [ ] T156 Create Role aggregate root in libs/iam/src/domain/role/aggregates/role.aggregate.ts
-- [ ] T157 Create Permission aggregate root in libs/iam/src/domain/permission/aggregates/permission.aggregate.ts
-- [ ] T158 Create PermissionAssignment aggregate root
-- [ ] T159 Create role and permission management commands and handlers
+- [ ] T159 Create CaslAbilityFactory in libs/iam/src/infrastructure/shared/casl/ability-factory.ts
+- [ ] T160 Create role-based rules in libs/iam/src/infrastructure/shared/casl/rules/role-based.rules.ts
+- [ ] T161 Create attribute-based rules in libs/iam/src/infrastructure/shared/casl/rules/attribute-based.rules.ts
+- [ ] T162 Create TenantContextAdapter in libs/iam/src/infrastructure/shared/casl/adapters/tenant-context-adapter.ts
+- [ ] T163 Create CaslPermissionValidator in libs/iam/src/infrastructure/shared/casl/casl-permission-validator.ts
+- [ ] T164 Configure CaslModule using nest-casl in libs/iam/src/infrastructure/shared/casl/casl.module.ts
+- [ ] T165 Use @CheckPolicies decorator in controllers for permission checks
+- [ ] T166 Implement GET /users/me/permissions endpoint for frontend menu permission control
+- [ ] T167 Implement POST /permissions/check-batch endpoint for batch permission checking
+- [ ] T168 Include permissions in JWT token payload during token generation
+
+#### 领域层 - 角色和权限管理子领域
+
+- [ ] T169 Create Role aggregate root in libs/iam/src/domain/role/aggregates/role.aggregate.ts
+- [ ] T170 Create Permission aggregate root in libs/iam/src/domain/permission/aggregates/permission.aggregate.ts
+- [ ] T171 Create PermissionAssignment aggregate root in libs/iam/src/domain/permission/aggregates/permission-assignment.aggregate.ts
+
+#### 应用层 - 角色和权限管理子领域
+
+- [ ] T172 Create role and permission management use cases in libs/iam/src/application/role/use-cases/
+- [ ] T173 Create role and permission management commands in libs/iam/src/application/role/commands/
+- [ ] T174 Create role and permission management handlers in libs/iam/src/application/role/handlers/
 
 ## Implementation Strategy
 
@@ -419,7 +447,7 @@
 ### Parallel Execution Recommendations
 
 - **Phase 2**: 所有值对象可以并行开发
-- **Phase 3**: 值对象、实体、聚合根可以并行开发
+- **Phase 3**: 用户管理子领域的值对象、实体、聚合根可以并行开发
 - **Phase 4**: 租户、组织、部门相关的值对象和实体可以并行开发
 - **Phase 5**: 用户分配相关的实体可以并行开发
 - **Phase 9**: CASL集成和角色权限管理可以并行开发
@@ -430,5 +458,8 @@
 - 所有代码注释使用中文，遵循TSDoc规范
 - 领域层保持纯净，不依赖基础设施
 - 使用充血模型，聚合根委托业务逻辑给内部实体
+- **应用层和基础设施层按子领域组织**：每个子领域包含自己的用例、命令、查询、处理器、持久化组件
+- **共享组件放在 shared/ 目录**：跨子领域的应用服务（shared/services/）、外部服务（shared/external/）、CASL集成（shared/casl/）
 - 所有状态变更通过领域事件记录
 - 实现CQRS模式，命令和查询分离
+- **UseCase 是应用层核心**：所有业务逻辑通过 UseCase 实现，Handler 仅负责适配和转换

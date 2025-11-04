@@ -7,10 +7,10 @@ import { Injectable } from "@nestjs/common";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { EntityManager } from "@mikro-orm/core";
 import { EntityId } from "@hl8/domain-kernel";
-import { IUserRepository } from "../../../domain/user/repositories/user.repository.interface.js";
-import { User } from "../../../domain/user/aggregates/user.aggregate.js";
-import { EmailValueObject } from "../../../domain/user/value-objects/email.value-object.js";
-import { PhoneNumberValueObject } from "../../../domain/user/value-objects/phone-number.value-object.js";
+import { IUserRepository } from "../../../../domain/user/repositories/user.repository.interface.js";
+import { User } from "../../../../domain/user/aggregates/user.aggregate.js";
+import { EmailValueObject } from "../../../../domain/user/value-objects/email.value-object.js";
+import { PhoneNumberValueObject } from "../../../../domain/user/value-objects/phone-number.value-object.js";
 import { UserPersistenceEntity } from "../entities/user.persistence-entity.js";
 import { UserMapper } from "../mappers/user.mapper.js";
 import {

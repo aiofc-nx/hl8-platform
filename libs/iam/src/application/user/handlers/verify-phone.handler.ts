@@ -12,7 +12,7 @@ import {
   VerifyPhoneCommand,
   type VerifyPhoneCommandResult,
 } from "../commands/verify-phone.command.js";
-import type { IUserRepository } from "../../domain/user/repositories/user.repository.interface.js";
+import type { IUserRepository } from "../../../domain/user/repositories/user.repository.interface.js";
 
 /**
  * 验证手机号命令处理器
