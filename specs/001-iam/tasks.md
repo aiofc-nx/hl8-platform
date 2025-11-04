@@ -120,33 +120,33 @@
 
 #### 应用层 - 用户注册用例
 
-- [ ] T040 [US1] Create RegisterUserCommand in libs/iam/src/application/commands/register-user.command.ts
-- [ ] T041 [US1] Create VerifyEmailCommand in libs/iam/src/application/commands/verify-email.command.ts
-- [ ] T042 [US1] Create VerifyPhoneCommand in libs/iam/src/application/commands/verify-phone.command.ts
-- [ ] T043 [US1] Create RegisterUserHandler in libs/iam/src/application/handlers/register-user.handler.ts
-- [ ] T044 [US1] Create VerifyEmailHandler in libs/iam/src/application/handlers/verify-email.handler.ts
-- [ ] T045 [US1] Create VerifyPhoneHandler in libs/iam/src/application/handlers/verify-phone.handler.ts
+- [X] T040 [US1] Create RegisterUserCommand in libs/iam/src/application/commands/register-user.command.ts
+- [X] T041 [US1] Create VerifyEmailCommand in libs/iam/src/application/commands/verify-email.command.ts
+- [X] T042 [US1] Create VerifyPhoneCommand in libs/iam/src/application/commands/verify-phone.command.ts
+- [X] T043 [US1] Create RegisterUserHandler in libs/iam/src/application/handlers/register-user.handler.ts
+- [X] T044 [US1] Create VerifyEmailHandler in libs/iam/src/application/handlers/verify-email.handler.ts
+- [X] T045 [US1] Create VerifyPhoneHandler in libs/iam/src/application/handlers/verify-phone.handler.ts
 
 #### 基础设施层 - 用户仓储和外部服务
 
-- [ ] T046 [P] [US1] Create User persistence entity in libs/iam/src/infrastructure/persistence/entities/user.persistence-entity.ts
-- [ ] T047 [P] [US1] Create UserRepository implementation in libs/iam/src/infrastructure/persistence/repositories/user.repository.ts
-- [ ] T048 [P] [US1] Create UserMapper in libs/iam/src/infrastructure/persistence/mappers/user.mapper.ts
-- [ ] T049 [P] [US1] Create EmailService interface in libs/iam/src/infrastructure/external/email/email.service.interface.ts
-- [ ] T050 [P] [US1] Create EmailService implementation in libs/iam/src/infrastructure/external/email/email.service.ts
-- [ ] T051 [P] [US1] Create SmsService interface in libs/iam/src/infrastructure/external/sms/sms.service.interface.ts
-- [ ] T052 [P] [US1] Create SmsService implementation in libs/iam/src/infrastructure/external/sms/sms.service.ts
-- [ ] T053 [US1] Implement retry mechanism with exponential backoff in external services
+- [X] T046 [P] [US1] Create User persistence entity in libs/iam/src/infrastructure/persistence/entities/user.persistence-entity.ts
+- [X] T047 [P] [US1] Create UserRepository implementation in libs/iam/src/infrastructure/persistence/repositories/user.repository.ts
+- [X] T048 [P] [US1] Create UserMapper in libs/iam/src/infrastructure/persistence/mappers/user.mapper.ts
+- [X] T049 [P] [US1] Create EmailService interface in libs/iam/src/infrastructure/external/email/email.service.interface.ts
+- [X] T050 [P] [US1] Create EmailService implementation in libs/iam/src/infrastructure/external/email/email.service.ts
+- [X] T051 [P] [US1] Create SmsService interface in libs/iam/src/infrastructure/external/sms/sms.service.interface.ts
+- [X] T052 [P] [US1] Create SmsService implementation in libs/iam/src/infrastructure/external/sms/sms.service.ts
+- [X] T053 [US1] Implement retry mechanism with exponential backoff in external services
 
 #### 接口层 - REST API
 
-- [ ] T054 [US1] Create RegisterUserDto in libs/iam/src/interface/http/dto/register-user.dto.ts
-- [ ] T055 [US1] Create VerifyEmailDto in libs/iam/src/interface/http/dto/verify-email.dto.ts
-- [ ] T056 [US1] Create VerifyPhoneDto in libs/iam/src/interface/http/dto/verify-phone.dto.ts
-- [ ] T057 [US1] Create UsersController in libs/iam/src/interface/http/controllers/users.controller.ts
-- [ ] T058 [US1] Implement POST /users/register endpoint
-- [ ] T059 [US1] Implement POST /users/verify-email endpoint
-- [ ] T060 [US1] Implement POST /users/verify-phone endpoint
+- [X] T054 [US1] Create RegisterUserDto in libs/iam/src/interface/http/dto/register-user.dto.ts
+- [X] T055 [US1] Create VerifyEmailDto in libs/iam/src/interface/http/dto/verify-email.dto.ts
+- [X] T056 [US1] Create VerifyPhoneDto in libs/iam/src/interface/http/dto/verify-phone.dto.ts
+- [X] T057 [US1] Create UsersController in libs/iam/src/interface/http/controllers/users.controller.ts
+- [X] T058 [US1] Implement POST /users/register endpoint
+- [X] T059 [US1] Implement POST /users/verify-email endpoint
+- [X] T060 [US1] Implement POST /users/verify-phone endpoint
 
 ## Phase 4: User Story 2 - 租户创建和初始化 [US2]
 

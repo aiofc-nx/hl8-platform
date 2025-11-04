@@ -43,6 +43,38 @@ export class User extends AggregateRoot {
   private _registeredAt: Date;
 
   /**
+   * 设置邮箱验证状态（用于从持久化重建）
+   * @param verified 验证状态
+   */
+  public setEmailVerified(verified: boolean): void {
+    this._emailVerified = verified;
+  }
+
+  /**
+   * 设置手机验证状态（用于从持久化重建）
+   * @param verified 验证状态
+   */
+  public setPhoneVerified(verified: boolean): void {
+    this._phoneVerified = verified;
+  }
+
+  /**
+   * 设置用户状态（用于从持久化重建）
+   * @param status 用户状态
+   */
+  public setStatus(status: UserStatus): void {
+    this._status = status;
+  }
+
+  /**
+   * 设置注册时间（用于从持久化重建）
+   * @param registeredAt 注册时间
+   */
+  public setRegisteredAt(registeredAt: Date): void {
+    this._registeredAt = new Date(registeredAt.getTime());
+  }
+
+  /**
    * 创建用户聚合根（私有构造函数，使用静态工厂方法）
    * @param id 用户ID
    * @param email 邮箱
@@ -102,6 +134,41 @@ export class User extends AggregateRoot {
       data: registeredEvent.eventData,
     });
 
+    return user;
+  }
+
+  /**
+   * 从持久化数据重建用户聚合根（工厂方法）
+   * @param id 用户ID
+   * @param email 邮箱
+   * @param phoneNumber 手机号
+   * @param name 姓名
+   * @param passwordHash 密码哈希
+   * @param emailVerified 邮箱验证状态
+   * @param phoneVerified 手机验证状态
+   * @param status 用户状态
+   * @param registeredAt 注册时间
+   * @param version 版本号
+   * @returns 用户聚合根
+   */
+  public static fromPersistence(
+    id: EntityId,
+    email: EmailValueObject,
+    phoneNumber: PhoneNumberValueObject,
+    name: UserNameValueObject,
+    passwordHash: PasswordHashValueObject,
+    emailVerified: boolean,
+    phoneVerified: boolean,
+    status: UserStatus,
+    registeredAt: Date,
+    _version: number,
+  ): User {
+    const user = new User(id, email, phoneNumber, name, passwordHash);
+    user.setEmailVerified(emailVerified);
+    user.setPhoneVerified(phoneVerified);
+    user.setStatus(status);
+    user.setRegisteredAt(registeredAt);
+    // 注意：版本号由AggregateRoot基类管理，这里不需要手动设置
     return user;
   }
 

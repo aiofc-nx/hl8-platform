@@ -60,3 +60,4 @@ pnpm-debug.log*
 # forks
 forks/
 
+docs/mikro-orm-docs

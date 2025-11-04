@@ -1,0 +1,65 @@
+/**
+ * @fileoverview 验证邮箱命令
+ * @description 用户邮箱验证命令，包含用户ID和验证码
+ */
+
+import { BaseCommand } from "@hl8/application-kernel";
+import { IsNotEmpty, IsString } from "class-validator";
+
+/**
+ * 验证邮箱命令结果
+ */
+export interface VerifyEmailCommandResult {
+  /** 用户ID */
+  userId: string;
+  /** 是否验证成功 */
+  verified: boolean;
+  /** 验证时间 */
+  verifiedAt: Date;
+}
+
+/**
+ * 验证邮箱命令
+ * @description 用于验证用户邮箱的命令
+ */
+export class VerifyEmailCommand extends BaseCommand<VerifyEmailCommandResult> {
+  /** 验证码 */
+  @IsNotEmpty()
+  @IsString()
+  public readonly code: string;
+
+  /**
+   * 创建验证邮箱命令
+   * @param userId 用户ID（作为aggregateId）
+   * @param code 验证码
+   * @param options 命令选项
+   */
+  constructor(
+    userId: string,
+    code: string,
+    options: {
+      commandId?: string;
+      correlationId?: string;
+      timestamp?: Date;
+      version?: string;
+      metadata?: Record<string, unknown>;
+    } = {},
+  ) {
+    super(userId, "VerifyEmail", options);
+    this.code = code;
+  }
+
+  /**
+   * 克隆命令对象
+   * @returns 新的命令对象实例
+   */
+  public clone(): VerifyEmailCommand {
+    return new VerifyEmailCommand(this.userId, this.code, {
+      commandId: this.commandId,
+      correlationId: this.correlationId,
+      timestamp: this.timestamp,
+      version: this.version,
+      metadata: this.metadata ? { ...this.metadata } : undefined,
+    });
+  }
+}
